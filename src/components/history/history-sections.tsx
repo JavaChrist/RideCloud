@@ -139,7 +139,7 @@ export function HistorySections({
           )}
           <div className="space-y-2 rounded-lg border border-emerald-200 bg-white p-3">
             <Input placeholder="Titre (ex: Vidange moteur)" value={doneForm.titre} onChange={(e) => setDoneForm((s) => ({ ...s, titre: e.target.value }))} />
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <Input type="date" value={doneForm.date_entretien} onChange={(e) => setDoneForm((s) => ({ ...s, date_entretien: e.target.value }))} />
               <Input type="number" placeholder="Kilométrage" value={doneForm.kilometrage} onChange={(e) => setDoneForm((s) => ({ ...s, kilometrage: e.target.value }))} />
             </div>
@@ -168,7 +168,7 @@ export function HistorySections({
         <CardContent className="space-y-3">
           <div className="space-y-2 rounded-lg border border-amber-200 bg-white p-3">
             <Input placeholder="Titre (ex: Contrôle pneus)" value={upcomingForm.titre} onChange={(e) => setUpcomingForm((s) => ({ ...s, titre: e.target.value }))} />
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <Input type="date" value={upcomingForm.due_date} onChange={(e) => setUpcomingForm((s) => ({ ...s, due_date: e.target.value }))} />
               <Input type="number" placeholder="Échéance km" value={upcomingForm.due_km} onChange={(e) => setUpcomingForm((s) => ({ ...s, due_km: e.target.value }))} />
             </div>

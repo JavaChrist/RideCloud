@@ -97,7 +97,7 @@ export function ModificationsList({ vehicleId, items }: { vehicleId: string; ite
             <Input placeholder="Marque" value={form.marque} onChange={(e) => setForm((s) => ({ ...s, marque: e.target.value }))} />
             <Input placeholder="Modèle" value={form.modele} onChange={(e) => setForm((s) => ({ ...s, modele: e.target.value }))} />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <Input type="date" value={form.date_pose} onChange={(e) => setForm((s) => ({ ...s, date_pose: e.target.value }))} />
             <Input type="number" placeholder="Coût" value={form.cout} onChange={(e) => setForm((s) => ({ ...s, cout: e.target.value }))} />
           </div>

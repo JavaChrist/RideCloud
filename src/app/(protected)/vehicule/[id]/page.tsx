@@ -1,12 +1,9 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { Bike, Car, Gauge, Truck } from "lucide-react";
-import { DocumentsList } from "@/components/documents/documents-list";
-import { HistorySections } from "@/components/history/history-sections";
-import { ModificationsList } from "@/components/modifications/modifications-list";
+import { VehicleDetailTabs } from "@/components/vehicles/vehicle-detail-tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getVehicleById, getVehicleHistory } from "@/lib/data/vehicle-repository";
 import { createClient } from "@/lib/supabase/server";
 
@@ -67,18 +64,17 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="historique" className="w-full">
-        <TabsList className="w-full justify-start">
-          <TabsTrigger value="historique">Historique</TabsTrigger>
-          <TabsTrigger value="modifications">Modifications</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="informations">Informations</TabsTrigger>
-        </TabsList>
-        <TabsContent value="historique"><HistorySections vehicleId={vehicle.id} completed={completed} upcoming={upcoming} /></TabsContent>
-        <TabsContent value="modifications"><ModificationsList vehicleId={vehicle.id} items={modifications} /></TabsContent>
-        <TabsContent value="documents"><DocumentsList vehicleId={vehicle.id} items={documents} /></TabsContent>
-        <TabsContent value="informations"><Card><CardContent className="space-y-2 p-4 text-sm text-slate-700"><p>Immatriculation : {vehicle.immatriculation ?? "-"}</p><p>VIN : {vehicle.vin ?? "-"}</p><p>Surnom : {vehicle.surnom ?? "-"}</p><p>Carburant : {vehicle.carburant ?? "-"}</p></CardContent></Card></TabsContent>
-      </Tabs>
+      <VehicleDetailTabs
+        vehicleId={vehicle.id}
+        completed={completed}
+        upcoming={upcoming}
+        modifications={modifications}
+        documents={documents}
+        immatriculation={vehicle.immatriculation}
+        vin={vehicle.vin}
+        surnom={vehicle.surnom}
+        carburant={vehicle.carburant}
+      />
     </section>
   );
 }
