@@ -21,7 +21,7 @@ export default async function CategoriesPage() {
         <h1 className="text-3xl font-semibold tracking-tight">Catégories de véhicules</h1>
         <p className="text-slate-600">Choisissez une catégorie pour afficher la liste des véhicules.</p>
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {categories.map((category) => <CategoryCard key={category.slug} slug={category.slug} title={category.title} />)}
       </div>
     </section>
