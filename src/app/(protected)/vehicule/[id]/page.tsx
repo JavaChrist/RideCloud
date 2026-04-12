@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { Bike, Car, Gauge, Truck } from "lucide-react";
+import { VehicleActions } from "@/components/vehicles/vehicle-actions";
 import { VehicleDetailTabs } from "@/components/vehicles/vehicle-detail-tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -63,6 +64,8 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
           </div>
         </CardContent>
       </Card>
+
+      <VehicleActions vehicleId={vehicle.id} vehicleName={`${vehicle.marque} ${vehicle.modele}`} />
 
       <VehicleDetailTabs
         vehicleId={vehicle.id}

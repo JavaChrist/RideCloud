@@ -1,14 +1,14 @@
-import {
-  categoryLabels,
-  demoDocuments,
-  demoMaintenanceEntries,
-  demoModifications,
-  demoUpcomingMaintenance,
-  demoVehicles
-} from "@/lib/data/demo";
+import { categoryLabels } from "@/lib/data/demo";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateFr } from "@/lib/utils/date";
-import type { VehicleCategory } from "@/types/database";
+import type {
+  DocumentItem,
+  MaintenanceEntry,
+  Modification,
+  UpcomingMaintenance,
+  Vehicle,
+  VehicleCategory
+} from "@/types/database";
 
 export function formatDate(date: string | null) {
   return formatDateFr(date);
@@ -16,8 +16,7 @@ export function formatDate(date: string | null) {
 
 function getDemoCategoryCounts() {
   return (Object.keys(categoryLabels) as VehicleCategory[]).map((category) => {
-    const count = demoVehicles.filter((vehicle) => vehicle.category === category).length;
-    return { slug: category, title: categoryLabels[category], count };
+    return { slug: category, title: categoryLabels[category], count: 0 };
   });
 }
 
@@ -33,7 +32,7 @@ function normalizeStoragePath(input: string | null) {
   return pathWithQuery.split("?")[0] ?? null;
 }
 
-async function toDisplayVehicles(vehicles: typeof demoVehicles) {
+async function toDisplayVehicles(vehicles: Vehicle[]) {
   const supabase = await createClient();
 
   const enriched = await Promise.all(
@@ -55,7 +54,7 @@ async function toDisplayVehicles(vehicles: typeof demoVehicles) {
   return enriched;
 }
 
-async function mapDocumentsUrls(documents: typeof demoDocuments) {
+async function mapDocumentsUrls(documents: DocumentItem[]) {
   const supabase = await createClient();
   const enriched = await Promise.all(
     documents.map(async (document) => {
@@ -70,6 +69,27 @@ async function mapDocumentsUrls(documents: typeof demoDocuments) {
 
       const { data } = await supabase.storage.from("ridecloud-files").createSignedUrl(storagePath, 60 * 60);
       return { ...document, url: data?.signedUrl ?? "#" };
+    })
+  );
+
+  return enriched;
+}
+
+async function mapModificationsUrls(modifications: Modification[]) {
+  const supabase = await createClient();
+  const enriched = await Promise.all(
+    modifications.map(async (item) => {
+      if (!item.facture_url) {
+        return item;
+      }
+
+      const storagePath = normalizeStoragePath(item.facture_url);
+      if (!storagePath) {
+        return item;
+      }
+
+      const { data } = await supabase.storage.from("ridecloud-files").createSignedUrl(storagePath, 60 * 60);
+      return { ...item, facture_url: data?.signedUrl ?? null };
     })
   );
 
@@ -104,13 +124,13 @@ export async function getVehiclesByCategory(userId: string, category: VehicleCat
       .eq("category", category)
       .order("created_at", { ascending: false });
 
-    if (error) return toDisplayVehicles(demoVehicles.filter((vehicle) => vehicle.category === category));
-    const vehicles = (data ?? []) as typeof demoVehicles;
-    if (vehicles.length === 0) return toDisplayVehicles(demoVehicles.filter((vehicle) => vehicle.category === category));
+    if (error) return [];
+    const vehicles = (data ?? []) as Vehicle[];
+    if (vehicles.length === 0) return [];
 
     return toDisplayVehicles(vehicles);
   } catch {
-    return toDisplayVehicles(demoVehicles.filter((vehicle) => vehicle.category === category));
+    return [];
   }
 }
 
@@ -124,14 +144,14 @@ export async function getVehicleById(userId: string, id: string) {
       .eq("id", id)
       .maybeSingle();
 
-    if (error) return demoVehicles.find((vehicle) => vehicle.id === id) ?? null;
-    const vehicleData = data as (typeof demoVehicles)[number] | null;
-    if (!vehicleData) return demoVehicles.find((vehicle) => vehicle.id === id) ?? null;
+    if (error) return null;
+    const vehicleData = data as Vehicle | null;
+    if (!vehicleData) return null;
 
     const [vehicle] = await toDisplayVehicles([vehicleData]);
     return vehicle ?? null;
   } catch {
-    return demoVehicles.find((vehicle) => vehicle.id === id) ?? null;
+    return null;
   }
 }
 
@@ -167,47 +187,14 @@ export async function getVehicleHistory(userId: string, vehicleId: string) {
     ]);
 
     if (completedRes.error || upcomingRes.error || modificationsRes.error || documentsRes.error) {
-      return {
-        completed: demoMaintenanceEntries.filter((entry) => entry.vehicle_id === vehicleId),
-        upcoming: demoUpcomingMaintenance.filter((entry) => entry.vehicle_id === vehicleId),
-        modifications: demoModifications.filter((entry) => entry.vehicle_id === vehicleId),
-        documents: demoDocuments.filter((entry) => entry.vehicle_id === vehicleId)
-      };
+      return { completed: [], upcoming: [], modifications: [], documents: [] };
     }
 
-    const completed = (completedRes.data ?? []) as typeof demoMaintenanceEntries;
-    const upcoming = (upcomingRes.data ?? []) as typeof demoUpcomingMaintenance;
-    const modificationsRaw = (modificationsRes.data ?? []) as typeof demoModifications;
-    const documents = (documentsRes.data ?? []) as typeof demoDocuments;
-    const modifications = await Promise.all(
-      modificationsRaw.map(async (item) => {
-        if (!item.facture_url) {
-          return item;
-        }
-
-        const storagePath = normalizeStoragePath(item.facture_url);
-        if (!storagePath) {
-          return item;
-        }
-
-        const { data } = await supabase.storage.from("ridecloud-files").createSignedUrl(storagePath, 60 * 60);
-        return { ...item, facture_url: data?.signedUrl ?? null };
-      })
-    );
-
-    if (
-      completed.length === 0 &&
-      upcoming.length === 0 &&
-      modifications.length === 0 &&
-      documents.length === 0
-    ) {
-      return {
-        completed: demoMaintenanceEntries.filter((entry) => entry.vehicle_id === vehicleId),
-        upcoming: demoUpcomingMaintenance.filter((entry) => entry.vehicle_id === vehicleId),
-        modifications: demoModifications.filter((entry) => entry.vehicle_id === vehicleId),
-        documents: demoDocuments.filter((entry) => entry.vehicle_id === vehicleId)
-      };
-    }
+    const completed = (completedRes.data ?? []) as MaintenanceEntry[];
+    const upcoming = (upcomingRes.data ?? []) as UpcomingMaintenance[];
+    const modificationsRaw = (modificationsRes.data ?? []) as Modification[];
+    const documents = (documentsRes.data ?? []) as DocumentItem[];
+    const modifications = await mapModificationsUrls(modificationsRaw);
 
     return {
       completed,
@@ -216,11 +203,6 @@ export async function getVehicleHistory(userId: string, vehicleId: string) {
       documents: await mapDocumentsUrls(documents)
     };
   } catch {
-    return {
-      completed: demoMaintenanceEntries.filter((entry) => entry.vehicle_id === vehicleId),
-      upcoming: demoUpcomingMaintenance.filter((entry) => entry.vehicle_id === vehicleId),
-      modifications: demoModifications.filter((entry) => entry.vehicle_id === vehicleId),
-      documents: demoDocuments.filter((entry) => entry.vehicle_id === vehicleId)
-    };
+    return { completed: [], upcoming: [], modifications: [], documents: [] };
   }
 }

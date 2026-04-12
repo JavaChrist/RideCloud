@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { FileUp } from "lucide-react";
 import { toast } from "sonner";
 import type { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
@@ -20,6 +21,8 @@ export function AddVehicleForm() {
 
   const router = useRouter();
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importLoading, setImportLoading] = useState(false);
 
   const form = useForm<VehicleFormInput, unknown, VehicleFormOutput>({
     resolver: zodResolver(vehicleFormSchema),
@@ -135,9 +138,229 @@ export function AddVehicleForm() {
     }
   };
 
+  const importVehiclePackage = async () => {
+    if (!importFile) {
+      toast.error("Sélectionnez un fichier JSON RideCloud.");
+      return;
+    }
+
+    try {
+      setImportLoading(true);
+      const content = await importFile.text();
+      const parsed = JSON.parse(content) as {
+        vehicle?: Record<string, unknown>;
+        maintenance_entries?: Array<Record<string, unknown>>;
+        upcoming_maintenance?: Array<Record<string, unknown>>;
+        modifications?: Array<Record<string, unknown>>;
+        documents?: Array<Record<string, unknown>>;
+        documents_files?: Array<{
+          source_document_id?: string;
+          file_name?: string;
+          mime_type?: string;
+          base64?: string;
+          size?: number;
+        }>;
+      };
+
+      if (!parsed.vehicle) {
+        toast.error("Fichier invalide : bloc véhicule manquant.");
+        return;
+      }
+
+      const supabase = createClient();
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Session expirée, reconnectez-vous.");
+        router.push("/login");
+        return;
+      }
+
+      const vehiclePayload = {
+        user_id: user.id,
+        category: String(parsed.vehicle.category ?? "voitures"),
+        marque: String(parsed.vehicle.marque ?? ""),
+        modele: String(parsed.vehicle.modele ?? ""),
+        annee: Number(parsed.vehicle.annee ?? new Date().getFullYear()),
+        kilometrage: Number(parsed.vehicle.kilometrage ?? 0),
+        date_achat: parsed.vehicle.date_achat ? String(parsed.vehicle.date_achat) : null,
+        carburant: parsed.vehicle.carburant ? String(parsed.vehicle.carburant) : null,
+        immatriculation: parsed.vehicle.immatriculation ? String(parsed.vehicle.immatriculation) : null,
+        vin: parsed.vehicle.vin ? String(parsed.vehicle.vin) : null,
+        surnom: parsed.vehicle.surnom ? String(parsed.vehicle.surnom) : null,
+        photo_url: null
+      };
+
+      const { data: inserted, error } = await supabase.from("vehicles").insert(vehiclePayload as never).select("id").single();
+      if (error) {
+        toast.error(`Import véhicule impossible : ${error.message}`);
+        return;
+      }
+
+      const insertedVehicle = inserted as { id: string } | null;
+      if (!insertedVehicle?.id) {
+        toast.error("Import interrompu : identifiant véhicule introuvable.");
+        return;
+      }
+
+      const maintenance = (parsed.maintenance_entries ?? []).map((item) => ({
+        user_id: user.id,
+        vehicle_id: insertedVehicle.id,
+        titre: String(item.titre ?? "Opération"),
+        date_entretien: item.date_entretien ? String(item.date_entretien) : new Date().toISOString().slice(0, 10),
+        kilometrage: Number(item.kilometrage ?? 0),
+        cout: item.cout ? Number(item.cout) : null,
+        description: item.description ? String(item.description) : null
+      }));
+      if (maintenance.length > 0) {
+        await supabase.from("maintenance_entries").insert(maintenance as never);
+      }
+
+      const upcoming = (parsed.upcoming_maintenance ?? []).map((item) => ({
+        user_id: user.id,
+        vehicle_id: insertedVehicle.id,
+        titre: String(item.titre ?? "Échéance"),
+        due_date: item.due_date ? String(item.due_date) : null,
+        due_km: item.due_km ? Number(item.due_km) : null,
+        niveau_urgence: item.niveau_urgence === "urgent" ? "urgent" : "normal",
+        description: item.description ? String(item.description) : null
+      }));
+      if (upcoming.length > 0) {
+        await supabase.from("upcoming_maintenance").insert(upcoming as never);
+      }
+
+      const modifications = (parsed.modifications ?? []).map((item) => ({
+        user_id: user.id,
+        vehicle_id: insertedVehicle.id,
+        titre: String(item.titre ?? "Modification"),
+        marque: item.marque ? String(item.marque) : null,
+        modele: item.modele ? String(item.modele) : null,
+        date_pose: item.date_pose ? String(item.date_pose) : null,
+        cout: item.cout ? Number(item.cout) : null,
+        facture_url: null
+      }));
+      if (modifications.length > 0) {
+        await supabase.from("modifications").insert(modifications as never);
+      }
+
+      const documentsMeta = (parsed.documents ?? []) as Array<Record<string, unknown>>;
+      const documentsFiles = (parsed.documents_files ?? []).filter((file) => file.base64);
+
+      const metaBySourceId = new Map(
+        documentsMeta
+          .filter((item) => item.id)
+          .map((item) => [String(item.id), item])
+      );
+
+      const documentsToInsert: Array<{
+        user_id: string;
+        vehicle_id: string;
+        nom_fichier: string;
+        type_fichier: string;
+        url: string;
+        taille: number | null;
+      }> = [];
+
+      const uploadedSourceIds = new Set<string>();
+
+      for (const file of documentsFiles) {
+        try {
+          const mimeType = file.mime_type || "application/octet-stream";
+          const sourceId = file.source_document_id ? String(file.source_document_id) : "";
+          const meta = sourceId ? metaBySourceId.get(sourceId) : undefined;
+          const fileName = file.file_name || (meta?.nom_fichier ? String(meta.nom_fichier) : "document-importe.bin");
+          const extension = fileName.includes(".") ? fileName.split(".").pop() : "bin";
+          const safeExt = String(extension ?? "bin").toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
+          const storagePath = `${user.id}/${insertedVehicle.id}/documents/${crypto.randomUUID()}.${safeExt}`;
+
+          const fileResponse = await fetch(`data:${mimeType};base64,${file.base64}`);
+          const fileBlob = await fileResponse.blob();
+          const { error: uploadError } = await supabase.storage.from("ridecloud-files").upload(storagePath, fileBlob, {
+            upsert: false,
+            contentType: mimeType
+          });
+          if (uploadError) {
+            continue;
+          }
+
+          documentsToInsert.push({
+            user_id: user.id,
+            vehicle_id: insertedVehicle.id,
+            nom_fichier: fileName,
+            type_fichier: mimeType,
+            url: storagePath,
+            taille: typeof file.size === "number" ? file.size : fileBlob.size
+          });
+          if (sourceId) {
+            uploadedSourceIds.add(sourceId);
+          }
+        } catch {
+          // Skip malformed embedded files
+        }
+      }
+
+      for (const item of documentsMeta) {
+        const sourceId = item.id ? String(item.id) : "";
+        if (sourceId && uploadedSourceIds.has(sourceId)) {
+          continue;
+        }
+
+        documentsToInsert.push({
+          user_id: user.id,
+          vehicle_id: insertedVehicle.id,
+          nom_fichier: String(item.nom_fichier ?? "Document importé"),
+          type_fichier: String(item.type_fichier ?? "Fichier"),
+          url: "#",
+          taille: Number.isFinite(Number(item.taille)) ? Number(item.taille) : null
+        });
+      }
+
+      if (documentsToInsert.length > 0) {
+        let importedDocumentsCount = 0;
+        let failedDocumentsCount = 0;
+
+        for (const documentRow of documentsToInsert) {
+          const { error: documentError } = await supabase.from("documents").insert(documentRow as never);
+          if (documentError) {
+            failedDocumentsCount += 1;
+          } else {
+            importedDocumentsCount += 1;
+          }
+        }
+
+        if (failedDocumentsCount > 0) {
+          toast.warning(`Import partiel des documents : ${importedDocumentsCount}/${documentsToInsert.length} importé(s).`);
+        } else {
+          toast.success(`${importedDocumentsCount} document(s) importé(s).`);
+        }
+      }
+
+      toast.success("Dossier RideCloud importé avec succès.");
+      router.push(`/vehicule/${insertedVehicle.id}?tab=historique`);
+      router.refresh();
+    } catch {
+      toast.error("Fichier d'import invalide.");
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-3 rounded-xl border-2 border-blue-200 bg-blue-50 p-4 shadow-sm">
+          <div className="space-y-1">
+            <p className="text-base font-semibold text-blue-900">Reprise d’un véhicule existant</p>
+            <p className="text-sm text-blue-800">Importez un dossier RideCloud (.json) reçu lors d’une vente.</p>
+          </div>
+          <Input type="file" accept="application/json,.json" onChange={(e) => setImportFile(e.target.files?.[0] ?? null)} />
+          <Button type="button" onClick={importVehiclePackage} disabled={importLoading || !importFile} className="w-full sm:w-auto">
+            <FileUp className="mr-2 h-4 w-4" />
+            {importLoading ? "Import en cours..." : "Importer le dossier"}
+          </Button>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-2">
           <FormField control={form.control} name="category" render={({ field }) => (
             <FormItem><FormLabel>Type de véhicule</FormLabel><FormControl><select className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" {...field}><option value="voitures">Voitures</option><option value="motos">Motos</option><option value="scooters">Scooters</option><option value="utilitaires">Utilitaires</option></select></FormControl><FormMessage /></FormItem>
