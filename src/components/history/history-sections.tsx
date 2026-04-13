@@ -1,14 +1,20 @@
- "use client";
+"use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { differenceInCalendarDays, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
-import { calculateNextMaintenanceDue, getMaintenanceStatus } from "@/lib/maintenance";
+import {
+  DEFAULT_DUE_SOON_DAYS_THRESHOLD,
+  DEFAULT_DUE_SOON_KM_THRESHOLD,
+  calculateNextMaintenanceDue,
+  getMaintenanceStatus
+} from "@/lib/maintenance";
 import { formatDateFr } from "@/lib/utils/date";
 import { toast } from "sonner";
 import type { MaintenanceEntry, MaintenancePlanEntry, UpcomingMaintenance } from "@/types/database";
@@ -91,7 +97,9 @@ export function HistorySections({
           const status = getMaintenanceStatus({
             nextDueKm: due.nextDueKm,
             nextDueDate: due.nextDueDate,
-            currentKm
+            currentKm,
+            dueSoonKmThreshold: selectedPlan.due_soon_km_threshold,
+            dueSoonDaysThreshold: selectedPlan.due_soon_days_threshold
           });
           await supabase
             .from("maintenance_plan_entries")
@@ -174,17 +182,58 @@ export function HistorySections({
   const generatedUpcoming = planEntries.map((entry) => ({
     id: `plan-${entry.id}`,
     titre: entry.titre,
+    categorie: entry.categorie,
     due_date: entry.next_due_date,
     due_km: entry.next_due_km,
+    due_soon_km_threshold: entry.due_soon_km_threshold,
+    due_soon_days_threshold: entry.due_soon_days_threshold,
     niveau_urgence: entry.priority === "urgent" ? "urgent" : "normal",
     description: entry.description,
     source: "template" as const
   }));
 
-  const unifiedUpcoming = [
-    ...upcoming.map((item) => ({ ...item, source: item.source ?? "manual" })),
-    ...generatedUpcoming
-  ];
+  const unifiedUpcoming = useMemo(() => {
+    const rawItems = [
+      ...upcoming.map((item) => ({
+        ...item,
+        source: item.source ?? "manual",
+        categorie: "",
+        due_soon_km_threshold: DEFAULT_DUE_SOON_KM_THRESHOLD,
+        due_soon_days_threshold: DEFAULT_DUE_SOON_DAYS_THRESHOLD
+      })),
+      ...generatedUpcoming
+    ];
+
+    const deduped = new Map<string, (typeof rawItems)[number]>();
+    for (const item of rawItems) {
+      const key = `${item.source}::${item.categorie}::${item.titre}`.toLowerCase();
+      if (!deduped.has(key)) {
+        deduped.set(key, item);
+      }
+    }
+
+    const statusRank = (item: (typeof rawItems)[number]) => {
+      const kmDiff = item.due_km != null ? item.due_km - currentKm : Number.POSITIVE_INFINITY;
+      const dayDiff = item.due_date ? differenceInCalendarDays(parseISO(item.due_date), new Date()) : Number.POSITIVE_INFINITY;
+      const dueSoonKmThreshold = item.due_soon_km_threshold ?? DEFAULT_DUE_SOON_KM_THRESHOLD;
+      const dueSoonDaysThreshold = item.due_soon_days_threshold ?? DEFAULT_DUE_SOON_DAYS_THRESHOLD;
+      if (kmDiff < 0 || dayDiff < 0) return 0;
+      if (kmDiff <= dueSoonKmThreshold || dayDiff <= dueSoonDaysThreshold) return 1;
+      return 2;
+    };
+
+    return Array.from(deduped.values()).sort((a, b) => {
+      const rankDiff = statusRank(a) - statusRank(b);
+      if (rankDiff !== 0) return rankDiff;
+      const kmA = a.due_km != null ? a.due_km - currentKm : Number.POSITIVE_INFINITY;
+      const kmB = b.due_km != null ? b.due_km - currentKm : Number.POSITIVE_INFINITY;
+      if (kmA !== kmB) return kmA - kmB;
+      const dayA = a.due_date ? differenceInCalendarDays(parseISO(a.due_date), new Date()) : Number.POSITIVE_INFINITY;
+      const dayB = b.due_date ? differenceInCalendarDays(parseISO(b.due_date), new Date()) : Number.POSITIVE_INFINITY;
+      if (dayA !== dayB) return dayA - dayB;
+      return a.titre.localeCompare(b.titre, "fr");
+    });
+  }, [upcoming, generatedUpcoming, currentKm]);
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">

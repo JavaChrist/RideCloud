@@ -2,13 +2,19 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { differenceInCalendarDays, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
-import { calculateNextMaintenanceDue, getMaintenanceStatus } from "@/lib/maintenance";
+import {
+  DEFAULT_DUE_SOON_DAYS_THRESHOLD,
+  DEFAULT_DUE_SOON_KM_THRESHOLD,
+  calculateNextMaintenanceDue,
+  getMaintenanceStatus
+} from "@/lib/maintenance";
 import { formatDateFr } from "@/lib/utils/date";
 import { toast } from "sonner";
 import type { MaintenancePlanEntry } from "@/types/database";
@@ -20,6 +26,11 @@ type FormState = {
   description: string;
 };
 
+type AlertFormState = {
+  dueSoonKmThreshold: string;
+  dueSoonDaysThreshold: string;
+};
+
 function getStatusBadge(status: MaintenancePlanEntry["status"]) {
   if (status === "overdue") return { label: "En retard", variant: "danger" as const };
   if (status === "due_soon") return { label: "Bientôt dû", variant: "warning" as const };
@@ -27,25 +38,63 @@ function getStatusBadge(status: MaintenancePlanEntry["status"]) {
   return { label: "À venir", variant: "secondary" as const };
 }
 
+const statusRank: Record<MaintenancePlanEntry["status"], number> = {
+  overdue: 0,
+  due_soon: 1,
+  upcoming: 2,
+  done: 3
+};
+
+function getMaintenanceSortScore(entry: MaintenancePlanEntry, currentKm: number, now: Date) {
+  const kmDiff = entry.next_due_km != null ? entry.next_due_km - currentKm : Number.POSITIVE_INFINITY;
+  const daysDiff = entry.next_due_date
+    ? differenceInCalendarDays(parseISO(entry.next_due_date), now)
+    : Number.POSITIVE_INFINITY;
+  const kmThreshold = entry.due_soon_km_threshold || DEFAULT_DUE_SOON_KM_THRESHOLD;
+  const daysThreshold = entry.due_soon_days_threshold || DEFAULT_DUE_SOON_DAYS_THRESHOLD;
+  const kmEquivalentFromDays = Number.isFinite(daysDiff) ? daysDiff * (kmThreshold / daysThreshold) : Number.POSITIVE_INFINITY;
+  return Math.min(kmDiff, kmEquivalentFromDays);
+}
+
 export function MaintenancePlanList({
   vehicleId,
   currentKm,
-  items
+  items,
+  maintenanceProfileName
 }: {
   vehicleId: string;
   currentKm: number;
   items: MaintenancePlanEntry[];
+  maintenanceProfileName: string;
 }) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
+  const [activeAlertEntryId, setActiveAlertEntryId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [savingAlert, setSavingAlert] = useState(false);
   const [form, setForm] = useState<FormState>({
     date_entretien: new Date().toISOString().slice(0, 10),
     kilometrage: currentKm.toString(),
     cout: "",
     description: ""
   });
+  const [alertForm, setAlertForm] = useState<AlertFormState>({
+    dueSoonKmThreshold: String(DEFAULT_DUE_SOON_KM_THRESHOLD),
+    dueSoonDaysThreshold: String(DEFAULT_DUE_SOON_DAYS_THRESHOLD)
+  });
+  const sortedItems = useMemo(() => {
+    const now = new Date();
+    return [...items].sort((a, b) => {
+      const rankDiff = statusRank[a.status] - statusRank[b.status];
+      if (rankDiff !== 0) return rankDiff;
+
+      const scoreDiff = getMaintenanceSortScore(a, currentKm, now) - getMaintenanceSortScore(b, currentKm, now);
+      if (scoreDiff !== 0) return scoreDiff;
+
+      return a.titre.localeCompare(b.titre, "fr");
+    });
+  }, [items, currentKm]);
 
   const submitDone = async (entry: MaintenancePlanEntry) => {
     if (!form.date_entretien || !form.kilometrage) {
@@ -89,7 +138,9 @@ export function MaintenancePlanList({
       const status = getMaintenanceStatus({
         nextDueKm: due.nextDueKm,
         nextDueDate: due.nextDueDate,
-        currentKm
+        currentKm,
+        dueSoonKmThreshold: entry.due_soon_km_threshold,
+        dueSoonDaysThreshold: entry.due_soon_days_threshold
       });
 
       const { error: updateError } = await supabase
@@ -99,7 +150,8 @@ export function MaintenancePlanList({
           last_done_date: doneDate,
           next_due_km: due.nextDueKm,
           next_due_date: due.nextDueDate,
-          status
+          status,
+          updated_at: new Date().toISOString()
         } as never)
         .eq("id", entry.id);
 
@@ -122,10 +174,57 @@ export function MaintenancePlanList({
     }
   };
 
+  const startAlertEdition = (entry: MaintenancePlanEntry) => {
+    setActiveAlertEntryId(entry.id);
+    setAlertForm({
+      dueSoonKmThreshold: String(entry.due_soon_km_threshold ?? DEFAULT_DUE_SOON_KM_THRESHOLD),
+      dueSoonDaysThreshold: String(entry.due_soon_days_threshold ?? DEFAULT_DUE_SOON_DAYS_THRESHOLD)
+    });
+  };
+
+  const saveAlertRules = async (entry: MaintenancePlanEntry) => {
+    const kmThreshold = Number(alertForm.dueSoonKmThreshold);
+    const daysThreshold = Number(alertForm.dueSoonDaysThreshold);
+    if (!Number.isFinite(kmThreshold) || kmThreshold < 0 || !Number.isFinite(daysThreshold) || daysThreshold <= 0) {
+      toast.error("Seuils invalides. Vérifiez km et jours.");
+      return;
+    }
+
+    try {
+      setSavingAlert(true);
+      const status = getMaintenanceStatus({
+        nextDueKm: entry.next_due_km,
+        nextDueDate: entry.next_due_date,
+        currentKm,
+        dueSoonKmThreshold: kmThreshold,
+        dueSoonDaysThreshold: daysThreshold
+      });
+      const { error } = await supabase
+        .from("maintenance_plan_entries")
+        .update({
+          due_soon_km_threshold: kmThreshold,
+          due_soon_days_threshold: daysThreshold,
+          status,
+          updated_at: new Date().toISOString()
+        } as never)
+        .eq("id", entry.id);
+      if (error) {
+        toast.error(`Impossible d'enregistrer les seuils : ${error.message}`);
+        return;
+      }
+      toast.success("Règles d'alerte mises à jour.");
+      setActiveAlertEntryId(null);
+      router.refresh();
+    } finally {
+      setSavingAlert(false);
+    }
+  };
+
   return (
     <Card className="border-sky-200 bg-sky-50/40">
       <CardHeader>
         <CardTitle className="text-sky-700">Plan d&apos;entretien</CardTitle>
+        <p className="text-sm text-slate-600">Profil actif : {maintenanceProfileName}</p>
       </CardHeader>
       <CardContent className="space-y-3">
         {items.length === 0 && (
@@ -133,7 +232,7 @@ export function MaintenancePlanList({
             Aucun plan disponible pour ce véhicule.
           </p>
         )}
-        {items.map((item) => {
+        {sortedItems.map((item) => {
           const statusBadge = getStatusBadge(item.status);
           return (
             <div key={item.id} className="rounded-lg border border-sky-200 bg-white p-3">
@@ -154,6 +253,9 @@ export function MaintenancePlanList({
               </p>
               <p className="text-sm text-slate-600">
                 Prochaine échéance date : {item.next_due_date ? formatDateFr(item.next_due_date) : "non définie"}
+              </p>
+              <p className="text-sm text-slate-600">
+                Alerte bientôt due : ≤ {item.due_soon_km_threshold} km ou ≤ {item.due_soon_days_threshold} jours
               </p>
               {item.description && <p className="mt-1 text-sm text-slate-600">{item.description}</p>}
 
@@ -194,11 +296,45 @@ export function MaintenancePlanList({
                     </div>
                   </div>
                 ) : (
-                  <Button variant="outline" onClick={() => setActiveEntryId(item.id)}>
-                    Marquer comme effectué
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" onClick={() => setActiveEntryId(item.id)}>
+                      Marquer comme effectué
+                    </Button>
+                    <Button variant="ghost" onClick={() => startAlertEdition(item)}>
+                      Régler alerte
+                    </Button>
+                  </div>
                 )}
               </div>
+              {activeAlertEntryId === item.id && (
+                <div className="mt-2 space-y-2 rounded-md border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-sm font-medium text-slate-700">Règles d&apos;alerte personnalisées</p>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <Input
+                      type="number"
+                      min={0}
+                      placeholder="Seuil km"
+                      value={alertForm.dueSoonKmThreshold}
+                      onChange={(e) => setAlertForm((state) => ({ ...state, dueSoonKmThreshold: e.target.value }))}
+                    />
+                    <Input
+                      type="number"
+                      min={1}
+                      placeholder="Seuil jours"
+                      value={alertForm.dueSoonDaysThreshold}
+                      onChange={(e) => setAlertForm((state) => ({ ...state, dueSoonDaysThreshold: e.target.value }))}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={() => saveAlertRules(item)} disabled={savingAlert}>
+                      {savingAlert ? "Enregistrement..." : "Sauvegarder"}
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setActiveAlertEntryId(null)}>
+                      Annuler
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

@@ -14,10 +14,20 @@ export interface MaintenanceTemplateEntry {
   intervalMonths: number | null;
   firstDueKm: number | null;
   firstDueDate: string | null;
+  dueSoonKmThreshold?: number;
+  dueSoonDaysThreshold?: number;
   priority: MaintenancePriority;
 }
 
 export type MaintenanceTemplateByCategory = Record<VehicleCategory, MaintenanceTemplateEntry[]>;
+
+export interface ManufacturerMaintenanceTemplateRule {
+  category: VehicleCategory;
+  marque: string;
+  modeleContains?: string;
+  profileName: string;
+  templates: MaintenanceTemplateEntry[];
+}
 
 export interface MaintenanceDueResult {
   nextDueKm: number | null;
@@ -28,6 +38,8 @@ export interface MaintenanceStatusInput {
   nextDueKm: number | null;
   nextDueDate: string | null;
   currentKm: number;
+  dueSoonKmThreshold?: number;
+  dueSoonDaysThreshold?: number;
   now?: Date;
 }
 
@@ -60,4 +72,30 @@ export interface PlanItemDisplay {
   status: MaintenanceStatus;
   nextDueKm: number | null;
   nextDueDate: string | null;
+}
+
+export interface VehicleCostSummary {
+  monthlyCost: number;
+  yearlyCost: number;
+  totalCost: number;
+  maintenanceCost: number;
+  modificationsCost: number;
+  costPerKm: number;
+}
+
+export interface VehicleReminderItem {
+  id: string;
+  titre: string;
+  categorie: string;
+  level: "urgent" | "important" | "normal";
+  statusLabel: string;
+  nextDueKm: number | null;
+  nextDueDate: string | null;
+}
+
+export interface VehicleReminderSummary {
+  urgentCount: number;
+  importantCount: number;
+  normalCount: number;
+  items: VehicleReminderItem[];
 }

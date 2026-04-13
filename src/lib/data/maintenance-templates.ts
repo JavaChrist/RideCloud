@@ -10,6 +10,8 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: null,
       firstDueKm: 1000,
       firstDueDate: null,
+      dueSoonKmThreshold: 200,
+      dueSoonDaysThreshold: 15,
       priority: "important"
     },
     {
@@ -20,6 +22,8 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 12,
       firstDueKm: 6000,
       firstDueDate: null,
+      dueSoonKmThreshold: 600,
+      dueSoonDaysThreshold: 30,
       priority: "important"
     },
     {
@@ -30,6 +34,8 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 3,
       firstDueKm: 1000,
       firstDueDate: null,
+      dueSoonKmThreshold: 150,
+      dueSoonDaysThreshold: 15,
       priority: "normal"
     },
     {
@@ -40,6 +46,7 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 24,
       firstDueKm: null,
       firstDueDate: null,
+      dueSoonDaysThreshold: 45,
       priority: "important"
     },
     {
@@ -50,6 +57,8 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 2,
       firstDueKm: 2000,
       firstDueDate: null,
+      dueSoonKmThreshold: 250,
+      dueSoonDaysThreshold: 15,
       priority: "normal"
     }
   ],
@@ -62,6 +71,8 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 12,
       firstDueKm: 15000,
       firstDueDate: null,
+      dueSoonKmThreshold: 1200,
+      dueSoonDaysThreshold: 30,
       priority: "important"
     },
     {
@@ -72,6 +83,8 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 12,
       firstDueKm: 15000,
       firstDueDate: null,
+      dueSoonKmThreshold: 1200,
+      dueSoonDaysThreshold: 30,
       priority: "normal"
     },
     {
@@ -82,6 +95,7 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 24,
       firstDueKm: null,
       firstDueDate: null,
+      dueSoonDaysThreshold: 45,
       priority: "important"
     },
     {
@@ -92,6 +106,7 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 24,
       firstDueKm: null,
       firstDueDate: null,
+      dueSoonDaysThreshold: 60,
       priority: "urgent"
     },
     {
@@ -102,6 +117,8 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 3,
       firstDueKm: 5000,
       firstDueDate: null,
+      dueSoonKmThreshold: 500,
+      dueSoonDaysThreshold: 20,
       priority: "normal"
     }
   ],
@@ -114,6 +131,8 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 12,
       firstDueKm: 5000,
       firstDueDate: null,
+      dueSoonKmThreshold: 500,
+      dueSoonDaysThreshold: 30,
       priority: "important"
     },
     {
@@ -124,6 +143,8 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 18,
       firstDueKm: 10000,
       firstDueDate: null,
+      dueSoonKmThreshold: 700,
+      dueSoonDaysThreshold: 30,
       priority: "important"
     },
     {
@@ -134,6 +155,7 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 24,
       firstDueKm: null,
       firstDueDate: null,
+      dueSoonDaysThreshold: 45,
       priority: "important"
     },
     {
@@ -144,6 +166,8 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 2,
       firstDueKm: 2000,
       firstDueDate: null,
+      dueSoonKmThreshold: 250,
+      dueSoonDaysThreshold: 15,
       priority: "normal"
     }
   ],
@@ -156,6 +180,8 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 12,
       firstDueKm: 20000,
       firstDueDate: null,
+      dueSoonKmThreshold: 1500,
+      dueSoonDaysThreshold: 30,
       priority: "important"
     },
     {
@@ -166,6 +192,8 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 18,
       firstDueKm: 30000,
       firstDueDate: null,
+      dueSoonKmThreshold: 2000,
+      dueSoonDaysThreshold: 30,
       priority: "normal"
     },
     {
@@ -176,6 +204,8 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 12,
       firstDueKm: 25000,
       firstDueDate: null,
+      dueSoonKmThreshold: 1500,
+      dueSoonDaysThreshold: 30,
       priority: "important"
     },
     {
@@ -186,6 +216,8 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 3,
       firstDueKm: 5000,
       firstDueDate: null,
+      dueSoonKmThreshold: 500,
+      dueSoonDaysThreshold: 20,
       priority: "normal"
     },
     {
@@ -196,6 +228,7 @@ export const maintenanceTemplates: MaintenanceTemplateByCategory = {
       intervalMonths: 12,
       firstDueKm: null,
       firstDueDate: null,
+      dueSoonDaysThreshold: 45,
       priority: "urgent"
     }
   ]

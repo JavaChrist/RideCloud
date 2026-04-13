@@ -74,6 +74,8 @@ export interface MaintenancePlanEntry {
   last_done_date: string | null;
   next_due_km: number | null;
   next_due_date: string | null;
+  due_soon_km_threshold: number;
+  due_soon_days_threshold: number;
   priority: MaintenancePriority;
   status: MaintenanceStatus;
   source: MaintenanceSource;

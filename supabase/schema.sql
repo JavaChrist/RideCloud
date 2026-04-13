@@ -71,12 +71,83 @@ create table if not exists public.maintenance_plan_entries (
   last_done_date date,
   next_due_km integer,
   next_due_date date,
+  due_soon_km_threshold integer not null default 500,
+  due_soon_days_threshold integer not null default 30,
   priority text not null default 'normal' check (priority in ('normal', 'important', 'urgent')),
   status text not null default 'upcoming' check (status in ('upcoming', 'due_soon', 'overdue', 'done')),
   source text not null default 'manual' check (source in ('manual', 'template')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+alter table public.maintenance_plan_entries add column if not exists due_soon_km_threshold integer not null default 500;
+alter table public.maintenance_plan_entries add column if not exists due_soon_days_threshold integer not null default 30;
+
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.tables
+    where table_schema = 'public'
+      and table_name = 'maintenance_plan_entries'
+  ) then
+    with ranked as (
+      select
+        id,
+        user_id,
+        vehicle_id,
+        source,
+        categorie,
+        titre,
+        first_value(id) over (
+          partition by user_id, vehicle_id, source, categorie, titre
+          order by
+            case when last_done_date is not null or last_done_km is not null then 0 else 1 end,
+            updated_at desc nulls last,
+            created_at desc nulls last,
+            id desc
+        ) as keep_id,
+        row_number() over (
+          partition by user_id, vehicle_id, source, categorie, titre
+          order by
+            case when last_done_date is not null or last_done_km is not null then 0 else 1 end,
+            updated_at desc nulls last,
+            created_at desc nulls last,
+            id desc
+        ) as rn
+      from public.maintenance_plan_entries
+    ),
+    duplicates as (
+      select id, keep_id
+      from ranked
+      where rn > 1
+    )
+    update public.maintenance_entries me
+    set maintenance_plan_entry_id = d.keep_id
+    from duplicates d
+    where me.maintenance_plan_entry_id = d.id;
+
+    with ranked as (
+      select
+        id,
+        row_number() over (
+          partition by user_id, vehicle_id, source, categorie, titre
+          order by
+            case when last_done_date is not null or last_done_km is not null then 0 else 1 end,
+            updated_at desc nulls last,
+            created_at desc nulls last,
+            id desc
+        ) as rn
+      from public.maintenance_plan_entries
+    )
+    delete from public.maintenance_plan_entries mpe
+    using ranked r
+    where mpe.id = r.id
+      and r.rn > 1;
+  end if;
+end $$;
+
+create unique index if not exists maintenance_plan_entries_unique_task_idx
+on public.maintenance_plan_entries (user_id, vehicle_id, source, categorie, titre);
 
 do $$
 begin

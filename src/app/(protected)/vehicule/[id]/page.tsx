@@ -2,11 +2,15 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { Bike, Car, Gauge, Truck } from "lucide-react";
 import { VehicleActions } from "@/components/vehicles/vehicle-actions";
+import { VehicleCostSummaryCard } from "@/components/vehicles/vehicle-cost-summary";
 import { VehicleDetailTabs } from "@/components/vehicles/vehicle-detail-tabs";
+import { VehicleRemindersCard } from "@/components/vehicles/vehicle-reminders-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getVehicleById, getVehicleHistory } from "@/lib/data/vehicle-repository";
+import { getVehicleCostSummary } from "@/lib/costs";
 import { getVehicleMaintenanceSummary } from "@/lib/maintenance";
+import { getVehicleReminderSummary } from "@/lib/reminders";
 import { createClient } from "@/lib/supabase/server";
 
 function VehicleIcon({ category }: { category: "voitures" | "motos" | "scooters" | "utilitaires" }) {
@@ -32,8 +36,20 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
     return <div className="rounded-xl border bg-white p-8 text-center text-slate-600">Véhicule introuvable.</div>;
   }
 
-  const { completed, upcoming, modifications, documents, planEntries } = await getVehicleHistory(user.id, vehicle.id);
+  const { completed, upcoming, modifications, documents, planEntries, maintenanceProfileName } = await getVehicleHistory(
+    user.id,
+    vehicle.id
+  );
   const summary = getVehicleMaintenanceSummary({
+    planEntries,
+    currentKm: vehicle.kilometrage
+  });
+  const costSummary = getVehicleCostSummary({
+    completed,
+    modifications,
+    currentKm: vehicle.kilometrage
+  });
+  const reminderSummary = getVehicleReminderSummary({
     planEntries,
     currentKm: vehicle.kilometrage
   });
@@ -87,12 +103,15 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
       </Card>
 
       <VehicleActions vehicleId={vehicle.id} vehicleName={`${vehicle.marque} ${vehicle.modele}`} />
+      <VehicleCostSummaryCard summary={costSummary} />
+      <VehicleRemindersCard summary={reminderSummary} />
 
       <VehicleDetailTabs
         vehicleId={vehicle.id}
         completed={completed}
         upcoming={upcoming}
         planEntries={planEntries}
+        maintenanceProfileName={maintenanceProfileName}
         modifications={modifications}
         documents={documents}
         category={vehicle.category}

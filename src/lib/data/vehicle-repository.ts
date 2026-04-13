@@ -1,6 +1,11 @@
 import { categoryLabels } from "@/lib/data/demo";
-import { maintenanceTemplates } from "@/lib/data/maintenance-templates";
-import { calculateNextMaintenanceDue, getMaintenanceStatus } from "@/lib/maintenance";
+import { resolveMaintenanceTemplatesForVehicle } from "@/lib/data/maintenance-template-resolver";
+import {
+  DEFAULT_DUE_SOON_DAYS_THRESHOLD,
+  DEFAULT_DUE_SOON_KM_THRESHOLD,
+  calculateNextMaintenanceDue,
+  getMaintenanceStatus
+} from "@/lib/maintenance";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateFr } from "@/lib/utils/date";
 import type {
@@ -99,6 +104,37 @@ async function mapModificationsUrls(modifications: Modification[]) {
   return enriched;
 }
 
+function getPlanKey(entry: Pick<MaintenancePlanEntry, "categorie" | "titre" | "source">) {
+  return `${entry.source}::${entry.categorie}::${entry.titre}`.toLowerCase();
+}
+
+function dedupePlanEntries(entries: MaintenancePlanEntry[]) {
+  const map = new Map<string, MaintenancePlanEntry>();
+  for (const entry of entries) {
+    const key = getPlanKey(entry);
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, entry);
+      continue;
+    }
+
+    const existingHasDone = Boolean(existing.last_done_date || existing.last_done_km != null);
+    const currentHasDone = Boolean(entry.last_done_date || entry.last_done_km != null);
+    if (!existingHasDone && currentHasDone) {
+      map.set(key, entry);
+      continue;
+    }
+
+    const existingUpdated = existing.updated_at ? new Date(existing.updated_at).getTime() : 0;
+    const currentUpdated = entry.updated_at ? new Date(entry.updated_at).getTime() : 0;
+    if (currentUpdated > existingUpdated) {
+      map.set(key, entry);
+    }
+  }
+
+  return Array.from(map.values());
+}
+
 async function ensureMaintenancePlanEntries(userId: string, vehicle: Vehicle) {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -113,15 +149,21 @@ async function ensureMaintenancePlanEntries(userId: string, vehicle: Vehicle) {
   }
 
   const existing = (data ?? []) as MaintenancePlanEntry[];
-  if (existing.length > 0) {
-    return existing;
+  const { templates } = resolveMaintenanceTemplatesForVehicle(vehicle);
+  if (templates.length === 0) return dedupePlanEntries(existing);
+
+  const existingKeys = new Set(existing.map((entry) => getPlanKey(entry)));
+  const missingTemplates = templates.filter((template) => {
+    const key = `${"template"}::${template.categorie}::${template.titre}`.toLowerCase();
+    return !existingKeys.has(key);
+  });
+
+  if (missingTemplates.length === 0) {
+    return dedupePlanEntries(existing);
   }
 
-  const templates = maintenanceTemplates[vehicle.category] ?? [];
-  if (templates.length === 0) return [];
-
   const nowIso = new Date().toISOString();
-  const payload = templates.map((template) => {
+  const payload = missingTemplates.map((template) => {
     const due = calculateNextMaintenanceDue({
       intervalKm: template.intervalKm,
       intervalMonths: template.intervalMonths,
@@ -133,7 +175,9 @@ async function ensureMaintenancePlanEntries(userId: string, vehicle: Vehicle) {
     const status = getMaintenanceStatus({
       nextDueKm: due.nextDueKm,
       nextDueDate: due.nextDueDate,
-      currentKm: vehicle.kilometrage
+      currentKm: vehicle.kilometrage,
+      dueSoonKmThreshold: template.dueSoonKmThreshold ?? DEFAULT_DUE_SOON_KM_THRESHOLD,
+      dueSoonDaysThreshold: template.dueSoonDaysThreshold ?? DEFAULT_DUE_SOON_DAYS_THRESHOLD
     });
 
     return {
@@ -150,6 +194,8 @@ async function ensureMaintenancePlanEntries(userId: string, vehicle: Vehicle) {
       last_done_date: null,
       next_due_km: due.nextDueKm,
       next_due_date: due.nextDueDate,
+      due_soon_km_threshold: template.dueSoonKmThreshold ?? DEFAULT_DUE_SOON_KM_THRESHOLD,
+      due_soon_days_threshold: template.dueSoonDaysThreshold ?? DEFAULT_DUE_SOON_DAYS_THRESHOLD,
       priority: template.priority,
       status,
       source: "template" as const,
@@ -164,10 +210,10 @@ async function ensureMaintenancePlanEntries(userId: string, vehicle: Vehicle) {
     .select("*");
 
   if (insertError) {
-    return [];
+    return dedupePlanEntries(existing);
   }
 
-  return (inserted ?? []) as MaintenancePlanEntry[];
+  return dedupePlanEntries([...(existing ?? []), ...((inserted ?? []) as MaintenancePlanEntry[])]);
 }
 
 export async function getCategoryCounts(userId: string) {
@@ -274,7 +320,14 @@ export async function getVehicleHistory(userId: string, vehicleId: string) {
     ]);
 
     if (completedRes.error || upcomingRes.error || modificationsRes.error || documentsRes.error || planRes.error) {
-      return { completed: [], upcoming: [], modifications: [], documents: [], planEntries: [] };
+      return {
+        completed: [],
+        upcoming: [],
+        modifications: [],
+        documents: [],
+        planEntries: [],
+        maintenanceProfileName: "Profil générique"
+      };
     }
 
     const completed = (completedRes.data ?? []) as MaintenanceEntry[];
@@ -282,9 +335,12 @@ export async function getVehicleHistory(userId: string, vehicleId: string) {
     const modificationsRaw = (modificationsRes.data ?? []) as Modification[];
     const documents = (documentsRes.data ?? []) as DocumentItem[];
     const modifications = await mapModificationsUrls(modificationsRaw);
-    const storedPlanEntries = (planRes.data ?? []) as MaintenancePlanEntry[];
+    const storedPlanEntries = dedupePlanEntries((planRes.data ?? []) as MaintenancePlanEntry[]);
     const ensuredPlanEntries =
       storedPlanEntries.length > 0 || !vehicle ? storedPlanEntries : await ensureMaintenancePlanEntries(userId, vehicle);
+    const maintenanceProfileName = vehicle
+      ? resolveMaintenanceTemplatesForVehicle(vehicle).profileName
+      : "Profil générique";
     const nowIso = new Date().toISOString();
     const currentKm = vehicle?.kilometrage ?? 0;
     const planEntries = ensuredPlanEntries.map((entry) => {
@@ -299,7 +355,9 @@ export async function getVehicleHistory(userId: string, vehicleId: string) {
       const status = getMaintenanceStatus({
         nextDueKm: due.nextDueKm,
         nextDueDate: due.nextDueDate,
-        currentKm
+        currentKm,
+        dueSoonKmThreshold: entry.due_soon_km_threshold,
+        dueSoonDaysThreshold: entry.due_soon_days_threshold
       });
 
       return {
@@ -316,9 +374,17 @@ export async function getVehicleHistory(userId: string, vehicleId: string) {
       upcoming,
       modifications,
       documents: await mapDocumentsUrls(documents),
-      planEntries
+      planEntries,
+      maintenanceProfileName
     };
   } catch {
-    return { completed: [], upcoming: [], modifications: [], documents: [], planEntries: [] };
+    return {
+      completed: [],
+      upcoming: [],
+      modifications: [],
+      documents: [],
+      planEntries: [],
+      maintenanceProfileName: "Profil générique"
+    };
   }
 }

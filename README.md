@@ -28,14 +28,20 @@ RideCloud est une application SaaS web en français pour suivre la vie des véhi
 - Suppression d'un véhicule avec suppression des données associées
 - Plan d'entretien intelligent :
   - templates de base par catégorie (`voitures`, `motos`, `scooters`, `utilitaires`)
+  - templates avancés par marque/modèle avec fallback catégorie
   - calcul automatique des prochaines échéances km/date
   - statut automatique (`À venir`, `Bientôt dû`, `En retard`)
   - résumé global en tête de fiche véhicule
   - onglet dédié `Plan d'entretien`
+  - affichage du profil d'entretien actif
+  - réglage des seuils d'alerte par tâche (km/jours)
   - action `Marquer comme effectué`
 - Onglet `Informations` éditable pour compléter/modifier un véhicule après création
 - Champ `Carburant` en menu déroulant (création + édition)
 - Bouton `Modifier` ajouté sur les éléments existants de l'onglet `Modifications`
+- Nouvel onglet `Chronologie` (vue unifiée : entretiens, échéances, modifications, documents)
+- Bloc KPI `Coûts du véhicule` (mois, année, total, coût/km)
+- Bloc `Rappels d'entretien` (urgent/important/normal) sur la fiche véhicule
 
 ## Nouveautés récentes
 
@@ -44,10 +50,17 @@ RideCloud est une application SaaS web en français pour suivre la vie des véhi
   - `calculateNextMaintenanceDue()`
   - `getMaintenanceStatus()`
   - `getVehicleMaintenanceSummary()`
-- Intégration d'un résumé d'entretien intelligent sur la fiche véhicule.
-- Ajout de l'édition inline des informations véhicule.
-- Ajout de l'édition inline des modifications existantes.
-- Harmonisation des statuts affichés entre le résumé et l'onglet `Plan d'entretien`.
+- Ajout de la gestion des coûts :
+  - `getVehicleCostSummary()`
+  - carte KPI coûts intégrée à la fiche véhicule
+- Ajout de la gestion des rappels :
+  - `getVehicleReminderSummary()`
+  - carte rappels intégrée à la fiche véhicule
+- Ajout d'un resolver de templates constructeur (`maintenance-template-resolver`) et règles dédiées.
+- Ajout d'une chronologie unifiée des événements véhicule.
+- Déduplication des entrées de plan et tri métier des échéances.
+- Ajout de l'édition inline des informations véhicule et des modifications existantes.
+- Harmonisation des statuts entre résumé, plan d'entretien et historique.
 
 ## Stack technique
 
@@ -123,8 +136,8 @@ supabase/
 
 ## Prochaines évolutions
 
-- Paramétrage avancé des règles `Bientôt dû` par type de tâche/catégorie.
-- Bibliothèque de templates constructeur par marque/modèle.
-- Notifications/rappels (email, push) pour les échéances importantes.
-- Filtres/recherche avancés
-- Tableau de bord coûts et maintenance
+- Notifications externes (email/push) pour les rappels urgents.
+- Enrichissement massif des templates constructeur (plus de marques/modèles).
+- Vue statistiques avancées (coûts multi-véhicules, tendances annuelles).
+- Filtres/recherche avancés sur chronologie et historique.
+- Assistant de migration/import constructeur (données entretien existantes).

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { DocumentsList } from "@/components/documents/documents-list";
 import { HistorySections } from "@/components/history/history-sections";
 import { MaintenancePlanList } from "@/components/history/maintenance-plan-list";
+import { VehicleTimeline } from "@/components/history/vehicle-timeline";
 import { ModificationsList } from "@/components/modifications/modifications-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,13 +23,14 @@ import type {
   VehicleCategory
 } from "@/types/database";
 
-type TabValue = "historique" | "plan-entretien" | "modifications" | "documents" | "informations";
+type TabValue = "historique" | "chronologie" | "plan-entretien" | "modifications" | "documents" | "informations";
 
 interface VehicleDetailTabsProps {
   vehicleId: string;
   completed: MaintenanceEntry[];
   upcoming: UpcomingMaintenance[];
   planEntries: MaintenancePlanEntry[];
+  maintenanceProfileName: string;
   modifications: Modification[];
   documents: DocumentItem[];
   category: VehicleCategory;
@@ -49,6 +51,7 @@ export function VehicleDetailTabs({
   completed,
   upcoming,
   planEntries,
+  maintenanceProfileName,
   modifications,
   documents,
   category,
@@ -138,6 +141,7 @@ export function VehicleDetailTabs({
           className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
         >
           <option value="historique">Historique</option>
+          <option value="chronologie">Chronologie</option>
           <option value="plan-entretien">Plan d&apos;entretien</option>
           <option value="modifications">Modifications</option>
           <option value="documents">Documents</option>
@@ -147,6 +151,7 @@ export function VehicleDetailTabs({
 
       <TabsList className="hidden w-full justify-start md:inline-flex">
         <TabsTrigger value="historique">Historique</TabsTrigger>
+        <TabsTrigger value="chronologie">Chronologie</TabsTrigger>
         <TabsTrigger value="plan-entretien">Plan d&apos;entretien</TabsTrigger>
         <TabsTrigger value="modifications">Modifications</TabsTrigger>
         <TabsTrigger value="documents">Documents</TabsTrigger>
@@ -162,8 +167,21 @@ export function VehicleDetailTabs({
           currentKm={kilometrage}
         />
       </TabsContent>
+      <TabsContent value="chronologie">
+        <VehicleTimeline
+          completed={completed}
+          upcoming={upcoming}
+          modifications={modifications}
+          documents={documents}
+        />
+      </TabsContent>
       <TabsContent value="plan-entretien">
-        <MaintenancePlanList vehicleId={vehicleId} currentKm={kilometrage} items={planEntries} />
+        <MaintenancePlanList
+          vehicleId={vehicleId}
+          currentKm={kilometrage}
+          items={planEntries}
+          maintenanceProfileName={maintenanceProfileName}
+        />
       </TabsContent>
       <TabsContent value="modifications">
         <ModificationsList vehicleId={vehicleId} items={modifications} />

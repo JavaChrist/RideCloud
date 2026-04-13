@@ -6,6 +6,9 @@ import type {
   VehicleMaintenanceSummary
 } from "@/types/maintenance";
 
+export const DEFAULT_DUE_SOON_KM_THRESHOLD = 500;
+export const DEFAULT_DUE_SOON_DAYS_THRESHOLD = 30;
+
 export function calculateNextMaintenanceDue(input: {
   intervalKm: number | null;
   intervalMonths: number | null;
@@ -14,10 +17,20 @@ export function calculateNextMaintenanceDue(input: {
   lastDoneKm: number | null;
   lastDoneDate: string | null;
 }): MaintenanceDueResult {
-  const nextDueKm =
-    input.intervalKm != null
-      ? (input.lastDoneKm ?? input.firstDueKm ?? 0) + input.intervalKm
-      : input.firstDueKm ?? null;
+  let nextDueKm: number | null = null;
+  if (input.intervalKm != null) {
+    if (input.lastDoneKm != null) {
+      nextDueKm = input.lastDoneKm + input.intervalKm;
+    } else if (input.firstDueKm != null) {
+      // Première échéance explicite du plan
+      nextDueKm = input.firstDueKm;
+    } else {
+      // Fallback quand seul un intervalle existe
+      nextDueKm = input.intervalKm;
+    }
+  } else {
+    nextDueKm = input.firstDueKm ?? null;
+  }
 
   let nextDueDate: string | null = null;
   if (input.intervalMonths != null) {
@@ -37,11 +50,15 @@ export function getMaintenanceStatus(input: MaintenanceStatusInput): Maintenance
   const now = input.now ?? new Date();
   const kmDiff = input.nextDueKm != null ? input.nextDueKm - input.currentKm : null;
   const daysDiff = input.nextDueDate ? differenceInCalendarDays(parseISO(input.nextDueDate), now) : null;
+  const dueSoonKmThreshold = input.dueSoonKmThreshold ?? DEFAULT_DUE_SOON_KM_THRESHOLD;
+  const dueSoonDaysThreshold = input.dueSoonDaysThreshold ?? DEFAULT_DUE_SOON_DAYS_THRESHOLD;
 
   const isOverdue = (kmDiff != null && kmDiff < 0) || (daysDiff != null && daysDiff < 0);
   if (isOverdue) return "overdue";
 
-  const isDueSoon = (kmDiff != null && kmDiff <= 500) || (daysDiff != null && daysDiff <= 30);
+  const isDueSoon =
+    (kmDiff != null && kmDiff <= dueSoonKmThreshold) ||
+    (daysDiff != null && daysDiff <= dueSoonDaysThreshold);
   if (isDueSoon) return "due_soon";
 
   return "upcoming";
@@ -75,10 +92,14 @@ export function getVehicleMaintenanceSummary(input: {
     return { entry, score };
   });
 
-  const overdueCount = input.planEntries.filter((item) => item.status === "overdue").length;
-  const dueSoonCount = input.planEntries.filter((item) => item.status === "due_soon").length;
-  const overdueTitles = input.planEntries.filter((item) => item.status === "overdue").map((item) => item.titre);
-  const dueSoonTitles = input.planEntries.filter((item) => item.status === "due_soon").map((item) => item.titre);
+  const overdueEntries = input.planEntries.filter((item) => item.status === "overdue");
+  const dueSoonEntries = input.planEntries.filter((item) => item.status === "due_soon");
+  const overdueTitles = [...new Set(overdueEntries.map((item) => `${item.categorie}:${item.titre}`))]
+    .map((key) => key.split(":").slice(1).join(":"));
+  const dueSoonTitles = [...new Set(dueSoonEntries.map((item) => `${item.categorie}:${item.titre}`))]
+    .map((key) => key.split(":").slice(1).join(":"));
+  const overdueCount = overdueTitles.length;
+  const dueSoonCount = dueSoonTitles.length;
   const nextItem = [...computed].sort((a, b) => a.score - b.score)[0];
 
   let globalLabel = "Globalement à jour";
