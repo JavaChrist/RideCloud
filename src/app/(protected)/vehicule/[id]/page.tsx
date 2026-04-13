@@ -6,6 +6,7 @@ import { VehicleDetailTabs } from "@/components/vehicles/vehicle-detail-tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getVehicleById, getVehicleHistory } from "@/lib/data/vehicle-repository";
+import { getVehicleMaintenanceSummary } from "@/lib/maintenance";
 import { createClient } from "@/lib/supabase/server";
 
 function VehicleIcon({ category }: { category: "voitures" | "motos" | "scooters" | "utilitaires" }) {
@@ -31,7 +32,11 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
     return <div className="rounded-xl border bg-white p-8 text-center text-slate-600">Véhicule introuvable.</div>;
   }
 
-  const { completed, upcoming, modifications, documents } = await getVehicleHistory(user.id, vehicle.id);
+  const { completed, upcoming, modifications, documents, planEntries } = await getVehicleHistory(user.id, vehicle.id);
+  const summary = getVehicleMaintenanceSummary({
+    planEntries,
+    currentKm: vehicle.kilometrage
+  });
   const isExternalImage = Boolean(vehicle.photo_url?.startsWith("http"));
 
   return (
@@ -56,8 +61,24 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
             <div className="space-y-4 p-5">
               <div><h1 className="text-3xl font-semibold tracking-tight">{vehicle.marque} {vehicle.modele}</h1><p className="text-slate-600">Année {vehicle.annee} · {vehicle.kilometrage.toLocaleString("fr-FR")} km</p></div>
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-xl border bg-slate-50 p-3"><p className="text-sm text-slate-600">État entretien</p><Badge variant="success">Globalement à jour</Badge></div>
-                <div className="rounded-xl border bg-slate-50 p-3"><p className="text-sm text-slate-600">Prochaine échéance</p><p className="font-medium">2 000 km</p></div>
+                <div className="rounded-xl border bg-slate-50 p-3">
+                  <p className="text-sm text-slate-600">État entretien</p>
+                  <Badge variant={summary.status === "overdue" ? "danger" : summary.status === "due_soon" ? "warning" : "success"}>
+                    {summary.globalLabel}
+                  </Badge>
+                </div>
+                <div className="rounded-xl border bg-slate-50 p-3">
+                  <p className="text-sm text-slate-600">Prochaine échéance</p>
+                  <p className="font-medium">{summary.nextLabel}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {summary.overdueCount} en retard · {summary.dueSoonCount} à prévoir bientôt
+                  </p>
+                  {summary.dueSoonTitles.length > 0 && (
+                    <p className="mt-1 text-xs text-slate-500">
+                      Entretiens bientôt dus : {summary.dueSoonTitles.join(", ")}
+                    </p>
+                  )}
+                </div>
                 <div className="rounded-xl border bg-slate-50 p-3"><p className="text-sm text-slate-600">Compteur</p><p className="flex items-center gap-2 font-medium"><Gauge className="h-4 w-4" />{vehicle.kilometrage.toLocaleString("fr-FR")} km</p></div>
               </div>
             </div>
@@ -71,8 +92,16 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
         vehicleId={vehicle.id}
         completed={completed}
         upcoming={upcoming}
+        planEntries={planEntries}
         modifications={modifications}
         documents={documents}
+        category={vehicle.category}
+        marque={vehicle.marque}
+        modele={vehicle.modele}
+        annee={vehicle.annee}
+        kilometrage={vehicle.kilometrage}
+        dateMiseEnCirculation={vehicle.date_mise_en_circulation}
+        dateAchat={vehicle.date_achat}
         immatriculation={vehicle.immatriculation}
         vin={vehicle.vin}
         surnom={vehicle.surnom}

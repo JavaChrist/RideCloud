@@ -16,6 +16,7 @@ create table if not exists public.vehicles (
   modele text not null,
   annee integer not null,
   kilometrage integer not null default 0,
+  date_mise_en_circulation date,
   date_achat date,
   carburant text,
   immatriculation text,
@@ -25,6 +26,7 @@ create table if not exists public.vehicles (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+alter table public.vehicles add column if not exists date_mise_en_circulation date;
 
 create table if not exists public.maintenance_entries (
   id uuid primary key default gen_random_uuid(),
@@ -35,8 +37,10 @@ create table if not exists public.maintenance_entries (
   kilometrage integer not null,
   cout numeric(10,2),
   description text,
+  maintenance_plan_entry_id uuid,
   created_at timestamptz not null default now()
 );
+alter table public.maintenance_entries add column if not exists maintenance_plan_entry_id uuid;
 
 create table if not exists public.upcoming_maintenance (
   id uuid primary key default gen_random_uuid(),
@@ -47,8 +51,49 @@ create table if not exists public.upcoming_maintenance (
   due_km integer,
   niveau_urgence text not null default 'normal' check (niveau_urgence in ('normal', 'urgent')),
   description text,
+  source text not null default 'manual' check (source in ('manual', 'template')),
   created_at timestamptz not null default now()
 );
+alter table public.upcoming_maintenance add column if not exists source text not null default 'manual';
+
+create table if not exists public.maintenance_plan_entries (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  vehicle_id uuid not null references public.vehicles(id) on delete cascade,
+  titre text not null,
+  categorie text not null,
+  description text,
+  interval_km integer,
+  interval_months integer,
+  first_due_km integer,
+  first_due_date date,
+  last_done_km integer,
+  last_done_date date,
+  next_due_km integer,
+  next_due_date date,
+  priority text not null default 'normal' check (priority in ('normal', 'important', 'urgent')),
+  status text not null default 'upcoming' check (status in ('upcoming', 'due_soon', 'overdue', 'done')),
+  source text not null default 'manual' check (source in ('manual', 'template')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+do $$
+begin
+  if not exists (
+    select 1
+    from information_schema.table_constraints
+    where constraint_name = 'maintenance_entries_plan_entry_fkey'
+      and table_name = 'maintenance_entries'
+      and table_schema = 'public'
+  ) then
+    alter table public.maintenance_entries
+      add constraint maintenance_entries_plan_entry_fkey
+      foreign key (maintenance_plan_entry_id)
+      references public.maintenance_plan_entries(id)
+      on delete set null;
+  end if;
+end $$;
 
 create table if not exists public.modifications (
   id uuid primary key default gen_random_uuid(),
@@ -100,6 +145,7 @@ alter table public.maintenance_entries enable row level security;
 alter table public.upcoming_maintenance enable row level security;
 alter table public.modifications enable row level security;
 alter table public.documents enable row level security;
+alter table public.maintenance_plan_entries enable row level security;
 
 drop policy if exists "profiles_select_own" on public.profiles;
 create policy "profiles_select_own" on public.profiles
@@ -127,6 +173,10 @@ for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 drop policy if exists "documents_all_own" on public.documents;
 create policy "documents_all_own" on public.documents
+for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "maintenance_plan_all_own" on public.maintenance_plan_entries;
+create policy "maintenance_plan_all_own" on public.maintenance_plan_entries
 for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 insert into storage.buckets (id, name, public)

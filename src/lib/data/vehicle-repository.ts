@@ -1,9 +1,12 @@
 import { categoryLabels } from "@/lib/data/demo";
+import { maintenanceTemplates } from "@/lib/data/maintenance-templates";
+import { calculateNextMaintenanceDue, getMaintenanceStatus } from "@/lib/maintenance";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateFr } from "@/lib/utils/date";
 import type {
   DocumentItem,
   MaintenanceEntry,
+  MaintenancePlanEntry,
   Modification,
   UpcomingMaintenance,
   Vehicle,
@@ -96,6 +99,77 @@ async function mapModificationsUrls(modifications: Modification[]) {
   return enriched;
 }
 
+async function ensureMaintenancePlanEntries(userId: string, vehicle: Vehicle) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("maintenance_plan_entries")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("vehicle_id", vehicle.id)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    return [] as MaintenancePlanEntry[];
+  }
+
+  const existing = (data ?? []) as MaintenancePlanEntry[];
+  if (existing.length > 0) {
+    return existing;
+  }
+
+  const templates = maintenanceTemplates[vehicle.category] ?? [];
+  if (templates.length === 0) return [];
+
+  const nowIso = new Date().toISOString();
+  const payload = templates.map((template) => {
+    const due = calculateNextMaintenanceDue({
+      intervalKm: template.intervalKm,
+      intervalMonths: template.intervalMonths,
+      firstDueKm: template.firstDueKm,
+      firstDueDate: template.firstDueDate,
+      lastDoneKm: null,
+      lastDoneDate: null
+    });
+    const status = getMaintenanceStatus({
+      nextDueKm: due.nextDueKm,
+      nextDueDate: due.nextDueDate,
+      currentKm: vehicle.kilometrage
+    });
+
+    return {
+      user_id: userId,
+      vehicle_id: vehicle.id,
+      titre: template.titre,
+      categorie: template.categorie,
+      description: template.description,
+      interval_km: template.intervalKm,
+      interval_months: template.intervalMonths,
+      first_due_km: template.firstDueKm,
+      first_due_date: template.firstDueDate,
+      last_done_km: null,
+      last_done_date: null,
+      next_due_km: due.nextDueKm,
+      next_due_date: due.nextDueDate,
+      priority: template.priority,
+      status,
+      source: "template" as const,
+      created_at: nowIso,
+      updated_at: nowIso
+    };
+  });
+
+  const { data: inserted, error: insertError } = await supabase
+    .from("maintenance_plan_entries")
+    .insert(payload as never)
+    .select("*");
+
+  if (insertError) {
+    return [];
+  }
+
+  return (inserted ?? []) as MaintenancePlanEntry[];
+}
+
 export async function getCategoryCounts(userId: string) {
   try {
     const supabase = await createClient();
@@ -158,8 +232,15 @@ export async function getVehicleById(userId: string, id: string) {
 export async function getVehicleHistory(userId: string, vehicleId: string) {
   try {
     const supabase = await createClient();
+    const { data: vehicleData } = await supabase
+      .from("vehicles")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("id", vehicleId)
+      .maybeSingle();
+    const vehicle = (vehicleData ?? null) as Vehicle | null;
 
-    const [completedRes, upcomingRes, modificationsRes, documentsRes] = await Promise.all([
+    const [completedRes, upcomingRes, modificationsRes, documentsRes, planRes] = await Promise.all([
       supabase
         .from("maintenance_entries")
         .select("*")
@@ -183,11 +264,17 @@ export async function getVehicleHistory(userId: string, vehicleId: string) {
         .select("*")
         .eq("user_id", userId)
         .eq("vehicle_id", vehicleId)
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("maintenance_plan_entries")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("vehicle_id", vehicleId)
+        .order("created_at", { ascending: true })
     ]);
 
-    if (completedRes.error || upcomingRes.error || modificationsRes.error || documentsRes.error) {
-      return { completed: [], upcoming: [], modifications: [], documents: [] };
+    if (completedRes.error || upcomingRes.error || modificationsRes.error || documentsRes.error || planRes.error) {
+      return { completed: [], upcoming: [], modifications: [], documents: [], planEntries: [] };
     }
 
     const completed = (completedRes.data ?? []) as MaintenanceEntry[];
@@ -195,14 +282,43 @@ export async function getVehicleHistory(userId: string, vehicleId: string) {
     const modificationsRaw = (modificationsRes.data ?? []) as Modification[];
     const documents = (documentsRes.data ?? []) as DocumentItem[];
     const modifications = await mapModificationsUrls(modificationsRaw);
+    const storedPlanEntries = (planRes.data ?? []) as MaintenancePlanEntry[];
+    const ensuredPlanEntries =
+      storedPlanEntries.length > 0 || !vehicle ? storedPlanEntries : await ensureMaintenancePlanEntries(userId, vehicle);
+    const nowIso = new Date().toISOString();
+    const currentKm = vehicle?.kilometrage ?? 0;
+    const planEntries = ensuredPlanEntries.map((entry) => {
+      const due = calculateNextMaintenanceDue({
+        intervalKm: entry.interval_km,
+        intervalMonths: entry.interval_months,
+        firstDueKm: entry.first_due_km,
+        firstDueDate: entry.first_due_date,
+        lastDoneKm: entry.last_done_km,
+        lastDoneDate: entry.last_done_date
+      });
+      const status = getMaintenanceStatus({
+        nextDueKm: due.nextDueKm,
+        nextDueDate: due.nextDueDate,
+        currentKm
+      });
+
+      return {
+        ...entry,
+        next_due_km: due.nextDueKm,
+        next_due_date: due.nextDueDate,
+        status,
+        updated_at: entry.updated_at ?? nowIso
+      };
+    });
 
     return {
       completed,
       upcoming,
       modifications,
-      documents: await mapDocumentsUrls(documents)
+      documents: await mapDocumentsUrls(documents),
+      planEntries
     };
   } catch {
-    return { completed: [], upcoming: [], modifications: [], documents: [] };
+    return { completed: [], upcoming: [], modifications: [], documents: [], planEntries: [] };
   }
 }

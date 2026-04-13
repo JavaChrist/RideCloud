@@ -8,6 +8,7 @@ import { FileUp } from "lucide-react";
 import { toast } from "sonner";
 import type { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
+import { fuelOptions } from "@/lib/data/fuel-options";
 import { modelCatalog, vehicleCatalog } from "@/lib/data/vehicle-catalog";
 import { vehicleFormSchema } from "@/lib/validators/vehicle";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ export function AddVehicleForm() {
       marque: "",
       modele: "",
       annee: new Date().getFullYear(),
+      date_mise_en_circulation: "",
       date_achat: "",
       kilometrage: 0,
       carburant: "",
@@ -75,6 +77,7 @@ export function AddVehicleForm() {
         modele: values.modele,
         annee: values.annee,
         kilometrage: values.kilometrage,
+        date_mise_en_circulation: values.date_mise_en_circulation || null,
         date_achat: values.date_achat || null,
         carburant: values.category === "voitures" ? values.carburant || null : null,
         immatriculation: values.immatriculation || null,
@@ -184,6 +187,9 @@ export function AddVehicleForm() {
         modele: String(parsed.vehicle.modele ?? ""),
         annee: Number(parsed.vehicle.annee ?? new Date().getFullYear()),
         kilometrage: Number(parsed.vehicle.kilometrage ?? 0),
+        date_mise_en_circulation: parsed.vehicle.date_mise_en_circulation
+          ? String(parsed.vehicle.date_mise_en_circulation)
+          : null,
         date_achat: parsed.vehicle.date_achat ? String(parsed.vehicle.date_achat) : null,
         carburant: parsed.vehicle.carburant ? String(parsed.vehicle.carburant) : null,
         immatriculation: parsed.vehicle.immatriculation ? String(parsed.vehicle.immatriculation) : null,
@@ -224,7 +230,8 @@ export function AddVehicleForm() {
         due_date: item.due_date ? String(item.due_date) : null,
         due_km: item.due_km ? Number(item.due_km) : null,
         niveau_urgence: item.niveau_urgence === "urgent" ? "urgent" : "normal",
-        description: item.description ? String(item.description) : null
+        description: item.description ? String(item.description) : null,
+        source: item.source === "template" ? "template" : "manual"
       }));
       if (upcoming.length > 0) {
         await supabase.from("upcoming_maintenance").insert(upcoming as never);
@@ -412,6 +419,9 @@ export function AddVehicleForm() {
           <FormField control={form.control} name="date_achat" render={({ field }) => (
             <FormItem><FormLabel>Date d'achat</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
           )} />
+          <FormField control={form.control} name="date_mise_en_circulation" render={({ field }) => (
+            <FormItem><FormLabel>Date de mise en circulation</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+          )} />
           <FormField control={form.control} name="kilometrage" render={({ field }) => (
             <FormItem>
               <FormLabel>Kilométrage actuel</FormLabel>
@@ -429,7 +439,20 @@ export function AddVehicleForm() {
             </FormItem>
           )} />
           {category === "voitures" && <FormField control={form.control} name="carburant" render={({ field }) => (
-            <FormItem><FormLabel>Carburant</FormLabel><FormControl><Input placeholder="Essence, Diesel..." {...field} /></FormControl><FormMessage /></FormItem>
+            <FormItem>
+              <FormLabel>Carburant</FormLabel>
+              <FormControl>
+                <select className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={field.value ?? ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref}>
+                  <option value="">Sélectionnez un carburant</option>
+                  {fuelOptions.map((fuel) => (
+                    <option key={fuel} value={fuel}>
+                      {fuel}
+                    </option>
+                  ))}
+                </select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )} />}
           <FormField control={form.control} name="immatriculation" render={({ field }) => (
             <FormItem><FormLabel>Immatriculation (optionnel)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>

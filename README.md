@@ -14,8 +14,40 @@ RideCloud est une application SaaS web en français pour suivre la vie des véhi
 - UI entièrement en français
 - Pages catégories, liste véhicules, détail, ajout véhicule
 - Branding/PWA câblés sur les icônes existantes de `public/icons`
-- Requêtes Supabase avec fallback de démonstration pour prévisualiser rapidement l'UI
 - SQL complet avec RLS dans `supabase/schema.sql`
+- CRUD complet pour :
+  - entretiens déjà effectués
+  - entretiens à prévoir
+  - modifications
+  - documents
+- Export véhicule en :
+  - JSON
+  - ZIP complet (JSON + fichiers)
+  - PDF (vue d'export imprimable)
+- Import d'un dossier RideCloud (`.json`) depuis `Ajouter un véhicule`
+- Suppression d'un véhicule avec suppression des données associées
+- Plan d'entretien intelligent :
+  - templates de base par catégorie (`voitures`, `motos`, `scooters`, `utilitaires`)
+  - calcul automatique des prochaines échéances km/date
+  - statut automatique (`À venir`, `Bientôt dû`, `En retard`)
+  - résumé global en tête de fiche véhicule
+  - onglet dédié `Plan d'entretien`
+  - action `Marquer comme effectué`
+- Onglet `Informations` éditable pour compléter/modifier un véhicule après création
+- Champ `Carburant` en menu déroulant (création + édition)
+- Bouton `Modifier` ajouté sur les éléments existants de l'onglet `Modifications`
+
+## Nouveautés récentes
+
+- Ajout d'une structure `maintenance_plan_entries` côté TypeScript + SQL.
+- Ajout des utilitaires métier de maintenance :
+  - `calculateNextMaintenanceDue()`
+  - `getMaintenanceStatus()`
+  - `getVehicleMaintenanceSummary()`
+- Intégration d'un résumé d'entretien intelligent sur la fiche véhicule.
+- Ajout de l'édition inline des informations véhicule.
+- Ajout de l'édition inline des modifications existantes.
+- Harmonisation des statuts affichés entre le résumé et l'onglet `Plan d'entretien`.
 
 ## Stack technique
 
@@ -91,8 +123,8 @@ supabase/
 
 ## Prochaines évolutions
 
-- CRUD complet pour historique, modifications et documents
-- Upload documents/factures et visualisation avancée
-- Rappels automatiques d'entretien (date/km)
+- Paramétrage avancé des règles `Bientôt dû` par type de tâche/catégorie.
+- Bibliothèque de templates constructeur par marque/modèle.
+- Notifications/rappels (email, push) pour les échéances importantes.
 - Filtres/recherche avancés
 - Tableau de bord coûts et maintenance

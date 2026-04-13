@@ -18,6 +18,7 @@ export interface Vehicle {
   modele: string;
   annee: number;
   kilometrage: number;
+  date_mise_en_circulation: string | null;
   date_achat: string | null;
   carburant: string | null;
   immatriculation: string | null;
@@ -37,6 +38,7 @@ export interface MaintenanceEntry {
   kilometrage: number;
   cout: number | null;
   description: string | null;
+  maintenance_plan_entry_id: UUID | null;
   created_at: string;
 }
 
@@ -49,7 +51,34 @@ export interface UpcomingMaintenance {
   due_km: number | null;
   niveau_urgence: "normal" | "urgent";
   description: string | null;
+  source: "manual" | "template";
   created_at: string;
+}
+
+export type MaintenancePriority = "normal" | "important" | "urgent";
+export type MaintenanceStatus = "upcoming" | "due_soon" | "overdue" | "done";
+export type MaintenanceSource = "manual" | "template";
+
+export interface MaintenancePlanEntry {
+  id: UUID;
+  user_id: UUID;
+  vehicle_id: UUID;
+  titre: string;
+  categorie: string;
+  description: string | null;
+  interval_km: number | null;
+  interval_months: number | null;
+  first_due_km: number | null;
+  first_due_date: string | null;
+  last_done_km: number | null;
+  last_done_date: string | null;
+  next_due_km: number | null;
+  next_due_date: string | null;
+  priority: MaintenancePriority;
+  status: MaintenanceStatus;
+  source: MaintenanceSource;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Modification {
@@ -132,6 +161,16 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<DocumentItem>;
+        Relationships: [];
+      };
+      maintenance_plan_entries: {
+        Row: MaintenancePlanEntry;
+        Insert: Omit<MaintenancePlanEntry, "id" | "created_at" | "updated_at"> & {
+          id?: UUID;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<MaintenancePlanEntry>;
         Relationships: [];
       };
     };

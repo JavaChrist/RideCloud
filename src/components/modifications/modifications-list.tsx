@@ -14,8 +14,18 @@ import type { Modification } from "@/types/database";
 export function ModificationsList({ vehicleId, items }: { vehicleId: string; items: Modification[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
   const [factureFile, setFactureFile] = useState<File | null>(null);
+  const [editFactureFile, setEditFactureFile] = useState<File | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({
+    titre: "",
+    marque: "",
+    modele: "",
+    date_pose: "",
+    cout: ""
+  });
+  const [editForm, setEditForm] = useState({
     titre: "",
     marque: "",
     modele: "",
@@ -82,6 +92,75 @@ export function ModificationsList({ vehicleId, items }: { vehicleId: string; ite
     router.refresh();
   };
 
+  const startEditing = (item: Modification) => {
+    setEditingId(item.id);
+    setEditFactureFile(null);
+    setEditForm({
+      titre: item.titre,
+      marque: item.marque ?? "",
+      modele: item.modele ?? "",
+      date_pose: item.date_pose ?? "",
+      cout: item.cout != null ? String(item.cout) : ""
+    });
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditFactureFile(null);
+  };
+
+  const updateModification = async (id: string) => {
+    if (!isUuidVehicle) return;
+    if (!editForm.titre.trim()) {
+      toast.error("Le titre est requis.");
+      return;
+    }
+
+    try {
+      setSavingEdit(true);
+      const supabase = createClient();
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      let facturePath: string | null | undefined = undefined;
+      if (editFactureFile) {
+        const ext = editFactureFile.name.split(".").pop()?.toLowerCase() ?? "pdf";
+        const safeExt = ext.replace(/[^a-z0-9]/g, "") || "pdf";
+        facturePath = `${user.id}/${vehicleId}/factures/${crypto.randomUUID()}.${safeExt}`;
+        const { error: uploadError } = await supabase.storage.from("ridecloud-files").upload(facturePath, editFactureFile, {
+          upsert: false
+        });
+        if (uploadError) {
+          toast.error(`Upload facture impossible: ${uploadError.message}`);
+          return;
+        }
+      }
+
+      const payload = {
+        titre: editForm.titre.trim(),
+        marque: editForm.marque || null,
+        modele: editForm.modele || null,
+        date_pose: editForm.date_pose || null,
+        cout: editForm.cout ? Number(editForm.cout) : null,
+        ...(facturePath !== undefined ? { facture_url: facturePath } : {})
+      };
+
+      const { error } = await supabase.from("modifications").update(payload as never).eq("id", id);
+      if (error) {
+        toast.error(`Erreur modification: ${error.message}`);
+        return;
+      }
+
+      toast.success("Modification mise à jour.");
+      cancelEditing();
+      router.refresh();
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader><CardTitle className="flex items-center gap-2"><Wrench className="h-5 w-5 text-indigo-600" />Modifications</CardTitle></CardHeader>
@@ -108,13 +187,73 @@ export function ModificationsList({ vehicleId, items }: { vehicleId: string; ite
         {items.length === 0 && <p className="text-sm text-muted-foreground">Aucune modification enregistrée.</p>}
         {items.map((item) => (
           <div key={item.id} className="rounded-lg border p-3">
-            <p className="font-medium">{item.titre}</p>
-            <p className="text-sm text-slate-600">Marque : {item.marque ?? "-"} - Modèle : {item.modele ?? "-"}</p>
-            <p className="text-sm text-slate-600">Date de pose : {formatDateFr(item.date_pose)} - Coût : {item.cout ? `${item.cout} €` : "-"}</p>
-            <p className="text-sm text-slate-600">Facture : {item.facture_url ? <a className="text-primary hover:underline" href={item.facture_url} target="_blank">Ouvrir</a> : "Non fournie"}</p>
-            <Button variant="ghost" size="sm" className="mt-1 text-red-600 hover:text-red-700" onClick={() => deleteModification(item.id)}>
-              Supprimer
-            </Button>
+            {editingId === item.id ? (
+              <div className="space-y-2">
+                <Input
+                  placeholder="Titre"
+                  value={editForm.titre}
+                  onChange={(e) => setEditForm((s) => ({ ...s, titre: e.target.value }))}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="Marque"
+                    value={editForm.marque}
+                    onChange={(e) => setEditForm((s) => ({ ...s, marque: e.target.value }))}
+                  />
+                  <Input
+                    placeholder="Modèle"
+                    value={editForm.modele}
+                    onChange={(e) => setEditForm((s) => ({ ...s, modele: e.target.value }))}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <Input
+                    type="date"
+                    value={editForm.date_pose}
+                    onChange={(e) => setEditForm((s) => ({ ...s, date_pose: e.target.value }))}
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Coût"
+                    value={editForm.cout}
+                    onChange={(e) => setEditForm((s) => ({ ...s, cout: e.target.value }))}
+                  />
+                </div>
+                <Input type="file" onChange={(e) => setEditFactureFile(e.target.files?.[0] ?? null)} />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => updateModification(item.id)} disabled={savingEdit || !isUuidVehicle}>
+                    {savingEdit ? "Enregistrement..." : "Enregistrer"}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={cancelEditing}>
+                    Annuler
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="font-medium">{item.titre}</p>
+                <p className="text-sm text-slate-600">Marque : {item.marque ?? "-"} - Modèle : {item.modele ?? "-"}</p>
+                <p className="text-sm text-slate-600">Date de pose : {formatDateFr(item.date_pose)} - Coût : {item.cout ? `${item.cout} €` : "-"}</p>
+                <p className="text-sm text-slate-600">
+                  Facture :{" "}
+                  {item.facture_url ? (
+                    <a className="text-primary hover:underline" href={item.facture_url} target="_blank" rel="noreferrer">
+                      Ouvrir
+                    </a>
+                  ) : (
+                    "Non fournie"
+                  )}
+                </p>
+                <div className="mt-1 flex gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => startEditing(item)} disabled={!isUuidVehicle}>
+                    Modifier
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => deleteModification(item.id)}>
+                    Supprimer
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </CardContent>

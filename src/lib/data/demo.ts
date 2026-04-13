@@ -23,6 +23,7 @@ export const demoVehicles: Vehicle[] = [
     modele: "MT-07",
     annee: 2021,
     kilometrage: 18600,
+    date_mise_en_circulation: "2021-06-01",
     date_achat: "2022-04-13",
     carburant: null,
     immatriculation: "FR-451-MT",
@@ -40,6 +41,7 @@ export const demoVehicles: Vehicle[] = [
     modele: "Z900",
     annee: 2020,
     kilometrage: 24500,
+    date_mise_en_circulation: "2020-04-15",
     date_achat: "2021-06-09",
     carburant: null,
     immatriculation: "FR-982-KW",
@@ -57,6 +59,7 @@ export const demoVehicles: Vehicle[] = [
     modele: "Monster",
     annee: 2023,
     kilometrage: 9200,
+    date_mise_en_circulation: "2023-03-01",
     date_achat: "2024-01-17",
     carburant: null,
     immatriculation: "FR-667-DC",
@@ -74,6 +77,7 @@ export const demoVehicles: Vehicle[] = [
     modele: "R 1250 GS",
     annee: 2022,
     kilometrage: 12840,
+    date_mise_en_circulation: "2022-02-20",
     date_achat: "2023-03-20",
     carburant: null,
     immatriculation: "FR-125-GS",
@@ -91,6 +95,7 @@ export const demoVehicles: Vehicle[] = [
     modele: "308",
     annee: 2019,
     kilometrage: 72300,
+    date_mise_en_circulation: "2019-01-18",
     date_achat: "2019-10-02",
     carburant: "Diesel",
     immatriculation: "FR-308-PE",
@@ -108,6 +113,7 @@ export const demoVehicles: Vehicle[] = [
     modele: "Beverly 400",
     annee: 2022,
     kilometrage: 8400,
+    date_mise_en_circulation: "2022-05-10",
     date_achat: "2022-09-10",
     carburant: null,
     immatriculation: "FR-400-PG",
@@ -129,6 +135,7 @@ export const demoMaintenanceEntries: MaintenanceEntry[] = [
     kilometrage: 16000,
     cout: 119,
     description: "Huile 10W40 + filtre à huile.",
+    maintenance_plan_entry_id: null,
     created_at: "2025-01-12"
   },
   {
@@ -140,6 +147,7 @@ export const demoMaintenanceEntries: MaintenanceEntry[] = [
     kilometrage: 17450,
     cout: 169,
     description: "Plaquettes route premium.",
+    maintenance_plan_entry_id: null,
     created_at: "2025-05-03"
   },
   {
@@ -151,6 +159,7 @@ export const demoMaintenanceEntries: MaintenanceEntry[] = [
     kilometrage: 18200,
     cout: 259,
     description: "Contrôle complet et réglages.",
+    maintenance_plan_entry_id: null,
     created_at: "2025-09-18"
   }
 ];
@@ -165,6 +174,7 @@ export const demoUpcomingMaintenance: UpcomingMaintenance[] = [
     due_km: 24000,
     niveau_urgence: "normal",
     description: "Prévoir filtre et huile.",
+    source: "manual",
     created_at: "2025-11-02"
   },
   {
@@ -176,6 +186,7 @@ export const demoUpcomingMaintenance: UpcomingMaintenance[] = [
     due_km: null,
     niveau_urgence: "normal",
     description: "Purge circuit et contrôle disques.",
+    source: "manual",
     created_at: "2025-11-02"
   },
   {
@@ -187,6 +198,7 @@ export const demoUpcomingMaintenance: UpcomingMaintenance[] = [
     due_km: 20000,
     niveau_urgence: "urgent",
     description: "Usure proche du témoin sur le pneu arrière.",
+    source: "manual",
     created_at: "2025-11-02"
   }
 ];

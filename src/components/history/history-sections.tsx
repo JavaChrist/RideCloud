@@ -8,18 +8,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
+import { calculateNextMaintenanceDue, getMaintenanceStatus } from "@/lib/maintenance";
 import { formatDateFr } from "@/lib/utils/date";
 import { toast } from "sonner";
-import type { MaintenanceEntry, UpcomingMaintenance } from "@/types/database";
+import type { MaintenanceEntry, MaintenancePlanEntry, UpcomingMaintenance } from "@/types/database";
 
 export function HistorySections({
   vehicleId,
   completed,
-  upcoming
+  upcoming,
+  planEntries,
+  currentKm
 }: {
   vehicleId: string;
   completed: MaintenanceEntry[];
   upcoming: UpcomingMaintenance[];
+  planEntries: MaintenancePlanEntry[];
+  currentKm: number;
 }) {
   const router = useRouter();
   const [loadingDone, setLoadingDone] = useState(false);
@@ -30,7 +35,8 @@ export function HistorySections({
     date_entretien: "",
     kilometrage: "",
     cout: "",
-    description: ""
+    description: "",
+    maintenance_plan_entry_id: ""
   });
   const [upcomingForm, setUpcomingForm] = useState({
     titre: "",
@@ -62,7 +68,8 @@ export function HistorySections({
         date_entretien: doneForm.date_entretien,
         kilometrage: Number(doneForm.kilometrage),
         cout: doneForm.cout ? Number(doneForm.cout) : null,
-        description: doneForm.description || null
+        description: doneForm.description || null,
+        maintenance_plan_entry_id: doneForm.maintenance_plan_entry_id || null
       };
       const { error } = await supabase.from("maintenance_entries").insert(payload as never);
       if (error) {
@@ -70,7 +77,43 @@ export function HistorySections({
         return;
       }
 
-      setDoneForm({ titre: "", date_entretien: "", kilometrage: "", cout: "", description: "" });
+      if (!error && doneForm.maintenance_plan_entry_id) {
+        const selectedPlan = planEntries.find((entry) => entry.id === doneForm.maintenance_plan_entry_id);
+        if (selectedPlan) {
+          const due = calculateNextMaintenanceDue({
+            intervalKm: selectedPlan.interval_km,
+            intervalMonths: selectedPlan.interval_months,
+            firstDueKm: selectedPlan.first_due_km,
+            firstDueDate: selectedPlan.first_due_date,
+            lastDoneKm: Number(doneForm.kilometrage),
+            lastDoneDate: doneForm.date_entretien
+          });
+          const status = getMaintenanceStatus({
+            nextDueKm: due.nextDueKm,
+            nextDueDate: due.nextDueDate,
+            currentKm
+          });
+          await supabase
+            .from("maintenance_plan_entries")
+            .update({
+              last_done_km: Number(doneForm.kilometrage),
+              last_done_date: doneForm.date_entretien,
+              next_due_km: due.nextDueKm,
+              next_due_date: due.nextDueDate,
+              status
+            } as never)
+            .eq("id", selectedPlan.id);
+        }
+      }
+
+      setDoneForm({
+        titre: "",
+        date_entretien: "",
+        kilometrage: "",
+        cout: "",
+        description: "",
+        maintenance_plan_entry_id: ""
+      });
       router.refresh();
     } finally {
       setLoadingDone(false);
@@ -98,7 +141,8 @@ export function HistorySections({
         due_date: upcomingForm.due_date || null,
         due_km: upcomingForm.due_km ? Number(upcomingForm.due_km) : null,
         niveau_urgence: upcomingForm.niveau_urgence as "normal" | "urgent",
-        description: upcomingForm.description || null
+        description: upcomingForm.description || null,
+        source: "manual" as const
       };
       const { error } = await supabase.from("upcoming_maintenance").insert(payload as never);
       if (error) {
@@ -127,6 +171,21 @@ export function HistorySections({
     router.refresh();
   };
 
+  const generatedUpcoming = planEntries.map((entry) => ({
+    id: `plan-${entry.id}`,
+    titre: entry.titre,
+    due_date: entry.next_due_date,
+    due_km: entry.next_due_km,
+    niveau_urgence: entry.priority === "urgent" ? "urgent" : "normal",
+    description: entry.description,
+    source: "template" as const
+  }));
+
+  const unifiedUpcoming = [
+    ...upcoming.map((item) => ({ ...item, source: item.source ?? "manual" })),
+    ...generatedUpcoming
+  ];
+
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <Card className="border-emerald-200 bg-emerald-50/40">
@@ -139,6 +198,18 @@ export function HistorySections({
           )}
           <div className="space-y-2 rounded-lg border border-emerald-200 bg-white p-3">
             <Input placeholder="Titre (ex: Vidange moteur)" value={doneForm.titre} onChange={(e) => setDoneForm((s) => ({ ...s, titre: e.target.value }))} />
+            <select
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              value={doneForm.maintenance_plan_entry_id}
+              onChange={(e) => setDoneForm((s) => ({ ...s, maintenance_plan_entry_id: e.target.value }))}
+            >
+              <option value="">Associer à une tâche du plan (optionnel)</option>
+              {planEntries.map((entry) => (
+                <option key={entry.id} value={entry.id}>
+                  {entry.titre}
+                </option>
+              ))}
+            </select>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <Input type="date" value={doneForm.date_entretien} onChange={(e) => setDoneForm((s) => ({ ...s, date_entretien: e.target.value }))} />
               <Input type="number" placeholder="Kilométrage" value={doneForm.kilometrage} onChange={(e) => setDoneForm((s) => ({ ...s, kilometrage: e.target.value }))} />
@@ -184,19 +255,26 @@ export function HistorySections({
             <Button onClick={createUpcoming} disabled={loadingUpcoming || !isUuidVehicle} className="w-full">{loadingUpcoming ? "Ajout..." : "Ajouter dans à prévoir"}</Button>
           </div>
 
-          {upcoming.length === 0 && <p className="text-sm text-muted-foreground">Aucune échéance à prévoir.</p>}
-          {upcoming.map((item) => (
+          {unifiedUpcoming.length === 0 && <p className="text-sm text-muted-foreground">Aucune échéance à prévoir.</p>}
+          {unifiedUpcoming.map((item) => (
             <div key={item.id} className="rounded-lg border border-amber-200 bg-white p-3">
               <div className="mb-1 flex items-center justify-between gap-2">
                 <p className="font-medium">{item.titre}</p>
-                <Badge variant={item.niveau_urgence === "urgent" ? "danger" : "warning"}>{item.niveau_urgence === "urgent" ? "Urgent" : "À anticiper"}</Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant={item.niveau_urgence === "urgent" ? "danger" : "warning"}>{item.niveau_urgence === "urgent" ? "Urgent" : "À anticiper"}</Badge>
+                  <Badge variant={item.source === "template" ? "secondary" : "outline"}>
+                    {item.source === "template" ? "Automatique" : "Manuel"}
+                  </Badge>
+                </div>
               </div>
               <p className="text-sm text-slate-600">{item.due_km ? `Échéance à ${item.due_km.toLocaleString("fr-FR")} km` : "Kilométrage non défini"}</p>
               <p className="text-sm text-slate-600">{item.due_date ? `Date cible : ${formatDateFr(item.due_date)}` : "Date non définie"}</p>
               {item.description && <p className="mt-1 text-sm text-slate-600">{item.description}</p>}
-              <Button variant="ghost" size="sm" className="mt-1 text-red-600 hover:text-red-700" onClick={() => deleteUpcoming(item.id)}>
-                Supprimer
-              </Button>
+              {item.source !== "template" && (
+                <Button variant="ghost" size="sm" className="mt-1 text-red-600 hover:text-red-700" onClick={() => deleteUpcoming(item.id)}>
+                  Supprimer
+                </Button>
+              )}
             </div>
           ))}
         </CardContent>
