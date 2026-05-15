@@ -38,5 +38,42 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    @apply bg-blue-700/15 text-blue-900;
+  }
+}
+
+@layer utilities {
+  .ride-text-balance {
+    text-wrap: balance;
+  }
+
+  .ride-mask-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent);
+    mask-image: linear-gradient(to bottom, black 60%, transparent);
+  }
+
+  .ride-mask-fade-x {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  }
+
+  .ride-ring-glow {
+    box-shadow:
+      0 0 0 1px rgba(29, 78, 216, 0.1),
+      0 8px 32px -8px rgba(29, 78, 216, 0.35);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ride-respect-motion,
+    .ride-respect-motion * {
+      animation: none !important;
+      transition: none !important;
+    }
   }
 }

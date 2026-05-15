@@ -8,6 +8,13 @@ const imageMap = {
   utilitaires: "/icons/logo_utilitaire.png"
 };
 
+const labelMap = {
+  voitures: "Voitures",
+  motos: "Motos",
+  scooters: "Scooters",
+  utilitaires: "Utilitaires"
+};
+
 interface CategoryCardProps {
   slug: "voitures" | "motos" | "scooters" | "utilitaires";
   title: string;
@@ -19,18 +26,29 @@ export function CategoryCard({ slug, title }: CategoryCardProps) {
   return (
     <Link
       href={`/vehicules/${slug}`}
-      className="group flex items-center justify-center rounded-xl p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       aria-label={title}
+      className="group relative flex flex-col items-center gap-2 overflow-hidden rounded-2xl border border-slate-200/80 bg-ride-gradient-card p-5 shadow-ride-xs transition-all duration-500 ease-ride-spring hover:-translate-y-1 hover:border-blue-200 hover:shadow-ride-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
     >
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-[radial-gradient(circle_at_50%_0%,rgba(29,78,216,0.10),transparent_65%)]"
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-700/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+      />
+
       <Image
         src={imageSrc}
-        alt={title}
+        alt={labelMap[slug]}
         width={280}
         height={280}
-        className="h-40 w-40 object-contain transition-transform duration-200 group-hover:scale-105 sm:h-48 sm:w-48"
+        className="h-32 w-32 object-contain transition-transform duration-500 ease-ride-spring group-hover:scale-110 sm:h-40 sm:w-40"
         priority
       />
-      <span className="sr-only">{title}</span>
+      <span className="text-sm font-medium text-slate-700 transition-colors group-hover:text-blue-700 sm:text-base">
+        {labelMap[slug]}
+      </span>
     </Link>
   );
 }

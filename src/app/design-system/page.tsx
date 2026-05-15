@@ -1,19 +1,17 @@
 /**
- * RideCloud — Design System Page
+ * RideCloud — Design System Page (v2.1)
  *
- * 📌 Placement suggéré dans ton projet Next.js :
- *    app/design-system/page.tsx
- *    (ou app/(internal)/design-system/page.tsx si tu veux l'isoler du marketing)
+ * 📌 Emplacement : src/app/design-system/page.tsx
+ * 🌐 URL : http://localhost:3000/design-system
  *
- * 🌐 Visible ensuite à : http://localhost:3000/design-system
- *
- * ✅ Self-contained : aucune dépendance hors Tailwind + lucide-react (déjà installé).
- * ✅ Server component : aucun "use client" requis.
- * ✅ Couleurs RideCloud officielles (alignées Product Sheet + charte).
+ * ✅ Server Component pur — aucun "use client".
+ * ✅ Aligné sur les tokens Tailwind ride-* (tailwind.config.ts).
+ * ✅ Documente les patterns réellement utilisés dans l'app authentifiée
+ *    (KPI tiles, status items, page headers, empty states).
  *
  * 💡 Les composants Button / Card / Badge / Input ci-dessous sont locaux
- *    à cette page (uniquement pour la démo). Quand tu seras prêt à les
- *    réutiliser dans l'app, déplace-les dans /components/ui/* .
+ *    à cette page. La réutilisation dans l'app passe par shadcn/ui
+ *    (src/components/ui/*) auquel on applique les classes ride-*.
  */
 
 import {
@@ -22,7 +20,9 @@ import {
   CheckCircle2,
   FileText,
   Gauge,
+  PlusCircle,
   ShieldCheck,
+  Sparkles,
   TrendingUp,
   Wrench,
 } from "lucide-react";
@@ -34,13 +34,22 @@ import type { ReactNode } from "react";
 
 export default function DesignSystemPage() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900">
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10 bg-ride-mesh opacity-80"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10 bg-ride-grid bg-ride-grid-sm [mask-image:radial-gradient(ellipse_50%_40%_at_50%_0%,black,transparent)]"
+      />
+
+      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-slate-50/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-baseline justify-between px-6 py-6">
           <h1 className="text-2xl font-semibold tracking-tight">
             RideCloud · Design System
           </h1>
-          <span className="font-mono text-xs text-slate-500">v1.0</span>
+          <span className="font-mono text-xs text-slate-500">v2.1 · patterns</span>
         </div>
       </header>
 
@@ -48,13 +57,24 @@ export default function DesignSystemPage() {
         <ColorsSection />
         <TypographySection />
         <SpacingRadiusSection />
+        <ShadowsSection />
+        <GradientsSection />
+        <AnimationsSection />
         <ButtonsSection />
         <CardsSection />
+        <KpiTilesSection />
+        <StatusItemsSection />
+        <PageHeadersSection />
+        <EmptyStatesSection />
         <BadgesSection />
         <InputsSection />
       </main>
 
-      <footer className="border-t border-slate-200 py-8 text-center text-sm text-slate-500">
+      <footer className="relative border-t border-slate-200 py-8 text-center text-sm text-slate-500">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-700/30 to-transparent"
+        />
         RideCloud · Charte officielle · {new Date().getFullYear()}
       </footer>
     </div>
@@ -333,6 +353,177 @@ function SpacingRadiusSection() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  Shadows
+// ─────────────────────────────────────────────────────────────────────────────
+
+const shadowScale: { name: string; className: string; usage: string }[] = [
+  { name: "xs", className: "shadow-ride-xs", usage: "Cards plates, KPI tiles" },
+  { name: "sm", className: "shadow-ride-sm", usage: "Inputs, controls" },
+  { name: "md", className: "shadow-ride-md", usage: "Cards interactives au hover" },
+  { name: "lg", className: "shadow-ride-lg", usage: "Cards features hover" },
+  { name: "xl", className: "shadow-ride-xl", usage: "Hero mockup, modals" },
+  { name: "float", className: "shadow-ride-float", usage: "Cartes flottantes premium" },
+  { name: "glow-sm", className: "shadow-ride-glow-sm", usage: "CTA secondaire" },
+  { name: "glow", className: "shadow-ride-glow", usage: "CTA primaire actif" },
+];
+
+function ShadowsSection() {
+  return (
+    <Section
+      title="Profondeur · Ombres"
+      description="Échelle d'ombres pensée pour empiler les surfaces sans bruit visuel. Les glows utilisent le bleu signature (#1d4ed8)."
+    >
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {shadowScale.map((s) => (
+          <div
+            key={s.name}
+            className={`flex h-32 flex-col justify-end rounded-2xl border border-slate-200/70 bg-white p-4 ${s.className}`}
+          >
+            <p className="text-sm font-semibold text-slate-900">{s.name}</p>
+            <p className="font-mono text-[10px] text-slate-500">{s.className}</p>
+            <p className="mt-1 text-xs text-slate-500">{s.usage}</p>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Gradients & Effects
+// ─────────────────────────────────────────────────────────────────────────────
+
+const gradientTokens = [
+  { name: "primary", className: "bg-ride-gradient-primary", note: "CTA principal" },
+  { name: "primary-hover", className: "bg-ride-gradient-primary-hover", note: "CTA primary hover" },
+  { name: "dark", className: "bg-ride-gradient-dark", note: "Sections immersives, beta CTA" },
+  { name: "surface", className: "bg-ride-gradient-surface", note: "Fonds de sections" },
+  { name: "card", className: "bg-ride-gradient-card", note: "Cartes premium subtiles" },
+  { name: "mesh", className: "bg-ride-mesh", note: "Ambient background" },
+  { name: "grid", className: "bg-ride-grid bg-ride-grid-sm", note: "Overlay structure" },
+  { name: "dots", className: "bg-ride-dots bg-ride-dots", note: "Overlay décoratif" },
+];
+
+function GradientsSection() {
+  return (
+    <Section
+      title="Gradients & Effets"
+      description="Gradients signés RideCloud + utilitaires d'overlay (grid, dots) pour structurer les fonds sans bruit."
+    >
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {gradientTokens.map((g) => (
+          <div
+            key={g.name}
+            className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white"
+          >
+            <div className={`h-24 ${g.className}`} />
+            <div className="px-3 py-3">
+              <p className="text-sm font-medium text-slate-900">{g.name}</p>
+              <p className="font-mono text-[10px] text-slate-500">{g.className}</p>
+              <p className="mt-1 text-xs text-slate-500">{g.note}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-slate-200/70 bg-white p-6">
+        <SubTitle>Texte gradient signature</SubTitle>
+        <p className="bg-ride-gradient-text bg-clip-text text-4xl font-semibold tracking-tight text-transparent [background-size:200%_auto] animate-shimmer">
+          de tous vos véhicules.
+        </p>
+        <p className="mt-3 font-mono text-xs text-slate-500">
+          bg-ride-gradient-text · bg-clip-text · animate-shimmer
+        </p>
+      </div>
+    </Section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Animations
+// ─────────────────────────────────────────────────────────────────────────────
+
+const animationTokens = [
+  {
+    name: "fade-in-up",
+    className: "animate-fade-in-up",
+    note: "Apparition de section / élément",
+  },
+  {
+    name: "fade-in",
+    className: "animate-fade-in",
+    note: "Apparition simple (FAQ, contenu)",
+  },
+  {
+    name: "float",
+    className: "animate-float",
+    note: "Cartes flottantes (notification, KPI)",
+  },
+  {
+    name: "float-slow",
+    className: "animate-float-slow",
+    note: "Floating éléments hero",
+  },
+  {
+    name: "glow-pulse",
+    className: "animate-glow-pulse",
+    note: "Halo ambient (beta CTA)",
+  },
+  {
+    name: "shimmer",
+    className: "animate-shimmer",
+    note: "Texte gradient en mouvement",
+  },
+  {
+    name: "pulse-dot",
+    className: "animate-pulse-dot",
+    note: "Dot status badge",
+  },
+];
+
+function AnimationsSection() {
+  return (
+    <Section
+      title="Animations & Transitions"
+      description="Toutes les animations sont en CSS pur, respectent prefers-reduced-motion, et utilisent la courbe ride-spring pour les transitions interactives."
+    >
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {animationTokens.map((a) => (
+          <div
+            key={a.name}
+            className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white"
+          >
+            <div className="flex h-24 items-center justify-center bg-slate-50/60">
+              {a.name === "shimmer" ? (
+                <span className="bg-ride-gradient-text bg-clip-text text-lg font-semibold text-transparent [background-size:200%_auto] animate-shimmer">
+                  RideCloud
+                </span>
+              ) : a.name === "pulse-dot" ? (
+                <span className="relative flex h-3 w-3 items-center justify-center">
+                  <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-blue-500" />
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-blue-600" />
+                </span>
+              ) : (
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-ride-gradient-primary text-white shadow-ride-glow-sm ${a.className}`}
+                >
+                  <Car className="h-4 w-4" strokeWidth={2.25} />
+                </div>
+              )}
+            </div>
+            <div className="px-3 py-3">
+              <p className="text-sm font-medium text-slate-900">{a.name}</p>
+              <p className="font-mono text-[10px] text-slate-500">{a.className}</p>
+              <p className="mt-1 text-xs text-slate-500">{a.note}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  Button component (démo)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -349,25 +540,27 @@ function Button({
   children: ReactNode;
 }) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-[15px] font-medium transition-colors duration-200";
+    "inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-[15px] font-medium transition-all duration-300 ease-ride-spring";
 
   const styles: Record<ButtonVariant, Record<ButtonState, string>> = {
     primary: {
-      default: "bg-blue-700 text-white hover:bg-blue-800",
-      hover: "bg-blue-800 text-white",
-      disabled: "bg-slate-300 text-white cursor-not-allowed",
+      default:
+        "bg-ride-gradient-primary text-white shadow-ride-glow-sm hover:shadow-ride-glow hover:brightness-110",
+      hover: "bg-ride-gradient-primary-hover text-white shadow-ride-glow",
+      disabled:
+        "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none",
     },
     secondary: {
       default:
-        "bg-white text-blue-700 border border-blue-700 hover:bg-indigo-50",
-      hover: "bg-indigo-50 text-blue-700 border border-blue-700",
+        "bg-white text-blue-700 border border-blue-200 shadow-ride-xs hover:border-blue-700 hover:bg-indigo-50 hover:shadow-ride-glow-sm",
+      hover: "bg-indigo-50 text-blue-700 border border-blue-700 shadow-ride-glow-sm",
       disabled:
         "bg-white text-slate-400 border border-slate-200 cursor-not-allowed",
     },
     ghost: {
       default:
-        "bg-transparent text-slate-900 border border-slate-200 hover:bg-slate-100",
-      hover: "bg-slate-100 text-slate-900 border border-slate-200",
+        "bg-transparent text-slate-900 border border-slate-200 hover:bg-white hover:shadow-ride-sm",
+      hover: "bg-white text-slate-900 border border-slate-200 shadow-ride-sm",
       disabled:
         "bg-transparent text-slate-400 border border-slate-200 cursor-not-allowed",
     },
@@ -433,19 +626,25 @@ function Card({
 }) {
   return (
     <div
-      className={`flex flex-col gap-3 rounded-2xl bg-white p-6 ${
+      className={`group/card relative flex flex-col gap-3 overflow-hidden rounded-2xl bg-ride-gradient-card p-6 transition-all duration-500 ease-ride-spring hover:-translate-y-1 ${
         featured
-          ? "border-2 border-blue-700 shadow-sm"
-          : "border border-slate-200 shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
+          ? "border-2 border-blue-700 shadow-ride-glow"
+          : "border border-slate-200/80 shadow-ride-xs hover:border-blue-200 hover:shadow-ride-lg"
       }`}
     >
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover/card:opacity-100 bg-[radial-gradient(circle_at_50%_0%,rgba(29,78,216,0.07),transparent_60%)]"
+      />
       {featured ? (
-        <span className="inline-flex w-fit items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-blue-700">
+        <span className="inline-flex w-fit items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-100">
           Recommandé
         </span>
       ) : null}
-      <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-indigo-50 text-blue-700">
-        <Icon className="h-5 w-5" strokeWidth={1.75} />
+      <div className="relative inline-flex">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-50 text-blue-700 ring-1 ring-blue-100/80 transition-all duration-500 group-hover/card:bg-ride-gradient-primary group-hover/card:text-white group-hover/card:shadow-ride-glow-sm">
+          <Icon className="h-5 w-5 transition-transform duration-500 group-hover/card:scale-110" strokeWidth={1.75} />
+        </div>
       </div>
       <h3 className="text-[22px] font-medium leading-snug text-slate-900">
         {title}
@@ -475,6 +674,253 @@ function CardsSection() {
           title="Suivi des coûts"
           description="Mois, année, coût total, coût au kilomètre. En temps réel."
         />
+      </div>
+    </Section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  KPI Tiles — utilisées dans VehicleCostSummary, fiche véhicule, mockup hero
+// ─────────────────────────────────────────────────────────────────────────────
+
+type KpiTone = "neutral" | "positive";
+
+const kpiTiles: { label: string; value: string; suffix?: string; tone?: KpiTone }[] = [
+  { label: "Ce mois", value: "84,20 €", tone: "positive" },
+  { label: "Cette année", value: "1 247 €" },
+  { label: "Total cumulé", value: "3 892 €" },
+  { label: "Coût / km", value: "0,18 €", suffix: "/ km" },
+];
+
+function KpiTile({
+  label,
+  value,
+  suffix,
+}: {
+  label: string;
+  value: string;
+  suffix?: string;
+}) {
+  return (
+    <div className="group/kpi relative overflow-hidden rounded-2xl border border-slate-200/80 bg-ride-gradient-card p-4 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-ride-md">
+      <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+        {label}
+      </p>
+      <p className="mt-2 font-mono text-xl font-semibold tracking-tight tabular-nums text-slate-900">
+        {value}
+        {suffix ? (
+          <span className="ml-1 text-xs font-medium text-slate-500">{suffix}</span>
+        ) : null}
+      </p>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-blue-700/30 to-transparent opacity-0 transition-opacity duration-300 group-hover/kpi:opacity-100"
+      />
+    </div>
+  );
+}
+
+function KpiTilesSection() {
+  return (
+    <Section
+      title="KPI Tiles"
+      description="Tuiles métriques utilisées pour les coûts, kilométrages et indicateurs chiffrés. Toujours en font-mono tabular-nums pour l'alignement vertical des chiffres."
+    >
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {kpiTiles.map((t) => (
+          <KpiTile key={t.label} {...t} />
+        ))}
+      </div>
+      <p className="mt-3 font-mono text-[11px] text-slate-500">
+        bg-ride-gradient-card · shadow-ride-xs · hover: -translate-y-0.5 · shadow-ride-md ·
+        valeurs en font-mono tabular-nums
+      </p>
+    </Section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Status Items — utilisés dans VehicleRemindersCard
+// ─────────────────────────────────────────────────────────────────────────────
+
+type StatusLevel = "urgent" | "important" | "normal" | "success";
+
+const statusLevelStyles: Record<
+  StatusLevel,
+  { container: string; indicator: string; badge: string }
+> = {
+  urgent: {
+    container: "border-red-200 bg-red-50/40 ring-1 ring-red-100",
+    indicator: "bg-red-500",
+    badge: "bg-red-100 text-red-800",
+  },
+  important: {
+    container: "border-amber-200 bg-amber-50/40 ring-1 ring-amber-100",
+    indicator: "bg-amber-500",
+    badge: "bg-amber-100 text-amber-800",
+  },
+  normal: {
+    container: "border-slate-200 bg-white ring-1 ring-slate-100",
+    indicator: "bg-slate-400",
+    badge: "bg-slate-100 text-slate-700",
+  },
+  success: {
+    container: "border-emerald-200 bg-emerald-50/40 ring-1 ring-emerald-100",
+    indicator: "bg-emerald-500",
+    badge: "bg-emerald-100 text-emerald-800",
+  },
+};
+
+function StatusItem({
+  level,
+  title,
+  meta,
+}: {
+  level: StatusLevel;
+  title: string;
+  meta: string;
+}) {
+  const s = statusLevelStyles[level];
+  return (
+    <div
+      className={`group/item relative overflow-hidden rounded-2xl border p-4 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ride-md ${s.container}`}
+    >
+      <span
+        aria-hidden
+        className={`absolute inset-y-3 left-0 w-1 rounded-r-full ${s.indicator}`}
+      />
+      <div className="ml-2">
+        <div className="mb-1 flex flex-wrap items-center gap-2">
+          <p className="font-medium text-slate-900">{title}</p>
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${s.badge}`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+            {level}
+          </span>
+        </div>
+        <p className="font-mono text-xs text-slate-500">{meta}</p>
+      </div>
+    </div>
+  );
+}
+
+function StatusItemsSection() {
+  return (
+    <Section
+      title="Status Items"
+      description="Items d'alerte avec barre verticale signature à gauche. Quatre niveaux : urgent / important / normal / success. Utilisés dans les rappels d'entretien, les listes d'échéances, les notifications."
+    >
+      <div className="grid gap-3 md:grid-cols-2">
+        <StatusItem
+          level="urgent"
+          title="Plaquettes de frein"
+          meta="3 200 km dépassés · 12 jours en retard"
+        />
+        <StatusItem
+          level="important"
+          title="Vidange moteur"
+          meta="dans 820 km · à planifier"
+        />
+        <StatusItem
+          level="normal"
+          title="Contrôle technique"
+          meta="dans 18 mois · 04/12/2027"
+        />
+        <StatusItem
+          level="success"
+          title="Filtre à air"
+          meta="effectué le 12/03/2026 · à jour"
+        />
+      </div>
+    </Section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Page Headers — bandeau d'introduction de section
+// ─────────────────────────────────────────────────────────────────────────────
+
+function PageHeadersSection() {
+  return (
+    <Section
+      title="Page Headers"
+      description="Bandeau d'introduction utilisé en haut de chaque page interne. Badge contextuel + titre + texte d'explication + chip de stat optionnelle."
+    >
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-ride-gradient-card p-5 shadow-ride-sm md:p-7">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-700/40 to-transparent"
+        />
+        <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-white/70 px-3 py-1 text-xs font-medium text-blue-700 shadow-ride-xs backdrop-blur">
+          <Sparkles className="h-3 w-3" strokeWidth={2.5} />
+          RideCloud · Garage
+        </span>
+        <h3 className="text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
+          Catégories de véhicules
+        </h3>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
+          Choisissez une catégorie pour ouvrir votre parc et accéder à
+          l&apos;historique complet de chaque véhicule.
+        </p>
+        <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-blue-200/70 bg-white/80 px-3 py-1 text-sm font-medium text-blue-700 shadow-ride-xs backdrop-blur">
+          <span className="font-mono tabular-nums">12</span>
+          véhicule(s) enregistré(s)
+        </div>
+      </div>
+      <p className="mt-3 font-mono text-[11px] text-slate-500">
+        bg-ride-gradient-card · shadow-ride-sm · top-line gradient · badge contextuel ·
+        chip stats avec font-mono tabular-nums
+      </p>
+    </Section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Empty States — état vide premium
+// ─────────────────────────────────────────────────────────────────────────────
+
+function EmptyStatesSection() {
+  return (
+    <Section
+      title="Empty States"
+      description="État premium pour les listes vides : titre clair, texte secondaire, CTA gradient. Border-dashed pour signaler l'invitation à agir."
+    >
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Variante 1 : invitation à créer */}
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-10 text-center shadow-ride-xs backdrop-blur-sm">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-50 text-blue-700 ring-1 ring-blue-100/80">
+            <PlusCircle className="h-5 w-5" strokeWidth={2} />
+          </div>
+          <p className="text-base font-medium text-slate-900">
+            Aucun véhicule dans cette catégorie.
+          </p>
+          <p className="mt-1 text-sm text-slate-500">
+            Ajoutez votre premier véhicule pour commencer le suivi.
+          </p>
+          <button
+            type="button"
+            className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-ride-gradient-primary px-5 py-2.5 text-[15px] font-medium text-white shadow-ride-glow-sm transition-all duration-300 hover:shadow-ride-glow hover:brightness-110"
+          >
+            <PlusCircle className="h-4 w-4" strokeWidth={2.25} />
+            Ajouter un véhicule
+          </button>
+        </div>
+
+        {/* Variante 2 : succès / à jour */}
+        <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-6 shadow-ride-xs ring-1 ring-emerald-100">
+          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 ring-1 ring-emerald-200">
+            <CheckCircle2 className="h-4 w-4" strokeWidth={2} />
+          </div>
+          <div>
+            <p className="text-base font-medium text-emerald-900">
+              Aucun rappel actif.
+            </p>
+            <p className="mt-1 text-sm text-emerald-800/80">
+              Le véhicule est à jour pour le moment.
+            </p>
+          </div>
+        </div>
       </div>
     </Section>
   );

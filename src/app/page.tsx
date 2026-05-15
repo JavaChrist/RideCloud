@@ -31,9 +31,10 @@ export const metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 antialiased">
+    <div className="relative min-h-screen overflow-x-hidden bg-slate-50 text-slate-900 antialiased">
+      <BackgroundDecor />
       <Header />
-      <main>
+      <main className="relative">
         <Hero />
         <SocialProof />
         <Features />
@@ -46,54 +47,52 @@ export default function LandingPage() {
   );
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Background decor — gradient mesh + subtle grid (page-wide ambient layer)
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+function BackgroundDecor() {
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-[900px] bg-ride-mesh opacity-90" />
+      <div className="absolute inset-x-0 top-0 h-[1200px] bg-ride-grid bg-ride-grid-sm [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]" />
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Header
+ * ──────────────────────────────────────────────────────────────────────────── */
+
 function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-slate-50/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-slate-200/60 bg-slate-50/70 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-50/50">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-700 text-white shadow-sm">
+        <Link href="/" className="group flex items-center gap-2.5">
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-ride-gradient-primary text-white shadow-ride-glow-sm transition-transform duration-300 group-hover:scale-105">
             <Car className="h-4 w-4" strokeWidth={2.25} />
+            <span aria-hidden className="absolute inset-0 rounded-xl bg-white/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           </div>
-          <span className="text-[15px] font-semibold tracking-tight">
-            RideCloud
-          </span>
+          <span className="text-[15px] font-semibold tracking-tight">RideCloud</span>
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          <a
-            href="#features"
-            className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
-          >
-            Fonctionnalités
-          </a>
-          <a
-            href="#benefits"
-            className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
-          >
-            Bénéfices
-          </a>
-          <a
-            href="#faq"
-            className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
-          >
-            FAQ
-          </a>
-          <Link
-            href="/login"
-            className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
-          >
+          <HeaderLink href="#features">Fonctionnalités</HeaderLink>
+          <HeaderLink href="#benefits">Bénéfices</HeaderLink>
+          <HeaderLink href="#faq">FAQ</HeaderLink>
+          <HeaderLink href="/login" asLink>
             Connexion
-          </Link>
+          </HeaderLink>
         </nav>
 
         <Button
           asChild
           size="sm"
-          className="bg-blue-700 text-white shadow-sm hover:bg-blue-800"
+          className="group/cta relative overflow-hidden bg-ride-gradient-primary text-white shadow-ride-glow-sm transition-all duration-300 hover:shadow-ride-glow hover:brightness-110"
         >
           <Link href="/register">
             Rejoindre la bêta
-            <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/cta:translate-x-0.5" strokeWidth={2.25} />
           </Link>
         </Button>
       </div>
@@ -101,69 +100,114 @@ function Header() {
   );
 }
 
+function HeaderLink({
+  href,
+  children,
+  asLink = false,
+}: {
+  href: string;
+  children: React.ReactNode;
+  asLink?: boolean;
+}) {
+  const className =
+    "relative text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 after:absolute after:inset-x-0 after:-bottom-1 after:h-px after:origin-left after:scale-x-0 after:bg-blue-700 after:transition-transform after:duration-300 hover:after:scale-x-100";
+  return asLink ? (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  ) : (
+    <a href={href} className={className}>
+      {children}
+    </a>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Hero — high-impact entry with floating glassmorphism elements
+ * ──────────────────────────────────────────────────────────────────────────── */
+
 function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[640px] bg-[radial-gradient(ellipse_60%_60%_at_50%_0%,rgba(29,78,216,0.12),transparent_70%)]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-blue-700/40 to-transparent"
-      />
-
-      <div className="mx-auto max-w-6xl px-6 pb-24 pt-20 md:pt-28">
+    <section className="relative">
+      <div className="mx-auto max-w-6xl px-6 pb-28 pt-20 md:pt-28">
         <div className="mx-auto max-w-3xl text-center">
-          <Badge
-            variant="outline"
-            className="mb-6 border-blue-200 bg-white/70 px-3 py-1 text-xs font-medium text-blue-700 shadow-sm backdrop-blur-sm"
-          >
-            <Sparkles className="mr-1.5 h-3 w-3" strokeWidth={2.5} />
-            Pré-bêta privée · Places limitées
-          </Badge>
+          <div className="inline-flex animate-fade-in-up">
+            <Badge
+              variant="outline"
+              className="gap-1.5 rounded-full border-blue-200/70 bg-white/70 px-3.5 py-1.5 text-xs font-medium text-blue-700 shadow-ride-xs backdrop-blur"
+            >
+              <span className="relative flex h-1.5 w-1.5 items-center justify-center">
+                <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-blue-500" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-blue-600" />
+              </span>
+              Pré-bêta privée · Places limitées
+            </Badge>
+          </div>
 
-          <h1 className="text-balance text-4xl font-semibold leading-[1.1] tracking-tight text-slate-900 sm:text-5xl md:text-[56px]">
+          <h1
+            className="ride-text-balance mt-6 animate-fade-in-up text-4xl font-semibold leading-[1.05] tracking-tight text-slate-900 sm:text-5xl md:text-[64px]"
+            style={{ animationDelay: "80ms" }}
+          >
             Le carnet d&apos;entretien intelligent
             <br className="hidden sm:block" />{" "}
-            <span className="bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">
+            <span className="bg-ride-gradient-text bg-clip-text text-transparent [background-size:200%_auto] animate-shimmer">
               de tous vos véhicules.
             </span>
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-balance text-lg leading-relaxed text-slate-600 md:text-xl">
+          <p
+            className="ride-text-balance mx-auto mt-6 max-w-2xl animate-fade-in-up text-lg leading-relaxed text-slate-600 md:text-xl"
+            style={{ animationDelay: "160ms" }}
+          >
             Centralisez, anticipez, valorisez. RideCloud suit la vie complète
             de vos véhicules — voiture, moto, scooter, utilitaire — dans une
             application web et mobile pensée pour le quotidien.
           </p>
 
-          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div
+            className="mt-10 flex animate-fade-in-up flex-col items-center justify-center gap-3 sm:flex-row"
+            style={{ animationDelay: "240ms" }}
+          >
             <Button
               asChild
               size="lg"
-              className="h-12 w-full bg-blue-700 px-6 text-base text-white shadow-md transition-all hover:bg-blue-800 hover:shadow-lg sm:w-auto"
+              className="group/cta relative h-12 w-full overflow-hidden bg-ride-gradient-primary px-6 text-base text-white shadow-ride-glow transition-all duration-300 hover:shadow-ride-float hover:brightness-110 sm:w-auto"
             >
               <Link href="/register">
-                Rejoindre la bêta privée
-                <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+                <span className="relative z-10 inline-flex items-center gap-2">
+                  Rejoindre la bêta privée
+                  <ArrowRight
+                    className="h-4 w-4 transition-transform duration-300 group-hover/cta:translate-x-0.5"
+                    strokeWidth={2.5}
+                  />
+                </span>
+                <span
+                  aria-hidden
+                  className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/25 to-white/0 opacity-0 transition-opacity duration-500 group-hover/cta:opacity-100"
+                />
               </Link>
             </Button>
             <Button
               asChild
               variant="ghost"
               size="lg"
-              className="h-12 w-full px-6 text-base text-slate-700 hover:bg-white hover:text-slate-900 sm:w-auto"
+              className="group/cta h-12 w-full px-6 text-base text-slate-700 hover:bg-white/60 hover:text-slate-900 sm:w-auto"
             >
               <a href="#features">
                 Découvrir l&apos;application
-                <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+                <ArrowUpRight
+                  className="h-4 w-4 transition-transform duration-300 group-hover/cta:-translate-y-0.5 group-hover/cta:translate-x-0.5"
+                  strokeWidth={2.25}
+                />
               </a>
             </Button>
           </div>
 
-          <p className="mt-6 text-sm text-slate-500">
-            Sans carte bancaire · Sans engagement · Vos données restent les
-            vôtres
+          <p
+            className="mt-6 animate-fade-in-up text-sm text-slate-500"
+            style={{ animationDelay: "320ms" }}
+          >
+            Sans carte bancaire · Sans engagement · Vos données restent les vôtres
           </p>
         </div>
 
@@ -173,30 +217,49 @@ function Hero() {
   );
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Dashboard preview — premium mockup with floating glass cards
+ * ──────────────────────────────────────────────────────────────────────────── */
+
 function DashboardPreview() {
   return (
-    <div className="relative mx-auto mt-16 max-w-5xl">
+    <div
+      className="relative mx-auto mt-20 max-w-5xl animate-fade-in-up"
+      style={{ animationDelay: "400ms" }}
+    >
+      {/* Outer glow */}
       <div
         aria-hidden
-        className="absolute -inset-x-4 -inset-y-4 -z-10 rounded-[2rem] bg-gradient-to-b from-blue-700/10 via-indigo-500/5 to-transparent blur-2xl"
+        className="absolute -inset-x-8 -inset-y-8 -z-10 rounded-[2.5rem] bg-ride-mesh opacity-70 blur-2xl"
       />
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-blue-900/10">
-        {/* Top bar (window chrome) */}
-        <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50/50 px-4 py-3">
+      <div
+        aria-hidden
+        className="absolute -inset-x-2 -inset-y-2 -z-10 rounded-[1.75rem] bg-gradient-to-b from-blue-700/20 via-indigo-500/10 to-transparent blur-xl"
+      />
+
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-ride-xl backdrop-blur-sm">
+        {/* Window chrome */}
+        <div className="flex items-center gap-2 border-b border-slate-100 bg-gradient-to-b from-slate-50/80 to-white px-4 py-3">
           <span className="h-2.5 w-2.5 rounded-full bg-red-400/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
-          <div className="ml-4 flex h-6 max-w-xs flex-1 items-center rounded-md bg-white px-3 text-[11px] font-mono text-slate-400 ring-1 ring-slate-200/70">
+          <div className="ml-4 flex h-6 max-w-xs flex-1 items-center rounded-md bg-white px-3 font-mono text-[11px] text-slate-400 ring-1 ring-slate-200/70">
             ridecloud.app/vehicule/peugeot-3008
+          </div>
+          <div className="ml-auto hidden items-center gap-1.5 sm:flex">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
+              Synchronisé
+            </span>
           </div>
         </div>
 
         {/* Dashboard content */}
         <div className="grid gap-6 p-6 md:grid-cols-3 md:p-8">
-          {/* Left column — vehicle card */}
+          {/* Vehicle card */}
           <div className="md:col-span-1">
-            <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-5">
-              <Badge className="mb-3 bg-indigo-50 text-blue-700 hover:bg-indigo-50">
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-ride-gradient-card p-5 shadow-ride-xs">
+              <Badge className="mb-3 rounded-full bg-indigo-50 px-3 py-1 text-blue-700 hover:bg-indigo-50">
                 Voiture
               </Badge>
               <h3 className="text-lg font-semibold tracking-tight">
@@ -213,7 +276,7 @@ function DashboardPreview() {
                 Vidange moteur
               </p>
               <div className="mt-2 flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-800 ring-1 ring-amber-200/60">
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                   Bientôt dû
                 </span>
@@ -222,7 +285,7 @@ function DashboardPreview() {
             </div>
           </div>
 
-          {/* Right column — KPIs + history */}
+          {/* KPI grid + history */}
           <div className="md:col-span-2">
             <div className="grid grid-cols-3 gap-3">
               <KpiTile label="Ce mois" value="84,20 €" trend="-12 %" tone="ok" />
@@ -230,7 +293,7 @@ function DashboardPreview() {
               <KpiTile label="Coût / km" value="0,18 €" trend="stable" tone="neutral" />
             </div>
 
-            <div className="mt-5 rounded-xl border border-slate-200 bg-white">
+            <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-ride-gradient-card shadow-ride-xs">
               <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                 <p className="text-sm font-semibold text-slate-900">
                   Derniers entretiens
@@ -240,29 +303,52 @@ function DashboardPreview() {
                 </span>
               </div>
               <ul className="divide-y divide-slate-100">
-                <HistoryRow
-                  icon={Wrench}
-                  title="Plaquettes de frein"
-                  date="12 mars 2026"
-                  km="41 850 km"
-                  cost="218 €"
-                />
-                <HistoryRow
-                  icon={Gauge}
-                  title="Contrôle technique"
-                  date="04 février 2026"
-                  km="40 720 km"
-                  cost="89 €"
-                />
-                <HistoryRow
-                  icon={Wrench}
-                  title="Vidange + filtre à huile"
-                  date="22 décembre 2025"
-                  km="38 410 km"
-                  cost="142 €"
-                />
+                <HistoryRow icon={Wrench} title="Plaquettes de frein" date="12 mars 2026" km="41 850 km" cost="218 €" />
+                <HistoryRow icon={Gauge} title="Contrôle technique" date="04 février 2026" km="40 720 km" cost="89 €" />
+                <HistoryRow icon={Wrench} title="Vidange + filtre à huile" date="22 décembre 2025" km="38 410 km" cost="142 €" />
               </ul>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Floating notification card — top right */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-2 -top-6 hidden w-72 animate-float-slow rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-ride-float backdrop-blur-md md:block"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 ring-1 ring-blue-100">
+            <BellRing className="h-4 w-4" strokeWidth={2} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold uppercase tracking-wider text-blue-700">
+              Rappel
+            </p>
+            <p className="mt-1 text-sm font-medium text-slate-900">
+              Vidange dans 820 km
+            </p>
+            <p className="mt-1 text-xs text-slate-500">Peugeot 3008 · à planifier</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Floating KPI card — bottom left */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-8 -left-4 hidden w-64 animate-float rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-ride-float backdrop-blur-md md:block"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+            <TrendingUp className="h-4 w-4" strokeWidth={2} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+              Économie ce mois
+            </p>
+            <p className="font-mono text-lg font-semibold tracking-tight text-slate-900 tabular-nums">
+              −12 %
+            </p>
           </div>
         </div>
       </div>
@@ -281,10 +367,9 @@ function KpiTile({
   trend: string;
   tone: "ok" | "neutral";
 }) {
-  const trendColor =
-    tone === "ok" ? "text-emerald-700" : "text-slate-500";
+  const trendColor = tone === "ok" ? "text-emerald-700" : "text-slate-500";
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
+    <div className="group/kpi relative overflow-hidden rounded-2xl border border-slate-200 bg-ride-gradient-card p-4 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-ride-md">
       <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
         {label}
       </p>
@@ -292,6 +377,10 @@ function KpiTile({
         {value}
       </p>
       <p className={`mt-1 text-xs font-medium ${trendColor}`}>{trend}</p>
+      <span
+        aria-hidden
+        className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-blue-700/30 to-transparent opacity-0 transition-opacity duration-300 group-hover/kpi:opacity-100"
+      />
     </div>
   );
 }
@@ -310,8 +399,8 @@ function HistoryRow({
   cost: string;
 }) {
   return (
-    <li className="flex items-center gap-4 px-4 py-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-blue-700">
+    <li className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-slate-50/70">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-blue-700 ring-1 ring-indigo-100">
         <Icon className="h-4 w-4" strokeWidth={2} />
       </div>
       <div className="min-w-0 flex-1">
@@ -327,6 +416,10 @@ function HistoryRow({
   );
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Social proof strip
+ * ──────────────────────────────────────────────────────────────────────────── */
+
 function SocialProof() {
   const stats = [
     { label: "Catégories supportées", value: "4" },
@@ -336,14 +429,14 @@ function SocialProof() {
   ];
 
   return (
-    <section className="border-y border-slate-200 bg-white/60">
+    <section className="relative border-y border-slate-200/70 bg-white/40 backdrop-blur-sm">
       <div className="mx-auto grid max-w-6xl grid-cols-2 gap-y-6 px-6 py-10 sm:grid-cols-4 sm:gap-x-8">
         {stats.map((s) => (
-          <div key={s.label} className="text-center">
-            <p className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+          <div key={s.label} className="group text-center">
+            <p className="bg-ride-gradient-text bg-clip-text text-2xl font-semibold tracking-tight text-transparent [background-size:200%_auto] sm:text-3xl">
               {s.value}
             </p>
-            <p className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-500">
+            <p className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-500 transition-colors group-hover:text-slate-700">
               {s.label}
             </p>
           </div>
@@ -352,6 +445,10 @@ function SocialProof() {
     </section>
   );
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Features
+ * ──────────────────────────────────────────────────────────────────────────── */
 
 type Feature = {
   icon: LucideIcon;
@@ -412,19 +509,20 @@ const FEATURES: Feature[] = [
 
 function Features() {
   return (
-    <section id="features" className="py-24 md:py-32">
+    <section id="features" className="relative py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6">
         <div className="max-w-2xl">
           <Badge
             variant="outline"
-            className="mb-4 border-slate-200 bg-white text-slate-600"
+            className="mb-4 gap-1.5 rounded-full border-slate-200 bg-white/70 px-3 py-1 text-slate-600 shadow-ride-xs backdrop-blur"
           >
+            <Sparkles className="h-3 w-3 text-blue-700" strokeWidth={2.5} />
             Fonctionnalités
           </Badge>
-          <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl md:text-[40px]">
+          <h2 className="ride-text-balance text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl md:text-[44px]">
             Tout ce qu&apos;un carnet papier ne fera jamais.
           </h2>
-          <p className="mt-4 text-lg leading-relaxed text-slate-600">
+          <p className="ride-text-balance mt-4 text-lg leading-relaxed text-slate-600">
             Huit fonctionnalités pensées pour remplacer le classeur de
             factures, le carnet oublié chez le garagiste et les rappels
             manuels sur smartphone.
@@ -444,10 +542,20 @@ function Features() {
 function FeatureCard({ feature }: { feature: Feature }) {
   const Icon = feature.icon;
   return (
-    <Card className="group relative overflow-hidden rounded-2xl border-slate-200 bg-white shadow-none transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md">
+    <Card className="group relative overflow-hidden rounded-2xl border-slate-200/80 bg-ride-gradient-card shadow-ride-xs transition-all duration-500 ease-ride-spring hover:-translate-y-1 hover:border-blue-200 hover:shadow-ride-lg">
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-[radial-gradient(circle_at_50%_0%,rgba(29,78,216,0.07),transparent_60%)]"
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-blue-700/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+      />
       <CardContent className="p-6">
-        <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-blue-700 transition-colors group-hover:bg-blue-700 group-hover:text-white">
-          <Icon className="h-5 w-5" strokeWidth={1.9} />
+        <div className="relative mb-5 inline-flex">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-50 text-blue-700 ring-1 ring-blue-100/80 transition-all duration-500 group-hover:bg-ride-gradient-primary group-hover:text-white group-hover:shadow-ride-glow-sm group-hover:ring-blue-700/30">
+            <Icon className="h-5 w-5 transition-transform duration-500 group-hover:scale-110" strokeWidth={1.9} />
+          </div>
         </div>
         <h3 className="text-base font-semibold tracking-tight text-slate-900">
           {feature.title}
@@ -459,6 +567,10 @@ function FeatureCard({ feature }: { feature: Feature }) {
     </Card>
   );
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Benefits
+ * ──────────────────────────────────────────────────────────────────────────── */
 
 const BENEFITS = [
   {
@@ -495,20 +607,21 @@ const BENEFITS = [
 
 function Benefits() {
   return (
-    <section id="benefits" className="border-t border-slate-200 bg-white">
+    <section id="benefits" className="relative border-t border-slate-200/70 bg-gradient-to-b from-white via-white to-slate-50/60">
       <div className="mx-auto max-w-6xl px-6 py-24 md:py-32">
         <div className="grid gap-16 lg:grid-cols-[1fr_1.4fr] lg:gap-20">
           <div className="lg:sticky lg:top-28 lg:self-start">
             <Badge
               variant="outline"
-              className="mb-4 border-slate-200 bg-slate-50 text-slate-600"
+              className="mb-4 gap-1.5 rounded-full border-slate-200 bg-white/70 px-3 py-1 text-slate-600 shadow-ride-xs backdrop-blur"
             >
+              <Sparkles className="h-3 w-3 text-blue-700" strokeWidth={2.5} />
               Bénéfices
             </Badge>
-            <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl md:text-[40px]">
+            <h2 className="ride-text-balance text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl md:text-[44px]">
               La différence se voit dès la première minute.
             </h2>
-            <p className="mt-4 text-lg leading-relaxed text-slate-600">
+            <p className="ride-text-balance mt-4 text-lg leading-relaxed text-slate-600">
               Elle se confirme à chaque ouverture. Ce que RideCloud change
               vraiment dans le quotidien de ceux qui possèdent un ou plusieurs
               véhicules.
@@ -519,10 +632,14 @@ function Benefits() {
             {BENEFITS.map((b, idx) => (
               <li
                 key={b.title}
-                className="group flex gap-5 rounded-2xl p-5 transition-colors hover:bg-slate-50"
+                className="group/benefit relative flex gap-5 rounded-2xl p-5 transition-all duration-300 ease-ride-spring hover:-translate-y-0.5 hover:bg-white hover:shadow-ride-md"
               >
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-5 top-0 h-px origin-left scale-x-0 bg-gradient-to-r from-blue-700/40 to-transparent transition-transform duration-500 group-hover/benefit:scale-x-100"
+                />
                 <div className="shrink-0">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white font-mono text-sm font-semibold text-blue-700 transition-colors group-hover:border-blue-700 group-hover:bg-blue-700 group-hover:text-white">
+                  <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white font-mono text-sm font-semibold text-blue-700 shadow-ride-xs transition-all duration-300 group-hover/benefit:border-transparent group-hover/benefit:bg-ride-gradient-primary group-hover/benefit:text-white group-hover/benefit:shadow-ride-glow-sm">
                     {String(idx + 1).padStart(2, "0")}
                   </div>
                 </div>
@@ -543,6 +660,10 @@ function Benefits() {
   );
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Beta CTA — high-impact gradient card with grid pattern
+ * ──────────────────────────────────────────────────────────────────────────── */
+
 const BETA_PERKS = [
   "Accès anticipé complet à toutes les fonctionnalités MVP",
   "Canal direct avec l'équipe produit (Discord ou email)",
@@ -555,27 +676,35 @@ function BetaCTA() {
   return (
     <section id="beta" className="px-6 py-24 md:py-32">
       <div className="mx-auto max-w-5xl">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-700 via-blue-700 to-indigo-800 px-8 py-14 shadow-xl shadow-blue-900/20 md:px-14 md:py-20">
+        <div className="relative overflow-hidden rounded-[2rem] bg-ride-gradient-dark px-8 py-14 shadow-ride-xl md:px-14 md:py-20">
+          {/* Soft glow accents */}
           <div
             aria-hidden
-            className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl"
+            className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 animate-glow-pulse rounded-full bg-white/10 blur-3xl"
           />
           <div
             aria-hidden
-            className="pointer-events-none absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-indigo-400/20 blur-3xl"
+            className="pointer-events-none absolute -bottom-32 -left-20 h-80 w-80 animate-glow-pulse rounded-full bg-indigo-400/25 blur-3xl"
+            style={{ animationDelay: "1.5s" }}
           />
+          {/* Grid overlay */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-[0.04] mix-blend-overlay [background-image:linear-gradient(rgba(255,255,255,0.4)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.4)_1px,transparent_1px)] [background-size:24px_24px]"
+            className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay bg-ride-grid-light bg-ride-grid"
+          />
+          {/* Top highlight */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent"
           />
 
           <div className="relative grid gap-12 lg:grid-cols-[1.2fr_1fr] lg:items-center">
             <div>
-              <Badge className="mb-5 border border-white/20 bg-white/10 text-white hover:bg-white/10">
-                <Sparkles className="mr-1.5 h-3 w-3" strokeWidth={2.5} />
+              <Badge className="mb-5 gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-white backdrop-blur hover:bg-white/10">
+                <Sparkles className="h-3 w-3" strokeWidth={2.5} />
                 200 à 500 places · Bêta privée
               </Badge>
-              <h2 className="text-balance text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl md:text-[44px]">
+              <h2 className="ride-text-balance text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl md:text-[48px]">
                 Rejoignez le cercle qui façonne RideCloud.
               </h2>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-blue-100">
@@ -588,11 +717,20 @@ function BetaCTA() {
                 <Button
                   asChild
                   size="lg"
-                  className="h-12 bg-white px-6 text-base text-blue-700 shadow-md transition-all hover:bg-slate-100 hover:shadow-lg"
+                  className="group/cta relative h-12 overflow-hidden bg-white px-6 text-base text-blue-700 shadow-ride-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ride-float"
                 >
                   <Link href="/register">
-                    Demander un accès à la bêta
-                    <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+                    <span className="relative z-10 inline-flex items-center gap-2">
+                      Demander un accès à la bêta
+                      <ArrowRight
+                        className="h-4 w-4 transition-transform duration-300 group-hover/cta:translate-x-0.5"
+                        strokeWidth={2.5}
+                      />
+                    </span>
+                    <span
+                      aria-hidden
+                      className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-blue-50 to-blue-50/0 opacity-0 transition-opacity duration-500 group-hover/cta:opacity-100"
+                    />
                   </Link>
                 </Button>
                 <Button
@@ -611,7 +749,7 @@ function BetaCTA() {
               </p>
             </div>
 
-            <ul className="space-y-3 rounded-2xl border border-white/15 bg-white/[0.06] p-6 backdrop-blur-sm">
+            <ul className="space-y-3 rounded-2xl border border-white/15 bg-white/[0.06] p-6 shadow-ride-inner backdrop-blur-md">
               {BETA_PERKS.map((perk) => (
                 <li key={perk} className="flex items-start gap-3">
                   <CheckCircle2
@@ -630,6 +768,10 @@ function BetaCTA() {
     </section>
   );
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * FAQ
+ * ──────────────────────────────────────────────────────────────────────────── */
 
 const FAQS: { question: string; answer: string }[] = [
   {
@@ -691,24 +833,25 @@ const FAQS: { question: string; answer: string }[] = [
 
 function FAQ() {
   return (
-    <section id="faq" className="border-t border-slate-200 bg-white">
+    <section id="faq" className="relative border-t border-slate-200/70 bg-white">
       <div className="mx-auto max-w-3xl px-6 py-24 md:py-32">
         <div className="text-center">
           <Badge
             variant="outline"
-            className="mb-4 border-slate-200 bg-slate-50 text-slate-600"
+            className="mb-4 gap-1.5 rounded-full border-slate-200 bg-slate-50 px-3 py-1 text-slate-600 shadow-ride-xs"
           >
+            <Sparkles className="h-3 w-3 text-blue-700" strokeWidth={2.5} />
             FAQ
           </Badge>
-          <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl md:text-[40px]">
+          <h2 className="ride-text-balance text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl md:text-[44px]">
             Questions fréquentes
           </h2>
-          <p className="mt-4 text-lg leading-relaxed text-slate-600">
+          <p className="ride-text-balance mt-4 text-lg leading-relaxed text-slate-600">
             Tout ce que vous voulez savoir avant de rejoindre la bêta.
           </p>
         </div>
 
-        <div className="mt-14 divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-slate-50/30">
+        <div className="mt-14 divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200/80 bg-ride-gradient-card shadow-ride-sm backdrop-blur-sm">
           {FAQS.map((faq) => (
             <FaqItem key={faq.question} faq={faq} />
           ))}
@@ -731,43 +874,38 @@ function FAQ() {
 
 function FaqItem({ faq }: { faq: { question: string; answer: string } }) {
   return (
-    <details className="group px-6 py-5 [&_summary::-webkit-details-marker]:hidden">
+    <details className="group px-6 py-5 transition-colors duration-200 hover:bg-white/60 [&_summary::-webkit-details-marker]:hidden">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left">
-        <span className="text-base font-medium text-slate-900 group-hover:text-blue-700 sm:text-[17px]">
+        <span className="text-base font-medium text-slate-900 transition-colors group-hover:text-blue-700 sm:text-[17px]">
           {faq.question}
         </span>
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-all group-open:rotate-180 group-open:border-blue-700 group-open:bg-blue-700 group-open:text-white">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-ride-xs transition-all duration-300 group-open:rotate-180 group-open:border-blue-700 group-open:bg-ride-gradient-primary group-open:text-white group-open:shadow-ride-glow-sm">
           <ChevronDown className="h-4 w-4" strokeWidth={2.25} />
         </span>
       </summary>
-      <p className="mt-3 pr-12 text-[15px] leading-relaxed text-slate-600">
+      <p className="mt-3 pr-12 text-[15px] leading-relaxed text-slate-600 animate-fade-in">
         {faq.answer}
       </p>
     </details>
   );
 }
 
-function LinkedInIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z" />
-    </svg>
-  );
-}
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Footer
+ * ──────────────────────────────────────────────────────────────────────────── */
 
 function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-slate-50">
+    <footer className="relative border-t border-slate-200/70 bg-gradient-to-b from-slate-50 to-white">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-700/30 to-transparent"
+      />
       <div className="mx-auto max-w-6xl px-6 py-16">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-700 text-white shadow-sm">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-ride-gradient-primary text-white shadow-ride-glow-sm">
                 <Car className="h-4 w-4" strokeWidth={2.25} />
               </div>
               <span className="text-[15px] font-semibold tracking-tight">
@@ -784,9 +922,9 @@ function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="LinkedIn RideCloud"
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:border-blue-700 hover:text-blue-700"
+                className="group/social flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-700/30 hover:text-blue-700 hover:shadow-ride-glow-sm"
               >
-                <LinkedInIcon className="h-4 w-4" />
+                <LinkedInIcon className="h-4 w-4 transition-transform duration-300 group-hover/social:scale-110" />
               </a>
             </div>
           </div>
@@ -834,6 +972,19 @@ function Footer() {
   );
 }
 
+function LinkedInIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z" />
+    </svg>
+  );
+}
+
 function FooterColumn({
   title,
   links,
@@ -851,9 +1002,11 @@ function FooterColumn({
           <li key={link.label}>
             <Link
               href={link.href}
-              className="text-sm text-slate-700 transition-colors hover:text-blue-700"
+              className="group/link inline-flex items-center gap-1 text-sm text-slate-700 transition-colors hover:text-blue-700"
             >
-              {link.label}
+              <span className="bg-gradient-to-r from-blue-700 to-blue-700 bg-[length:0%_1px] bg-left-bottom bg-no-repeat transition-[background-size] duration-300 group-hover/link:bg-[length:100%_1px]">
+                {link.label}
+              </span>
             </Link>
           </li>
         ))}

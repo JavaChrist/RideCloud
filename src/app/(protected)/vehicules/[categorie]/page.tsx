@@ -27,11 +27,60 @@ export default async function CategoryVehiclesPage({ params }: { params: Promise
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div><h1 className="text-3xl font-semibold tracking-tight">{categoryLabels[categorie as VehicleCategory]}</h1><p className="text-slate-600">{vehicles.length} véhicule(s) dans cette catégorie.</p></div>
-        <Button asChild><Link href="/vehicules/nouveau"><PlusCircle className="mr-2 h-4 w-4" />Ajouter un véhicule</Link></Button>
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+            {categoryLabels[categorie as VehicleCategory]}
+          </h1>
+          <p className="text-slate-600">
+            <span className="font-mono tabular-nums">{vehicles.length}</span>{" "}
+            véhicule(s) dans cette catégorie.
+          </p>
+        </div>
+        <Button
+          asChild
+          className="group/cta bg-ride-gradient-primary text-white shadow-ride-glow-sm transition-all duration-300 hover:shadow-ride-glow hover:brightness-110"
+        >
+          <Link href="/vehicules/nouveau">
+            <PlusCircle className="h-4 w-4 transition-transform duration-300 group-hover/cta:rotate-90" strokeWidth={2.25} />
+            Ajouter un véhicule
+          </Link>
+        </Button>
       </div>
-      <div className="relative max-w-md"><Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" /><Input className="pl-10" placeholder="Rechercher un véhicule (placeholder)" /></div>
-      {vehicles.length === 0 ? <div className="rounded-2xl border border-dashed bg-white p-8 text-center text-slate-600">Aucun véhicule dans cette catégorie.</div> : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{vehicles.map((v) => <VehicleCard key={v.id} vehicle={v} />)}</div>}
+      <div className="relative max-w-md">
+        <Search
+          className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400"
+          strokeWidth={2}
+        />
+        <Input
+          className="pl-10 shadow-ride-xs"
+          placeholder="Rechercher un véhicule (placeholder)"
+        />
+      </div>
+      {vehicles.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-10 text-center text-slate-600 shadow-ride-xs backdrop-blur-sm">
+          <p className="text-base font-medium text-slate-900">
+            Aucun véhicule dans cette catégorie.
+          </p>
+          <p className="mt-1 text-sm text-slate-500">
+            Ajoutez votre premier véhicule pour commencer le suivi.
+          </p>
+          <Button
+            asChild
+            className="mt-4 bg-ride-gradient-primary text-white shadow-ride-glow-sm transition-all duration-300 hover:shadow-ride-glow hover:brightness-110"
+          >
+            <Link href="/vehicules/nouveau">
+              <PlusCircle className="h-4 w-4" strokeWidth={2.25} />
+              Ajouter un véhicule
+            </Link>
+          </Button>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {vehicles.map((v) => (
+            <VehicleCard key={v.id} vehicle={v} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

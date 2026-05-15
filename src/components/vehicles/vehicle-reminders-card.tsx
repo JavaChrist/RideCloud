@@ -1,13 +1,37 @@
+import { BellRing, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDateFr } from "@/lib/utils/date";
 import type { VehicleReminderSummary } from "@/types/maintenance";
 
+const levelStyles = {
+  urgent: {
+    container:
+      "border-red-200 bg-red-50/40 ring-1 ring-red-100",
+    indicator: "bg-red-500"
+  },
+  important: {
+    container:
+      "border-amber-200 bg-amber-50/40 ring-1 ring-amber-100",
+    indicator: "bg-amber-500"
+  },
+  normal: {
+    container:
+      "border-slate-200 bg-white ring-1 ring-slate-100",
+    indicator: "bg-slate-400"
+  }
+} as const;
+
 export function VehicleRemindersCard({ summary }: { summary: VehicleReminderSummary }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Rappels d&apos;entretien</CardTitle>
+    <Card className="overflow-hidden rounded-2xl border-slate-200/80 bg-white shadow-ride-sm">
+      <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700 ring-1 ring-blue-100">
+          <BellRing className="h-4 w-4" strokeWidth={2} />
+        </div>
+        <CardTitle className="text-lg font-semibold tracking-tight">
+          Rappels d&apos;entretien
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -17,25 +41,65 @@ export function VehicleRemindersCard({ summary }: { summary: VehicleReminderSumm
         </div>
 
         {summary.items.length === 0 ? (
-          <p className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+          <p className="flex items-start gap-2 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 text-sm text-emerald-800 ring-1 ring-emerald-100">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2} />
             Aucun rappel actif. Le véhicule est à jour pour le moment.
           </p>
         ) : (
-          summary.items.map((item) => (
-            <div key={item.id} className="rounded-lg border bg-white p-3">
-              <div className="mb-1 flex flex-wrap items-center gap-2">
-                <p className="font-medium">{item.titre}</p>
-                <Badge variant={item.level === "urgent" ? "danger" : item.level === "important" ? "warning" : "secondary"}>
-                  {item.statusLabel}
-                </Badge>
-              </div>
-              <p className="text-sm text-slate-600">Catégorie : {item.categorie}</p>
-              <p className="text-sm text-slate-600">
-                Échéance km : {item.nextDueKm != null ? `${item.nextDueKm.toLocaleString("fr-FR")} km` : "non définie"}
-              </p>
-              <p className="text-sm text-slate-600">Échéance date : {formatDateFr(item.nextDueDate)}</p>
-            </div>
-          ))
+          <ul className="space-y-2">
+            {summary.items.map((item) => {
+              const styles = levelStyles[item.level];
+              return (
+                <li
+                  key={item.id}
+                  className={`group/reminder relative overflow-hidden rounded-2xl border p-4 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ride-md ${styles.container}`}
+                >
+                  <span
+                    aria-hidden
+                    className={`absolute inset-y-3 left-0 w-1 rounded-r-full ${styles.indicator}`}
+                  />
+                  <div className="ml-2">
+                    <div className="mb-1 flex flex-wrap items-center gap-2">
+                      <p className="font-medium text-slate-900">{item.titre}</p>
+                      <Badge
+                        variant={
+                          item.level === "urgent"
+                            ? "danger"
+                            : item.level === "important"
+                            ? "warning"
+                            : "secondary"
+                        }
+                      >
+                        {item.statusLabel}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-slate-600">
+                      <span className="text-xs uppercase tracking-wider text-slate-400">
+                        Catégorie ·{" "}
+                      </span>
+                      {item.categorie}
+                    </p>
+                    <p className="text-sm text-slate-600">
+                      <span className="text-xs uppercase tracking-wider text-slate-400">
+                        Échéance km ·{" "}
+                      </span>
+                      <span className="font-mono tabular-nums">
+                        {item.nextDueKm != null
+                          ? `${item.nextDueKm.toLocaleString("fr-FR")} km`
+                          : "non définie"}
+                      </span>
+                    </p>
+                    <p className="text-sm text-slate-600">
+                      <span className="text-xs uppercase tracking-wider text-slate-400">
+                        Échéance date ·{" "}
+                      </span>
+                      {formatDateFr(item.nextDueDate)}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </CardContent>
     </Card>

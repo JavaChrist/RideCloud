@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { Bike, Car, Gauge, Truck } from "lucide-react";
+import { Bike, CalendarClock, Car, Gauge, Truck } from "lucide-react";
 import { VehicleActions } from "@/components/vehicles/vehicle-actions";
 import { VehicleCostSummaryCard } from "@/components/vehicles/vehicle-cost-summary";
 import { VehicleDetailTabs } from "@/components/vehicles/vehicle-detail-tabs";
@@ -13,10 +13,17 @@ import { getVehicleMaintenanceSummary } from "@/lib/maintenance";
 import { getVehicleReminderSummary } from "@/lib/reminders";
 import { createClient } from "@/lib/supabase/server";
 
+const categoryLabels = {
+  voitures: "Voiture",
+  motos: "Moto",
+  scooters: "Scooter",
+  utilitaires: "Utilitaire"
+} as const;
+
 function VehicleIcon({ category }: { category: "voitures" | "motos" | "scooters" | "utilitaires" }) {
-  if (category === "voitures") return <Car className="h-12 w-12 text-slate-600" />;
-  if (category === "utilitaires") return <Truck className="h-12 w-12 text-slate-600" />;
-  return <Bike className="h-12 w-12 text-slate-600" />;
+  if (category === "voitures") return <Car className="h-12 w-12 text-slate-400" />;
+  if (category === "utilitaires") return <Truck className="h-12 w-12 text-slate-400" />;
+  return <Bike className="h-12 w-12 text-slate-400" />;
 }
 
 export default async function VehicleDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -33,7 +40,11 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
   const vehicle = await getVehicleById(user.id, id);
 
   if (!vehicle) {
-    return <div className="rounded-xl border bg-white p-8 text-center text-slate-600">Véhicule introuvable.</div>;
+    return (
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-8 text-center text-slate-600 shadow-ride-sm">
+        Véhicule introuvable.
+      </div>
+    );
   }
 
   const { completed, upcoming, modifications, documents, planEntries, maintenanceProfileName } = await getVehicleHistory(
@@ -57,10 +68,14 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
 
   return (
     <section className="space-y-6">
-      <Card className="overflow-hidden rounded-2xl">
+      <Card className="relative overflow-hidden rounded-2xl border-slate-200/80 bg-ride-gradient-card shadow-ride-md">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-700/40 to-transparent"
+        />
         <CardContent className="p-0">
-          <div className="grid gap-4 md:grid-cols-[280px_1fr]">
-            <div className="relative h-56 w-full bg-slate-100 md:h-full">
+          <div className="grid gap-0 md:grid-cols-[280px_1fr]">
+            <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-slate-50 to-white sm:h-56 md:h-full">
               {vehicle.photo_url ? (
                 <Image
                   src={vehicle.photo_url}
@@ -68,24 +83,58 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                   fill
                   sizes="(max-width: 768px) 100vw, 280px"
                   unoptimized={isExternalImage}
-                  className="object-cover"
+                  className="object-contain p-3"
                 />
               ) : (
-                <div className="flex h-full items-center justify-center"><VehicleIcon category={vehicle.category} /></div>
+                <div className="flex h-full items-center justify-center">
+                  <VehicleIcon category={vehicle.category} />
+                </div>
               )}
             </div>
-            <div className="space-y-4 p-5">
-              <div><h1 className="text-3xl font-semibold tracking-tight">{vehicle.marque} {vehicle.modele}</h1><p className="text-slate-600">Année {vehicle.annee} · {vehicle.kilometrage.toLocaleString("fr-FR")} km</p></div>
+            <div className="space-y-5 p-5 md:p-6">
+              <div>
+                <Badge
+                  variant="outline"
+                  className="mb-2 rounded-full border-blue-200 bg-white/70 px-3 py-0.5 text-xs font-medium text-blue-700 shadow-ride-xs"
+                >
+                  {categoryLabels[vehicle.category]}
+                </Badge>
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+                  {vehicle.marque} {vehicle.modele}
+                </h1>
+                <p className="text-slate-600">
+                  Année {vehicle.annee} ·{" "}
+                  <span className="font-mono tabular-nums">
+                    {vehicle.kilometrage.toLocaleString("fr-FR")} km
+                  </span>
+                </p>
+              </div>
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-xl border bg-slate-50 p-3">
-                  <p className="text-sm text-slate-600">État entretien</p>
-                  <Badge variant={summary.status === "overdue" ? "danger" : summary.status === "due_soon" ? "warning" : "success"}>
+                <div className="group/tile relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-3 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ride-md">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                    État entretien
+                  </p>
+                  <Badge
+                    className="mt-2"
+                    variant={
+                      summary.status === "overdue"
+                        ? "danger"
+                        : summary.status === "due_soon"
+                        ? "warning"
+                        : "success"
+                    }
+                  >
                     {summary.globalLabel}
                   </Badge>
                 </div>
-                <div className="rounded-xl border bg-slate-50 p-3">
-                  <p className="text-sm text-slate-600">Prochaine échéance</p>
-                  <p className="font-medium">{summary.nextLabel}</p>
+                <div className="group/tile relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-3 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ride-md">
+                  <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                    <CalendarClock className="h-3 w-3" strokeWidth={2.25} />
+                    Prochaine échéance
+                  </p>
+                  <p className="mt-1 font-medium text-slate-900">
+                    {summary.nextLabel}
+                  </p>
                   <p className="mt-1 text-xs text-slate-500">
                     {summary.overdueCount} en retard · {summary.dueSoonCount} à prévoir bientôt
                   </p>
@@ -95,7 +144,15 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                     </p>
                   )}
                 </div>
-                <div className="rounded-xl border bg-slate-50 p-3"><p className="text-sm text-slate-600">Compteur</p><p className="flex items-center gap-2 font-medium"><Gauge className="h-4 w-4" />{vehicle.kilometrage.toLocaleString("fr-FR")} km</p></div>
+                <div className="group/tile relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-3 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ride-md">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                    Compteur
+                  </p>
+                  <p className="mt-1 flex items-center gap-2 font-mono text-lg font-semibold tabular-nums text-slate-900">
+                    <Gauge className="h-4 w-4 text-blue-700" strokeWidth={2} />
+                    {vehicle.kilometrage.toLocaleString("fr-FR")} km
+                  </p>
+                </div>
               </div>
             </div>
           </div>
