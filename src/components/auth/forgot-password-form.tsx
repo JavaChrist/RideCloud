@@ -19,7 +19,9 @@ export function ForgotPasswordForm() {
   const onSubmit = async (values: ForgotValues) => {
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.resetPasswordForEmail(values.email, { redirectTo: `${window.location.origin}/reset-password` });
+      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
+        redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`
+      });
       if (error) return toast.error(error.message);
       toast.success("E-mail de réinitialisation envoyé.");
     } catch {

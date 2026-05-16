@@ -62,7 +62,11 @@ export function LoginForm() {
     setIsResending(true);
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.resend({ type: "signup", email });
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/categories` }
+      });
       if (error) {
         toast.error(error.message);
         return;

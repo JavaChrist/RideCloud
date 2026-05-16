@@ -31,7 +31,7 @@ export function RegisterForm() {
       const { error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
-        options: { emailRedirectTo: `${window.location.origin}/login` }
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/categories` }
       });
       if (error) return toast.error(error.message);
       toast.success("Compte créé. Vérifiez votre e-mail.");

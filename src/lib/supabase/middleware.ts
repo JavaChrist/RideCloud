@@ -26,7 +26,9 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
-  const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register") || pathname.startsWith("/forgot-password") || pathname.startsWith("/reset-password");
+  // /reset-password est volontairement exclu de isAuthRoute : un utilisateur authentifié
+  // via le lien de récupération doit pouvoir y accéder pour définir son nouveau mot de passe.
+  const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register") || pathname.startsWith("/forgot-password");
   const isProtectedRoute = pathname.startsWith("/categories") || pathname.startsWith("/vehicules") || pathname.startsWith("/vehicule");
 
   if (!user && isProtectedRoute) {
