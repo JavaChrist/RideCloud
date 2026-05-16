@@ -1,0 +1,165 @@
+<!--
+  RideCloud — Email Template : Change Email Address
+  À coller dans : Supabase Dashboard → Authentication → Emails → Templates → Change email address
+  Variables Supabase utilisées : {{ .ConfirmationURL }}, {{ .NewEmail }}, {{ .Email }}
+  Compatible : Gmail, Outlook (2007+), Apple Mail, IONOS, Yahoo, Thunderbird
+  Sujet recommandé : "Confirmation de votre nouvelle adresse e-mail"
+-->
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <title>Confirmez votre nouvelle adresse e-mail</title>
+  <!--[if mso]>
+  <style type="text/css">
+    table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    .mso-button { padding: 14px 32px !important; }
+  </style>
+  <![endif]-->
+  <style>
+    @media only screen and (max-width: 620px) {
+      .ride-container { width: 100% !important; }
+      .ride-padding { padding: 24px !important; }
+      .ride-title { font-size: 22px !important; }
+      .ride-cta { padding: 14px 24px !important; font-size: 15px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;color:#0f172a;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
+  <div style="display:none;font-size:1px;color:#f1f5f9;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    Confirmez votre nouvelle adresse e-mail pour votre compte RideCloud.
+  </div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f1f5f9;">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+
+        <table role="presentation" class="ride-container" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.06),0 8px 24px -12px rgba(15,23,42,0.12);">
+
+          <tr>
+            <td style="background-color:#1d4ed8;background-image:linear-gradient(135deg,#1e40af 0%,#1d4ed8 55%,#2563eb 100%);padding:36px 32px;" align="left">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="vertical-align:middle;width:56px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td width="48" height="48" align="center" valign="middle" bgcolor="#ffffff" style="width:48px;height:48px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);border-radius:14px;text-align:center;vertical-align:middle;">
+                          <span style="display:inline-block;color:#ffffff;font-size:22px;font-weight:700;line-height:46px;letter-spacing:-0.02em;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;">R</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td style="vertical-align:middle;padding-left:14px;">
+                    <div style="color:#ffffff;font-size:20px;font-weight:600;letter-spacing:-0.02em;line-height:1;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;">RideCloud</div>
+                    <div style="color:rgba(255,255,255,0.75);font-size:12px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;margin-top:4px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;">Le cloud de vos véhicules</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="ride-padding" style="padding:40px 40px 8px 40px;">
+              <div style="display:inline-block;padding:6px 12px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;color:#4338ca;font-size:12px;font-weight:600;letter-spacing:0.02em;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;">
+                Changement d'adresse
+              </div>
+              <h1 class="ride-title" style="margin:20px 0 12px 0;color:#0f172a;font-size:26px;font-weight:700;letter-spacing:-0.025em;line-height:1.25;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;">
+                Confirmez votre nouvelle adresse
+              </h1>
+              <p style="margin:0;color:#475569;font-size:15px;line-height:1.65;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;">
+                Vous avez demandé à modifier l'adresse e-mail associée à votre compte RideCloud. Confirmez ce changement pour finaliser la mise à jour.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="ride-padding" style="padding:24px 40px 0 40px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;">
+                <tr>
+                  <td style="padding:16px 18px;">
+                    <p style="margin:0 0 4px 0;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;">
+                      Nouvelle adresse
+                    </p>
+                    <p style="margin:0;color:#0f172a;font-size:15px;font-weight:600;letter-spacing:-0.01em;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;">
+                      {{ .NewEmail }}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="ride-padding" style="padding:24px 40px 8px 40px;" align="left">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0;">
+                <tr>
+                  <td align="center" bgcolor="#1d4ed8" style="background-color:#1d4ed8;background-image:linear-gradient(135deg,#1e40af 0%,#1d4ed8 50%,#2563eb 100%);border-radius:14px;box-shadow:0 8px 20px -8px rgba(29,78,216,0.55);">
+                    <a href="{{ .ConfirmationURL }}" target="_blank" class="ride-cta mso-button"
+                       style="display:inline-block;padding:14px 32px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:-0.01em;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;mso-padding-alt:0;">
+                      <!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->
+                      Confirmer le changement
+                      <!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="ride-padding" style="padding:28px 40px 0 40px;">
+              <p style="margin:0;color:#94a3b8;font-size:13px;line-height:1.65;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;">
+                Le bouton ne fonctionne pas ? Copiez-collez ce lien dans votre navigateur :
+              </p>
+              <p style="margin:8px 0 0 0;font-size:13px;line-height:1.5;word-break:break-all;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;">
+                <a href="{{ .ConfirmationURL }}" target="_blank" style="color:#1d4ed8;text-decoration:none;">{{ .ConfirmationURL }}</a>
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="ride-padding" style="padding:32px 40px;">
+              <hr style="border:none;border-top:1px solid #e2e8f0;margin:0 0 24px 0;" />
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="vertical-align:top;padding-right:14px;width:32px;">
+                    <div style="width:32px;height:32px;background:#fef2f2;border-radius:10px;text-align:center;line-height:32px;">
+                      <span style="color:#dc2626;font-size:16px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;">!</span>
+                    </div>
+                  </td>
+                  <td style="vertical-align:top;">
+                    <p style="margin:0 0 4px 0;color:#0f172a;font-size:13px;font-weight:600;line-height:1.5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;">
+                      Ce n'est pas vous qui avez demandé ce changement ?
+                    </p>
+                    <p style="margin:0;color:#64748b;font-size:13px;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;">
+                      Ignorez cet e-mail, votre adresse actuelle reste active. Pour plus de sécurité, modifiez votre mot de passe depuis votre compte RideCloud.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background:#f8fafc;padding:24px 40px;border-top:1px solid #e2e8f0;text-align:center;">
+              <p style="margin:0 0 6px 0;color:#0f172a;font-size:13px;font-weight:600;letter-spacing:-0.01em;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;">
+                RideCloud
+              </p>
+              <p style="margin:0 0 12px 0;color:#94a3b8;font-size:12px;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;">
+                L'entretien et l'historique de votre flotte personnelle, simplifiés.
+              </p>
+              <p style="margin:0;color:#cbd5e1;font-size:11px;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;">
+                © 2026 RideCloud · Tous droits réservés
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
