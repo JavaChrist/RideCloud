@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Settings } from "lucide-react";
 import { Logo } from "@/components/common/logo";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 
@@ -10,7 +12,17 @@ export function ProtectedHeader() {
       />
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 md:px-6">
         <Logo compact />
-        <SignOutButton />
+        <nav className="flex items-center gap-1">
+          <Link
+            href="/parametres"
+            aria-label="Paramètres du compte"
+            className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+          >
+            <Settings className="h-4 w-4" strokeWidth={2} aria-hidden />
+            <span className="hidden sm:inline">Paramètres</span>
+          </Link>
+          <SignOutButton />
+        </nav>
       </div>
     </header>
   );

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { Toaster } from "sonner";
+import { CookieBanner } from "@/components/common/cookie-banner";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"] });
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="fr" data-scroll-behavior="smooth">
       <body className={plusJakartaSans.className}>
         {children}
+        <CookieBanner />
         <Toaster position="top-right" richColors />
       </body>
     </html>

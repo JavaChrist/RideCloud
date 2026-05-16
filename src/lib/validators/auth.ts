@@ -5,12 +5,17 @@ export const loginSchema = z.object({
   password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères")
 });
 
-export const registerSchema = loginSchema.extend({
-  confirmPassword: z.string().min(6, "Veuillez confirmer votre mot de passe")
-}).refine((data) => data.password === data.confirmPassword, {
-  path: ["confirmPassword"],
-  message: "Les mots de passe ne correspondent pas"
-});
+export const registerSchema = loginSchema
+  .extend({
+    confirmPassword: z.string().min(6, "Veuillez confirmer votre mot de passe"),
+    acceptTerms: z.literal(true, {
+      message: "Vous devez accepter les CGU et la Politique de confidentialité"
+    })
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Les mots de passe ne correspondent pas"
+  });
 
 export const forgotPasswordSchema = z.object({
   email: z.string().email("Adresse e-mail invalide")

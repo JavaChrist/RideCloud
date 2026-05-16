@@ -29,7 +29,11 @@ export async function updateSession(request: NextRequest) {
   // /reset-password est volontairement exclu de isAuthRoute : un utilisateur authentifié
   // via le lien de récupération doit pouvoir y accéder pour définir son nouveau mot de passe.
   const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register") || pathname.startsWith("/forgot-password");
-  const isProtectedRoute = pathname.startsWith("/categories") || pathname.startsWith("/vehicules") || pathname.startsWith("/vehicule");
+  const isProtectedRoute =
+    pathname.startsWith("/categories") ||
+    pathname.startsWith("/vehicules") ||
+    pathname.startsWith("/vehicule") ||
+    pathname.startsWith("/parametres");
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();

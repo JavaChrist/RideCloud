@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 import { registerSchema } from "@/lib/validators/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import type { z } from "zod";
 
@@ -22,7 +23,7 @@ export function RegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const form = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { email: "", password: "", confirmPassword: "" }
+    defaultValues: { email: "", password: "", confirmPassword: "", acceptTerms: false as unknown as true }
   });
 
   const onSubmit = async (values: RegisterValues) => {
@@ -85,7 +86,48 @@ export function RegisterForm() {
             <FormMessage />
           </FormItem>
         )} />
-        <Button type="submit" className="w-full">Créer un compte</Button>
+        <FormField control={form.control} name="acceptTerms" render={({ field }) => (
+          <FormItem className="pt-2">
+            <div className="flex items-start gap-3">
+              <FormControl>
+                <Checkbox
+                  checked={field.value === true}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                />
+              </FormControl>
+              <div className="grid gap-1 leading-tight">
+                <FormLabel className="text-sm font-normal leading-snug text-slate-700">
+                  J&apos;accepte les{" "}
+                  <Link
+                    href="/cgu"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-primary hover:underline"
+                  >
+                    Conditions Générales d&apos;Utilisation
+                  </Link>{" "}
+                  et la{" "}
+                  <Link
+                    href="/confidentialite"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-primary hover:underline"
+                  >
+                    Politique de confidentialité
+                  </Link>
+                  .
+                </FormLabel>
+                <FormMessage />
+              </div>
+            </div>
+          </FormItem>
+        )} />
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting ? "Création..." : "Créer un compte"}
+        </Button>
         <p className="text-center text-sm text-muted-foreground">Déjà inscrit ? <Link href="/login" className="text-primary hover:underline">Se connecter</Link></p>
       </form>
     </Form>
