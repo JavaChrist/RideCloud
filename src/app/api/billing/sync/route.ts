@@ -22,7 +22,8 @@ export const maxDuration = 30;
  * webhook a échoué ou n'a pas été reçu (filet de sécurité).
  *
  * Algorithme :
- *   1. Récupère le profile (mollie_customer_id requis)
+ *   1. Récupère le profile. Si mollie_customer_id absent, on tente une
+ *      recherche chez Mollie par e-mail (filet de sécurité supplémentaire).
  *   2. Liste les paiements du customer Mollie
  *   3. Si un paiement "first" en status "paid" existe sans subscription côté
  *      profil → on (re)crée la subscription Mollie et on active le plan
@@ -65,22 +66,58 @@ export async function POST(request: Request) {
     plan_interval: string | null;
   } | null;
 
-  if (!profile?.mollie_customer_id) {
-    return NextResponse.json(
-      {
-        error:
-          "Aucun customer Mollie associé. Lancez un nouveau checkout depuis /tarifs."
-      },
-      { status: 404 }
-    );
-  }
-
   const mollie = getMollieClient();
-  const customerId = profile.mollie_customer_id;
   const now = new Date().toISOString();
 
+  // Si on n'a pas de mollie_customer_id en DB (cas : checkout interrompu juste
+  // avant l'update Supabase), on tente de le retrouver chez Mollie via l'email
+  // de l'utilisateur. Ça évite à l'utilisateur de devoir refaire un checkout.
+  let customerId = profile?.mollie_customer_id ?? null;
+
+  if (!customerId) {
+    if (!user.email) {
+      return NextResponse.json(
+        {
+          error:
+            "Aucun email associé à votre compte. Impossible de retrouver votre paiement chez Mollie."
+        },
+        { status: 404 }
+      );
+    }
+
+    try {
+      const customers = await mollie.customers.page({ limit: 250 });
+      const match = customers.find(
+        (customer) => customer.email?.toLowerCase() === user.email!.toLowerCase()
+      );
+
+      if (!match) {
+        return NextResponse.json(
+          {
+            error:
+              "Aucun client Mollie trouvé pour votre e-mail. Lancez un nouveau checkout depuis /tarifs."
+          },
+          { status: 404 }
+        );
+      }
+
+      customerId = match.id;
+
+      await admin
+        .from("profiles")
+        .update({ mollie_customer_id: customerId, updated_at: now } as never)
+        .eq("id", user.id);
+    } catch (error) {
+      console.error("[billing/sync] customer lookup by email failed", error);
+      return NextResponse.json(
+        { error: "Impossible de joindre Mollie. Réessayez dans quelques minutes." },
+        { status: 502 }
+      );
+    }
+  }
+
   // 1. Si on a déjà une subscription en base, on actualise l'état
-  if (profile.mollie_subscription_id) {
+  if (profile?.mollie_subscription_id) {
     try {
       const sub = await mollie.customerSubscriptions.get(profile.mollie_subscription_id, {
         customerId
@@ -103,7 +140,7 @@ export async function POST(request: Request) {
       return NextResponse.json({
         ok: true,
         synced: "subscription_refreshed",
-        plan: profile.plan,
+        plan: profile?.plan ?? "premium",
         planStatus: status,
         renewsAt
       });

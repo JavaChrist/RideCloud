@@ -17,13 +17,14 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
   const isCanceled = Boolean(state.canceledAt);
   const isPastDue = state.planStatus === "past_due";
 
-  // Incohérence : l'utilisateur a un customer Mollie (= il a déjà payé ou tenté)
-  // mais son plan est toujours free OU en attente côté Supabase.
-  // Cas typique : webhook Mollie raté → on propose un resync manuel.
-  const hasMollieMismatch = Boolean(
-    state.mollieCustomerId &&
-      (state.plan === "free" || state.planStatus === "pending")
-  );
+  // On propose la resynchronisation manuelle dès que l'utilisateur est en Free
+  // ou en `pending`. Deux scénarios :
+  //   - mollie_customer_id déjà en DB : webhook raté → resync direct
+  //   - mollie_customer_id absent en DB : on cherchera côté Mollie via l'email
+  // Cette UX permet à un utilisateur qui a payé mais dont le profil n'a pas été
+  // mis à jour de débloquer la situation lui-même.
+  const showSyncFallback = state.plan === "free" || state.planStatus === "pending";
+  const hasMollieCustomer = Boolean(state.mollieCustomerId);
 
   const renewsFormatted = state.renewsAt
     ? new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" }).format(new Date(state.renewsAt))
@@ -158,15 +159,18 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
         </div>
       ) : null}
 
-      {hasMollieMismatch ? (
+      {showSyncFallback ? (
         <div className="mt-5 flex flex-col items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50/70 p-4 text-sm text-blue-900 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
             <RefreshCw className="mt-0.5 h-4 w-4 shrink-0 text-blue-700" aria-hidden />
             <div>
-              <p className="font-medium">Vous avez réglé un paiement, mais votre plan est toujours Free ?</p>
+              <p className="font-medium">
+                Vous avez réglé un paiement, mais votre plan est toujours Free ?
+              </p>
               <p className="mt-0.5 text-blue-800">
-                Cela peut arriver si la notification Mollie n&apos;a pas été reçue. Cliquez ci-contre
-                pour resynchroniser votre abonnement instantanément.
+                {hasMollieCustomer
+                  ? "Cela peut arriver si la notification Mollie n'a pas été reçue. Cliquez ci-contre pour resynchroniser votre abonnement."
+                  : "Cliquez ci-contre pour rechercher votre paiement chez Mollie via votre e-mail et activer votre plan."}
               </p>
             </div>
           </div>
