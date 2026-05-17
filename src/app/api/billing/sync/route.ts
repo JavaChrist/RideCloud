@@ -48,6 +48,28 @@ export async function POST(request: Request) {
   }
 
   const admin = createAdminClient();
+  const nowTs = new Date().toISOString();
+
+  // Garantit qu'une ligne profiles existe pour cet utilisateur (cas : trigger
+  // handle_new_user pas exécuté à l'inscription, ou compte créé avant son
+  // déploiement). Sans cette étape, tous les UPDATE suivants n'affectent
+  // aucune ligne et renvoient data=null.
+  if (user.email) {
+    const { error: ensureError } = await admin
+      .from("profiles")
+      .upsert(
+        { id: user.id, email: user.email, updated_at: nowTs } as never,
+        { onConflict: "id" }
+      );
+    if (ensureError) {
+      console.error("[billing/sync] profile ensure failed", ensureError);
+      return NextResponse.json(
+        { error: `Création du profil échouée : ${ensureError.message}` },
+        { status: 500 }
+      );
+    }
+  }
+
   const { data: profileData } = await admin
     .from("profiles")
     .select(
@@ -67,7 +89,7 @@ export async function POST(request: Request) {
   } | null;
 
   const mollie = getMollieClient();
-  const now = new Date().toISOString();
+  const now = nowTs;
 
   // Si on n'a pas de mollie_customer_id en DB (cas : checkout interrompu juste
   // avant l'update Supabase), on tente de le retrouver chez Mollie via l'email
