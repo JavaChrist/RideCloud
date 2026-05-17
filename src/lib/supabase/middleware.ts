@@ -3,6 +3,26 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/types/database";
 import { supabaseAnonKey, supabaseUrl } from "@/lib/supabase/env";
 
+/**
+ * Nettoie tous les cookies de session Supabase (`sb-*`) du navigateur.
+ *
+ * Utilisé quand le refresh token est orphelin (compte supprimé, session
+ * révoquée, basculement entre projets Supabase) afin d'éviter les logs
+ * d'erreur "Invalid Refresh Token" en boucle côté client.
+ */
+function clearSupabaseCookies(request: NextRequest, response: NextResponse): void {
+  for (const cookie of request.cookies.getAll()) {
+    if (cookie.name.startsWith("sb-")) {
+      response.cookies.set({
+        name: cookie.name,
+        value: "",
+        maxAge: 0,
+        path: "/"
+      });
+    }
+  }
+}
+
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -23,7 +43,28 @@ export async function updateSession(request: NextRequest) {
     }
   });
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // getUser() peut lever en cas de refresh token orphelin (ex: compte supprimé).
+  // On capture proprement pour éviter le bruit en console et nettoyer la session.
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"] = null;
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    user = data.user;
+    if (error) {
+      const code = (error as { code?: string }).code;
+      const message = error.message?.toLowerCase() ?? "";
+      const isInvalidRefresh =
+        code === "refresh_token_not_found" ||
+        code === "session_not_found" ||
+        message.includes("refresh token") ||
+        message.includes("session");
+      if (isInvalidRefresh) {
+        clearSupabaseCookies(request, response);
+      }
+    }
+  } catch {
+    clearSupabaseCookies(request, response);
+    user = null;
+  }
 
   const pathname = request.nextUrl.pathname;
   // /reset-password est volontairement exclu de isAuthRoute : un utilisateur authentifié
