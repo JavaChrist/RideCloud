@@ -38,11 +38,20 @@ export function SyncSubscriptionButton({ variant = "default" }: SyncSubscription
         toast.success(
           `Abonnement ${result.plan} activé ! Votre profil est maintenant à jour.`
         );
+      } else if (result.synced === "subscription_relinked") {
+        toast.success(
+          `Abonnement ${result.plan} retrouvé et lié à votre compte.`
+        );
       } else {
         toast.success("Abonnement resynchronisé avec Mollie.");
       }
 
       router.refresh();
+      // Garantit la prise en compte immédiate du nouveau plan partout dans
+      // l'app (header, sidebar, page limites, etc.) en forçant un hard reload.
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
     } catch (error) {
       console.error(error);
       toast.error("Erreur réseau pendant la resynchronisation.");

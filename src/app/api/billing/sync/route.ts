@@ -103,10 +103,18 @@ export async function POST(request: Request) {
 
       customerId = match.id;
 
-      await admin
+      const { error: linkError } = await admin
         .from("profiles")
         .update({ mollie_customer_id: customerId, updated_at: now } as never)
         .eq("id", user.id);
+
+      if (linkError) {
+        console.error("[billing/sync] profile customer link failed", linkError);
+        return NextResponse.json(
+          { error: `Liaison customer échouée : ${linkError.message}` },
+          { status: 500 }
+        );
+      }
     } catch (error) {
       console.error("[billing/sync] customer lookup by email failed", error);
       return NextResponse.json(
@@ -128,7 +136,7 @@ export async function POST(request: Request) {
         : null;
       const status = sub.status === "active" ? "active" : sub.status === "canceled" ? "canceled" : "past_due";
 
-      await admin
+      const { error: refreshError } = await admin
         .from("profiles")
         .update({
           plan_status: status,
@@ -136,6 +144,14 @@ export async function POST(request: Request) {
           updated_at: now
         } as never)
         .eq("id", user.id);
+
+      if (refreshError) {
+        console.error("[billing/sync] profile refresh failed", refreshError);
+        return NextResponse.json(
+          { error: `Rafraîchissement du profil échoué : ${refreshError.message}` },
+          { status: 500 }
+        );
+      }
 
       return NextResponse.json({
         ok: true,
@@ -219,9 +235,12 @@ export async function POST(request: Request) {
       const renewsAt = existing.nextPaymentDate
         ? new Date(existing.nextPaymentDate).toISOString()
         : null;
-      const status = existing.status === "active" ? "active" : "past_due";
+      // pending = subscription créée mais pas encore débitée ; on l'active
+      // quand même côté UX car le premier paiement first a déjà été encaissé.
+      const status =
+        existing.status === "active" || existing.status === "pending" ? "active" : "past_due";
 
-      await admin
+      const { data: updated, error: updateError } = await admin
         .from("profiles")
         .update({
           plan,
@@ -233,7 +252,30 @@ export async function POST(request: Request) {
           mollie_mandate_id: firstPaid.mandateId ?? null,
           updated_at: now
         } as never)
-        .eq("id", user.id);
+        .eq("id", user.id)
+        .select("id, plan, plan_status")
+        .maybeSingle();
+
+      if (updateError) {
+        console.error("[billing/sync] profile update (relink) failed", updateError);
+        return NextResponse.json(
+          { error: `Mise à jour du profil échouée : ${updateError.message}` },
+          { status: 500 }
+        );
+      }
+
+      if (!updated) {
+        console.error("[billing/sync] profile update (relink) returned no row", {
+          userId: user.id
+        });
+        return NextResponse.json(
+          {
+            error:
+              "Aucun profil mis à jour. Veuillez contacter le support si le problème persiste."
+          },
+          { status: 500 }
+        );
+      }
 
       return NextResponse.json({
         ok: true,
@@ -264,7 +306,7 @@ export async function POST(request: Request) {
       ? new Date(subscription.nextPaymentDate).toISOString()
       : null;
 
-    await admin
+    const { error: createError } = await admin
       .from("profiles")
       .update({
         plan,
@@ -277,6 +319,14 @@ export async function POST(request: Request) {
         updated_at: now
       } as never)
       .eq("id", user.id);
+
+    if (createError) {
+      console.error("[billing/sync] profile activation (create) failed", createError);
+      return NextResponse.json(
+        { error: `Activation du profil échouée : ${createError.message}` },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       ok: true,
