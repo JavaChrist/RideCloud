@@ -115,9 +115,13 @@ export function MaintenancePlanList({
       const result = (await response.json()) as {
         ok?: boolean;
         error?: string;
+        details?: string[];
         upgradeUrl?: string;
         profileName?: string;
         templateCount?: number;
+        inserted?: number;
+        updated?: number;
+        errors?: string[];
         aiCallMade?: boolean;
       };
 
@@ -130,12 +134,25 @@ export function MaintenancePlanList({
         return;
       }
       if (!response.ok || !result.ok) {
-        toast.error(result.error ?? "Génération IA échouée.");
+        const detail = result.details?.[0];
+        toast.error(
+          detail
+            ? `${result.error ?? "Génération IA échouée"} · ${detail}`
+            : result.error ?? "Génération IA échouée."
+        );
+        return;
+      }
+
+      const persisted = (result.inserted ?? 0) + (result.updated ?? 0);
+      if (persisted === 0 && (result.templateCount ?? 0) > 0) {
+        toast.error(
+          "Génération réussie côté IA mais aucune tâche enregistrée en base. Vérifiez la migration template_source."
+        );
         return;
       }
 
       toast.success(
-        `${result.templateCount ?? 0} tâche(s) générée(s) pour ${
+        `${persisted} tâche(s) enregistrée(s) pour ${
           result.profileName ?? "ce véhicule"
         }${result.aiCallMade ? " (nouveau plan IA)" : " (depuis le cache)"}.`
       );

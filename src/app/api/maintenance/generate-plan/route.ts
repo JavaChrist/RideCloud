@@ -195,6 +195,10 @@ export async function POST(request: Request) {
   const templateSource = source === "approved" ? "approved" : source === "community" ? "community" : "ai";
   const nowIso = new Date().toISOString();
 
+  let inserted = 0;
+  let updated = 0;
+  const errors: string[] = [];
+
   for (const template of templates) {
     const key = `${template.categorie}::${template.titre}`.toLowerCase();
     const existing = existingMap.get(key);
@@ -215,8 +219,7 @@ export async function POST(request: Request) {
     });
 
     if (existing) {
-      // Mise à jour de l'entrée existante : on garde les last_done_*
-      await admin
+      const { error: updateError } = await admin
         .from("maintenance_plan_entries")
         .update({
           description: template.description,
@@ -231,9 +234,15 @@ export async function POST(request: Request) {
           updated_at: nowIso
         } as never)
         .eq("id", existing.id);
+      if (updateError) {
+        console.error("[generate-plan] update failed", { titre: template.titre, updateError });
+        errors.push(`${template.titre}: ${updateError.message}`);
+      } else {
+        updated += 1;
+      }
       existingMap.delete(key);
     } else {
-      await admin
+      const { error: insertError } = await admin
         .from("maintenance_plan_entries")
         .insert({
           user_id: user.id,
@@ -258,19 +267,41 @@ export async function POST(request: Request) {
           created_at: nowIso,
           updated_at: nowIso
         } as never);
+      if (insertError) {
+        console.error("[generate-plan] insert failed", { titre: template.titre, insertError });
+        errors.push(`${template.titre}: ${insertError.message}`);
+      } else {
+        inserted += 1;
+      }
     }
   }
 
-  // Supprime les entries qui n'existent plus dans le nouveau plan ET qui n'ont pas d'historique
   for (const [, entry] of existingMap.entries()) {
     if (entry.hasHistory) continue;
     await admin.from("maintenance_plan_entries").delete().eq("id", entry.id);
+  }
+
+  // Si TOUS les inserts/updates ont échoué, on remonte une erreur claire.
+  // Cause la plus probable : la migration 2026-05-17_ai_maintenance_plan.sql
+  // qui ajoute la colonne `template_source` n'a pas été exécutée sur la DB.
+  if (inserted + updated === 0 && errors.length > 0) {
+    return NextResponse.json(
+      {
+        error:
+          "Aucune tâche n'a pu être enregistrée. Vérifiez que la migration 'template_source' a été exécutée dans Supabase.",
+        details: errors.slice(0, 3)
+      },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({
     ok: true,
     profileName,
     templateCount: templates.length,
+    inserted,
+    updated,
+    errors: errors.length > 0 ? errors.slice(0, 3) : undefined,
     aiCallMade,
     source,
     llmModel
