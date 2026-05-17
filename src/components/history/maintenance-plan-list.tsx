@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import Link from "next/link";
-import { Loader2, Sparkles } from "lucide-react";
+import { CheckCircle2, Loader2, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -80,6 +80,7 @@ export function MaintenancePlanList({
   const [loading, setLoading] = useState(false);
   const [savingAlert, setSavingAlert] = useState(false);
   const [generatingAi, setGeneratingAi] = useState(false);
+  const [markingCurrent, setMarkingCurrent] = useState(false);
 
   const isUuidVehicle = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     vehicleId
@@ -164,6 +165,66 @@ export function MaintenancePlanList({
       setGeneratingAi(false);
     }
   };
+
+  const markAllAsCurrent = async () => {
+    if (!isUuidVehicle) {
+      toast.error("Indisponible sur le véhicule de démonstration.");
+      return;
+    }
+    if (items.length === 0) {
+      toast.info("Générez d'abord un plan d'entretien pour ce véhicule.");
+      return;
+    }
+
+    const confirmMessage =
+      "Marquer toutes les révisions périodiques comme à jour ?\n\n" +
+      `Toutes les tâches récurrentes (vidange, filtres, courroies, etc.) seront enregistrées comme effectuées aujourd'hui au kilométrage actuel (${currentKm.toLocaleString(
+        "fr-FR"
+      )} km).\n\nUtile à l'ajout d'un véhicule d'occasion entretenu. Cette action n'écrase pas les entretiens déjà déclarés plus récents.`;
+    if (!window.confirm(confirmMessage)) return;
+
+    setMarkingCurrent(true);
+    try {
+      const response = await fetch(
+        `/api/vehicles/${vehicleId}/mark-maintenance-current`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+      const result = (await response.json()) as {
+        ok?: boolean;
+        error?: string;
+        updated?: number;
+        skipped?: number;
+        referenceKm?: number;
+        errors?: string[];
+      };
+
+      if (!response.ok || !result.ok) {
+        const detail = result.errors?.[0];
+        toast.error(
+          detail
+            ? `${result.error ?? "Mise à jour échouée"} · ${detail}`
+            : result.error ?? "Mise à jour échouée."
+        );
+        return;
+      }
+
+      toast.success(
+        `${result.updated ?? 0} tâche(s) marquée(s) à jour à ${
+          result.referenceKm?.toLocaleString("fr-FR") ?? currentKm
+        } km. ${result.skipped ?? 0} ignorée(s) (non périodiques ou déjà plus récentes).`
+      );
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      toast.error("Erreur réseau pendant la mise à jour.");
+    } finally {
+      setMarkingCurrent(false);
+    }
+  };
+
   const [form, setForm] = useState<FormState>({
     date_entretien: new Date().toISOString().slice(0, 10),
     kilometrage: currentKm.toString(),
@@ -332,6 +393,28 @@ export function MaintenancePlanList({
         </div>
         {isUuidVehicle && (
           <div className="flex flex-wrap items-center gap-2">
+            {items.length > 0 && (
+              <Button
+                type="button"
+                onClick={markAllAsCurrent}
+                disabled={markingCurrent}
+                variant="outline"
+                className="gap-2 border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50"
+                title="Marquer toutes les révisions périodiques comme effectuées aujourd'hui (utile pour un véhicule d'occasion entretenu)."
+              >
+                {markingCurrent ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                    Mise à jour…
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+                    Marquer comme à jour
+                  </>
+                )}
+              </Button>
+            )}
             {canUseAi ? (
               <Button
                 type="button"
