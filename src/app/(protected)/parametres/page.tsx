@@ -12,6 +12,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { DeleteAccountSection } from "@/components/account/delete-account-section";
+import { SubscriptionSection } from "@/components/billing/subscription-section";
+import { getUserPlanState } from "@/lib/billing/limits";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
@@ -29,6 +31,7 @@ export default async function ParametresPage() {
     redirect("/login");
   }
 
+  const planState = await getUserPlanState(user.id);
   const email = user.email ?? "—";
   const createdAt = user.created_at
     ? new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" }).format(new Date(user.created_at))
@@ -52,9 +55,11 @@ export default async function ParametresPage() {
           Paramètres
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-slate-600 md:text-base">
-          Gérez votre compte, exercez vos droits RGPD et contrôlez vos données.
+          Gérez votre compte, votre abonnement et contrôlez vos données.
         </p>
       </header>
+
+      <SubscriptionSection state={planState} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <article className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-6 shadow-ride-sm lg:col-span-2">

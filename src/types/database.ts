@@ -2,10 +2,22 @@ export type UUID = string;
 
 export type VehicleCategory = "voitures" | "motos" | "scooters" | "utilitaires";
 
+export type Plan = "free" | "premium" | "family";
+export type PlanStatus = "active" | "past_due" | "canceled" | "pending";
+export type PlanInterval = "monthly" | "yearly";
+
 export interface Profile {
   id: UUID;
   email: string;
   full_name: string | null;
+  plan: Plan;
+  plan_status: PlanStatus;
+  plan_interval: PlanInterval | null;
+  plan_renews_at: string | null;
+  plan_canceled_at: string | null;
+  mollie_customer_id: string | null;
+  mollie_subscription_id: string | null;
+  mollie_mandate_id: string | null;
   created_at: string;
   updated_at: string;
 }

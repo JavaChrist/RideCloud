@@ -69,7 +69,7 @@ export default function CguPage() {
           <li>la cession du dossier complet d&apos;un véhicule à un acheteur tiers.</li>
         </ul>
         <p>
-          Le Service est actuellement proposé en accès <strong>bêta</strong>, gratuitement. L&apos;Éditeur se réserve la possibilité d&apos;introduire des fonctionnalités payantes (formules premium, abonnements) à l&apos;avenir. Toute évolution du modèle économique fera l&apos;objet d&apos;une notification préalable à l&apos;Utilisateur, dans un délai raisonnable.
+          Le Service est proposé sous forme freemium : un plan <strong>Free</strong> (1 véhicule) gratuit à vie, et des plans payants <strong>Premium</strong> (3,99 €/mois, 5 véhicules) et <strong>Family</strong> (7,99 €/mois, 10 véhicules), avec option annuelle remisée. Les prix incluent les taxes (l&apos;Éditeur bénéficiant de la franchise de TVA, art. 293 B du CGI, aucune TVA n&apos;est facturée). Toute évolution tarifaire fera l&apos;objet d&apos;une notification préalable à l&apos;Utilisateur, dans un délai raisonnable. Les paiements sont traités par <strong>Mollie B.V.</strong> (Pays-Bas), prestataire de services de paiement agréé.
         </p>
       </LegalSection>
 

@@ -1,0 +1,135 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { SequenceType } from "@mollie/api-client";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { PLANS } from "@/lib/billing/plans";
+import {
+  describeSubscription,
+  getMollieClient,
+  hasMollieEnv,
+  toMollieAmount
+} from "@/lib/billing/mollie";
+
+export const dynamic = "force-dynamic";
+
+const BodySchema = z.object({
+  plan: z.enum(["premium", "family"]),
+  interval: z.enum(["monthly", "yearly"])
+});
+
+/**
+ * POST /api/billing/checkout
+ *
+ * Démarre le flow Mollie de souscription :
+ *   1. Récupère / crée un customer Mollie pour l'utilisateur.
+ *   2. Crée un "first payment" pour obtenir un mandat SEPA / carte.
+ *   3. Renvoie l'URL de checkout Mollie au client.
+ *
+ * Le webhook (`/api/billing/webhook`) finalisera la subscription une fois le
+ * premier paiement validé.
+ */
+export async function POST(request: Request) {
+  if (!hasMollieEnv()) {
+    return NextResponse.json(
+      { error: "Paiements indisponibles : MOLLIE_API_KEY non configurée." },
+      { status: 503 }
+    );
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  }
+
+  let parsed: z.infer<typeof BodySchema>;
+  try {
+    parsed = BodySchema.parse(await request.json());
+  } catch {
+    return NextResponse.json({ error: "Paramètres invalides" }, { status: 400 });
+  }
+
+  const { plan, interval } = parsed;
+  const planDef = PLANS[plan];
+  const price = interval === "monthly" ? planDef.price.monthly : planDef.price.yearly;
+  if (price <= 0) {
+    return NextResponse.json({ error: "Plan gratuit, aucun paiement requis" }, { status: 400 });
+  }
+
+  const origin = new URL(request.url).origin;
+  const mollie = getMollieClient();
+  const admin = createAdminClient();
+
+  const { data: profileData } = await admin
+    .from("profiles")
+    .select("mollie_customer_id, plan, plan_status, mollie_subscription_id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const profile = profileData as {
+    mollie_customer_id: string | null;
+    plan: string | null;
+    plan_status: string | null;
+    mollie_subscription_id: string | null;
+  } | null;
+
+  let customerId = profile?.mollie_customer_id ?? null;
+
+  if (!customerId) {
+    const customer = await mollie.customers.create({
+      name: user.email ?? undefined,
+      email: user.email ?? undefined,
+      metadata: { userId: user.id }
+    });
+    customerId = customer.id;
+    await admin
+      .from("profiles")
+      .update({ mollie_customer_id: customerId } as never)
+      .eq("id", user.id);
+  }
+
+  if (profile?.mollie_subscription_id && profile.plan_status === "active") {
+    return NextResponse.json(
+      {
+        error:
+          "Vous avez déjà un abonnement actif. Annulez-le d'abord depuis la page Paramètres."
+      },
+      { status: 409 }
+    );
+  }
+
+  const payment = await mollie.customerPayments.create({
+    customerId,
+    amount: toMollieAmount(price),
+    description: `${describeSubscription(plan, interval)} — Premier paiement`,
+    redirectUrl: `${origin}/parametres?billing=success`,
+    cancelUrl: `${origin}/tarifs?billing=cancel`,
+    webhookUrl: `${origin}/api/billing/webhook`,
+    sequenceType: SequenceType.first,
+    metadata: {
+      userId: user.id,
+      plan,
+      interval,
+      kind: "first_payment"
+    }
+  });
+
+  const checkoutUrl = payment.getCheckoutUrl();
+  if (!checkoutUrl) {
+    return NextResponse.json(
+      { error: "Mollie n'a pas renvoyé d'URL de checkout. Réessayez." },
+      { status: 502 }
+    );
+  }
+
+  await admin
+    .from("profiles")
+    .update({ plan_status: "pending", plan_interval: interval } as never)
+    .eq("id", user.id);
+
+  return NextResponse.json({ checkoutUrl });
+}

@@ -7,14 +7,27 @@ import { useForm } from "react-hook-form";
 import { FileUp } from "lucide-react";
 import { toast } from "sonner";
 import type { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { fuelOptions } from "@/lib/data/fuel-options";
 import { modelCatalog, vehicleCatalog } from "@/lib/data/vehicle-catalog";
 import { vehicleFormSchema } from "@/lib/validators/vehicle";
+import { PLANS } from "@/lib/billing/plans";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+
+async function ensureVehicleQuota(supabase: SupabaseClient, userId: string): Promise<boolean> {
+  const [profileRes, countRes] = await Promise.all([
+    supabase.from("profiles").select("plan").eq("id", userId).maybeSingle(),
+    supabase.from("vehicles").select("id", { count: "exact", head: true }).eq("user_id", userId)
+  ]);
+  const plan = (profileRes.data as { plan?: keyof typeof PLANS } | null)?.plan ?? "free";
+  const limit = PLANS[plan]?.vehicleLimit ?? PLANS.free.vehicleLimit;
+  const used = countRes.count ?? 0;
+  return used < limit;
+}
 
 export function AddVehicleForm() {
   type VehicleFormInput = z.input<typeof vehicleFormSchema>;
@@ -57,6 +70,14 @@ export function AddVehicleForm() {
       if (!user) {
         toast.error("Session expirée, reconnectez-vous.");
         router.push("/login");
+        return;
+      }
+
+      const quotaOk = await ensureVehicleQuota(supabase, user.id);
+      if (!quotaOk) {
+        toast.error("Limite de véhicules atteinte. Passez à un plan supérieur.");
+        router.push("/vehicules/nouveau");
+        router.refresh();
         return;
       }
 
@@ -177,6 +198,13 @@ export function AddVehicleForm() {
       if (!user) {
         toast.error("Session expirée, reconnectez-vous.");
         router.push("/login");
+        return;
+      }
+
+      const quotaOk = await ensureVehicleQuota(supabase, user.id);
+      if (!quotaOk) {
+        toast.error("Limite de véhicules atteinte. Passez à un plan supérieur pour importer.");
+        router.push("/tarifs");
         return;
       }
 

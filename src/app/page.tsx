@@ -79,6 +79,9 @@ function Header() {
         <nav className="hidden items-center gap-8 md:flex">
           <HeaderLink href="#features">Fonctionnalités</HeaderLink>
           <HeaderLink href="#benefits">Bénéfices</HeaderLink>
+          <HeaderLink href="/tarifs" asLink>
+            Tarifs
+          </HeaderLink>
           <HeaderLink href="#faq">FAQ</HeaderLink>
           <HeaderLink href="/login" asLink>
             Connexion
@@ -91,7 +94,7 @@ function Header() {
           className="group/cta relative overflow-hidden bg-ride-gradient-primary text-white shadow-ride-glow-sm transition-all duration-300 hover:shadow-ride-glow hover:brightness-110"
         >
           <Link href="/register">
-            Rejoindre la bêta
+            Commencer gratuitement
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/cta:translate-x-0.5" strokeWidth={2.25} />
           </Link>
         </Button>
@@ -140,7 +143,7 @@ function Hero() {
                 <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-blue-500" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-blue-600" />
               </span>
-              Pré-bêta privée · Places limitées
+              Disponible maintenant · 1 véhicule offert
             </Badge>
           </div>
 
@@ -175,7 +178,7 @@ function Hero() {
             >
               <Link href="/register">
                 <span className="relative z-10 inline-flex items-center gap-2">
-                  Rejoindre la bêta privée
+                  Commencer gratuitement
                   <ArrowRight
                     className="h-4 w-4 transition-transform duration-300 group-hover/cta:translate-x-0.5"
                     strokeWidth={2.5}
@@ -207,7 +210,7 @@ function Hero() {
             className="mt-6 animate-fade-in-up text-sm text-slate-500"
             style={{ animationDelay: "320ms" }}
           >
-            Sans carte bancaire · Sans engagement · Vos données restent les vôtres
+            Sans carte bancaire · 1 véhicule offert · Vos données restent les vôtres
           </p>
         </div>
 
@@ -665,11 +668,11 @@ function Benefits() {
  * ──────────────────────────────────────────────────────────────────────────── */
 
 const BETA_PERKS = [
-  "Accès anticipé complet à toutes les fonctionnalités MVP",
-  "Canal direct avec l'équipe produit (Discord ou email)",
-  "Influence réelle sur la roadmap des prochains mois",
-  "Avantage tarifaire à vie sur les futurs plans payants",
-  "Application stable, soignée et déjà fonctionnelle",
+  "Plan Free : 1 véhicule, sans carte bancaire, à vie",
+  "Plan Premium : 5 véhicules, plan d'entretien intelligent",
+  "Plan Family : 10 véhicules pour tout le foyer",
+  "Sans engagement · Annulation en 1 clic",
+  "Données hébergées en Europe · RGPD natif",
 ];
 
 function BetaCTA() {
@@ -702,15 +705,15 @@ function BetaCTA() {
             <div>
               <Badge className="mb-5 gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-white backdrop-blur hover:bg-white/10">
                 <Sparkles className="h-3 w-3" strokeWidth={2.5} />
-                200 à 500 places · Bêta privée
+                À partir de 0 € · 3,99 €/mois en Premium
               </Badge>
               <h2 className="ride-text-balance text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl md:text-[48px]">
-                Rejoignez le cercle qui façonne RideCloud.
+                Démarrez en 30 secondes. Évoluez quand votre flotte grandit.
               </h2>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-blue-100">
-                Nous ouvrons l&apos;accès à un cercle restreint d&apos;utilisateurs
-                sélectionnés pour finaliser l&apos;expérience avant l&apos;ouverture
-                publique.
+                Créez votre compte gratuitement avec 1 véhicule offert. Passez Premium
+                ou Family quand votre garage s&apos;étoffe — annulation en un clic,
+                sans frais cachés.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -721,7 +724,7 @@ function BetaCTA() {
                 >
                   <Link href="/register">
                     <span className="relative z-10 inline-flex items-center gap-2">
-                      Demander un accès à la bêta
+                      Commencer gratuitement
                       <ArrowRight
                         className="h-4 w-4 transition-transform duration-300 group-hover/cta:translate-x-0.5"
                         strokeWidth={2.5}
@@ -739,13 +742,13 @@ function BetaCTA() {
                   variant="ghost"
                   className="h-12 px-6 text-base text-white hover:bg-white/10 hover:text-white"
                 >
-                  <Link href="/login">J&apos;ai déjà un compte</Link>
+                  <Link href="/tarifs">Voir les tarifs</Link>
                 </Button>
               </div>
 
               <p className="mt-5 text-sm text-blue-100/80">
-                Aucune carte bancaire · Aucun engagement · Vous partez quand
-                vous voulez
+                Aucune carte bancaire pour démarrer · Sans engagement ·
+                Annulation en 1 clic
               </p>
             </div>
 
@@ -802,7 +805,7 @@ const FAQS: { question: string; answer: string }[] = [
   {
     question: "Combien coûte RideCloud ?",
     answer:
-      "Pendant la bêta privée, l'accès est gratuit. À l'ouverture publique, un plan Free restera disponible (un véhicule, fonctionnalités essentielles). Les plans payants commenceront à 3,99 € par mois, avec des offres Family et Pro pour les usages plus avancés.",
+      "Le plan Free vous offre 1 véhicule gratuit, sans carte bancaire, à vie. Le plan Premium est à 3,99 €/mois (5 véhicules), le plan Family à 7,99 €/mois (10 véhicules). Voir la page Tarifs pour les détails et l'option annuelle (−18 %).",
   },
   {
     question: "Mon véhicule (marque ou modèle peu courant) est-il supporté ?",
@@ -847,7 +850,7 @@ function FAQ() {
             Questions fréquentes
           </h2>
           <p className="ride-text-balance mt-4 text-lg leading-relaxed text-slate-600">
-            Tout ce que vous voulez savoir avant de rejoindre la bêta.
+            Tout ce que vous voulez savoir avant de créer votre compte.
           </p>
         </div>
 
@@ -935,7 +938,7 @@ function Footer() {
               { label: "Fonctionnalités", href: "#features" },
               { label: "Bénéfices", href: "#benefits" },
               { label: "FAQ", href: "#faq" },
-              { label: "Bêta privée", href: "/register" },
+              { label: "Tarifs", href: "/tarifs" },
             ]}
           />
           <FooterColumn
