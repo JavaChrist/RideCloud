@@ -191,7 +191,7 @@ export async function POST(request: Request) {
     );
   }
 
-  // 3. Recrée la subscription Mollie à partir du metadata + active le plan
+  // 3. Lit le metadata pour déterminer plan + interval
   const metadata = (firstPaid.metadata ?? {}) as {
     userId?: string;
     plan?: Plan;
@@ -202,6 +202,54 @@ export async function POST(request: Request) {
   const planDef = PLANS[plan];
   const amount = interval === "monthly" ? planDef.price.monthly : planDef.price.yearly;
 
+  // 4. Avant de créer la subscription, vérifie qu'il n'en existe pas déjà une
+  //    chez Mollie pour ce customer (cas : webhook payment a déjà créé une sub
+  //    mais l'UPDATE profiles a échoué). Mollie refuse les subscriptions avec
+  //    une description dupliquée donc on doit obligatoirement détecter ce cas.
+  try {
+    const existingSubs = await mollie.customerSubscriptions.page({
+      customerId,
+      limit: 50
+    });
+    const existing = existingSubs.find(
+      (sub) => sub.status === "active" || sub.status === "pending"
+    );
+
+    if (existing) {
+      const renewsAt = existing.nextPaymentDate
+        ? new Date(existing.nextPaymentDate).toISOString()
+        : null;
+      const status = existing.status === "active" ? "active" : "past_due";
+
+      await admin
+        .from("profiles")
+        .update({
+          plan,
+          plan_status: status,
+          plan_interval: interval,
+          plan_renews_at: renewsAt,
+          plan_canceled_at: null,
+          mollie_subscription_id: existing.id,
+          mollie_mandate_id: firstPaid.mandateId ?? null,
+          updated_at: now
+        } as never)
+        .eq("id", user.id);
+
+      return NextResponse.json({
+        ok: true,
+        synced: "subscription_relinked",
+        plan,
+        planStatus: status,
+        planInterval: interval,
+        renewsAt
+      });
+    }
+  } catch (error) {
+    console.error("[billing/sync] subscriptions list failed", error);
+    // On continue : si Mollie refuse la création derrière, on lèvera l'erreur
+  }
+
+  // 5. Aucune subscription existante → on en crée une nouvelle
   try {
     const subscription = await mollie.customerSubscriptions.create({
       customerId,
