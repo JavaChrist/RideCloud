@@ -374,18 +374,23 @@ export function MaintenancePlanList({
           return (
             <div key={item.id} className="rounded-lg border border-sky-200 bg-white p-3">
               <div className="mb-1 flex flex-wrap items-center gap-2">
-                <p className="font-medium">{item.titre}</p>
-                <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
-                <Badge variant={item.source === "template" ? "secondary" : "outline"}>
+                <p className="font-medium leading-tight">{item.titre}</p>
+                <Badge variant={statusBadge.variant} className="whitespace-nowrap">
+                  {statusBadge.label}
+                </Badge>
+                <Badge
+                  variant={item.source === "template" ? "secondary" : "outline"}
+                  className="whitespace-nowrap"
+                >
                   {item.source === "template" ? "Template" : "Manuel"}
                 </Badge>
                 {isAi && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700">
+                  <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700">
                     <Sparkles className="h-3 w-3" strokeWidth={2.25} aria-hidden />
                     IA
                   </span>
                 )}
-                <Badge variant="outline">
+                <Badge variant="outline" className="whitespace-nowrap">
                   {item.priority === "urgent" ? "Urgent" : item.priority === "important" ? "Important" : "Normal"}
                 </Badge>
               </div>
