@@ -1,5 +1,5 @@
 import { categoryLabels } from "@/lib/data/demo";
-import { resolveMaintenanceTemplatesForVehicle } from "@/lib/data/maintenance-template-resolver";
+import { resolveMaintenanceTemplatesAsync } from "@/lib/data/maintenance-template-resolver";
 import {
   DEFAULT_DUE_SOON_DAYS_THRESHOLD,
   DEFAULT_DUE_SOON_KM_THRESHOLD,
@@ -149,7 +149,8 @@ async function ensureMaintenancePlanEntries(userId: string, vehicle: Vehicle) {
   }
 
   const existing = (data ?? []) as MaintenancePlanEntry[];
-  const { templates } = resolveMaintenanceTemplatesForVehicle(vehicle);
+  const resolved = await resolveMaintenanceTemplatesAsync(vehicle);
+  const { templates, templateSource } = resolved;
   if (templates.length === 0) return dedupePlanEntries(existing);
 
   const existingKeys = new Set(existing.map((entry) => getPlanKey(entry)));
@@ -199,6 +200,7 @@ async function ensureMaintenancePlanEntries(userId: string, vehicle: Vehicle) {
       priority: template.priority,
       status,
       source: "template" as const,
+      template_source: templateSource,
       created_at: nowIso,
       updated_at: nowIso
     };
@@ -339,7 +341,7 @@ export async function getVehicleHistory(userId: string, vehicleId: string) {
     const ensuredPlanEntries =
       storedPlanEntries.length > 0 || !vehicle ? storedPlanEntries : await ensureMaintenancePlanEntries(userId, vehicle);
     const maintenanceProfileName = vehicle
-      ? resolveMaintenanceTemplatesForVehicle(vehicle).profileName
+      ? (await resolveMaintenanceTemplatesAsync(vehicle)).profileName
       : "Profil générique";
     const nowIso = new Date().toISOString();
     const currentKm = vehicle?.kilometrage ?? 0;
@@ -357,7 +359,9 @@ export async function getVehicleHistory(userId: string, vehicleId: string) {
         nextDueDate: due.nextDueDate,
         currentKm,
         dueSoonKmThreshold: entry.due_soon_km_threshold,
-        dueSoonDaysThreshold: entry.due_soon_days_threshold
+        dueSoonDaysThreshold: entry.due_soon_days_threshold,
+        lastDoneKm: entry.last_done_km,
+        lastDoneDate: entry.last_done_date
       });
 
       return {

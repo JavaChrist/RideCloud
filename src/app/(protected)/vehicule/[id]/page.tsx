@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { Bike, CalendarClock, Car, Gauge, Truck } from "lucide-react";
+import { UpdateKilometrageDialog } from "@/components/vehicles/update-kilometrage-dialog";
 import { VehicleActions } from "@/components/vehicles/vehicle-actions";
 import { VehicleCostSummaryCard } from "@/components/vehicles/vehicle-cost-summary";
 import { VehicleDetailTabs } from "@/components/vehicles/vehicle-detail-tabs";
@@ -12,6 +13,8 @@ import { getVehicleCostSummary } from "@/lib/costs";
 import { getVehicleMaintenanceSummary } from "@/lib/maintenance";
 import { getVehicleReminderSummary } from "@/lib/reminders";
 import { createClient } from "@/lib/supabase/server";
+import { getUserPlanState } from "@/lib/billing/limits";
+import { isPaidPlan } from "@/lib/billing/plans";
 
 const categoryLabels = {
   voitures: "Voiture",
@@ -47,10 +50,12 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
     );
   }
 
-  const { completed, upcoming, modifications, documents, planEntries, maintenanceProfileName } = await getVehicleHistory(
-    user.id,
-    vehicle.id
-  );
+  const [history, planState] = await Promise.all([
+    getVehicleHistory(user.id, vehicle.id),
+    getUserPlanState(user.id)
+  ]);
+  const { completed, upcoming, modifications, documents, planEntries, maintenanceProfileName } = history;
+  const canUseAi = isPaidPlan(planState.plan) && planState.planStatus === "active";
   const summary = getVehicleMaintenanceSummary({
     planEntries,
     currentKm: vehicle.kilometrage
@@ -65,6 +70,9 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
     currentKm: vehicle.kilometrage
   });
   const isExternalImage = Boolean(vehicle.photo_url?.startsWith("http"));
+  const isUuidVehicle = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    vehicle.id
+  );
 
   return (
     <section className="space-y-6">
@@ -144,7 +152,7 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                     </p>
                   )}
                 </div>
-                <div className="group/tile relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-3 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ride-md">
+                <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-3 shadow-ride-xs">
                   <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
                     Compteur
                   </p>
@@ -152,6 +160,13 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                     <Gauge className="h-4 w-4 text-blue-700" strokeWidth={2} />
                     {vehicle.kilometrage.toLocaleString("fr-FR")} km
                   </p>
+                  <div className="mt-2.5">
+                    <UpdateKilometrageDialog
+                      vehicleId={vehicle.id}
+                      currentKm={vehicle.kilometrage}
+                      isDemoVehicle={!isUuidVehicle}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -182,6 +197,8 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
         vin={vehicle.vin}
         surnom={vehicle.surnom}
         carburant={vehicle.carburant}
+        canUseAi={canUseAi}
+        userPlan={planState.plan}
       />
     </section>
   );

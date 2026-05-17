@@ -44,6 +44,8 @@ interface VehicleDetailTabsProps {
   vin: string | null;
   surnom: string | null;
   carburant: string | null;
+  canUseAi?: boolean;
+  userPlan?: string;
 }
 
 export function VehicleDetailTabs({
@@ -64,7 +66,9 @@ export function VehicleDetailTabs({
   immatriculation,
   vin,
   surnom,
-  carburant
+  carburant,
+  canUseAi = false,
+  userPlan = "free"
 }: VehicleDetailTabsProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabValue>("historique");
@@ -181,6 +185,8 @@ export function VehicleDetailTabs({
           currentKm={kilometrage}
           items={planEntries}
           maintenanceProfileName={maintenanceProfileName}
+          canUseAi={canUseAi}
+          userPlan={userPlan}
         />
       </TabsContent>
       <TabsContent value="modifications">

@@ -40,6 +40,8 @@ export interface MaintenanceStatusInput {
   currentKm: number;
   dueSoonKmThreshold?: number;
   dueSoonDaysThreshold?: number;
+  lastDoneKm?: number | null;
+  lastDoneDate?: string | null;
   now?: Date;
 }
 

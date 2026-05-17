@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { AlertCircle, ArrowUpRight, Calendar, Car, Crown, Sparkles } from "lucide-react";
+import { AlertCircle, ArrowUpRight, Calendar, Car, Crown, RefreshCw, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { PLANS } from "@/lib/billing/plans";
 import { CancelSubscriptionButton } from "@/components/billing/cancel-subscription-button";
+import { SyncSubscriptionButton } from "@/components/billing/sync-subscription-button";
 import type { UserPlanState } from "@/lib/billing/limits";
 
 interface SubscriptionSectionProps {
@@ -15,6 +16,14 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
   const isPaid = state.plan !== "free";
   const isCanceled = Boolean(state.canceledAt);
   const isPastDue = state.planStatus === "past_due";
+
+  // Incohérence : l'utilisateur a un customer Mollie (= il a déjà payé ou tenté)
+  // mais son plan est toujours free OU en attente côté Supabase.
+  // Cas typique : webhook Mollie raté → on propose un resync manuel.
+  const hasMollieMismatch = Boolean(
+    state.mollieCustomerId &&
+      (state.plan === "free" || state.planStatus === "pending")
+  );
 
   const renewsFormatted = state.renewsAt
     ? new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" }).format(new Date(state.renewsAt))
@@ -146,6 +155,22 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
               votre moyen de paiement ou réessayez depuis la page Tarifs.
             </p>
           </div>
+        </div>
+      ) : null}
+
+      {hasMollieMismatch ? (
+        <div className="mt-5 flex flex-col items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50/70 p-4 text-sm text-blue-900 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <RefreshCw className="mt-0.5 h-4 w-4 shrink-0 text-blue-700" aria-hidden />
+            <div>
+              <p className="font-medium">Vous avez réglé un paiement, mais votre plan est toujours Free ?</p>
+              <p className="mt-0.5 text-blue-800">
+                Cela peut arriver si la notification Mollie n&apos;a pas été reçue. Cliquez ci-contre
+                pour resynchroniser votre abonnement instantanément.
+              </p>
+            </div>
+          </div>
+          <SyncSubscriptionButton />
         </div>
       ) : null}
 

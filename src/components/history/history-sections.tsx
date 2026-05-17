@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { differenceInCalendarDays, parseISO } from "date-fns";
+import { RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +19,10 @@ import {
 import { formatDateFr } from "@/lib/utils/date";
 import { toast } from "sonner";
 import type { MaintenanceEntry, MaintenancePlanEntry, UpcomingMaintenance } from "@/types/database";
+
+function normalizeTitle(value: string) {
+  return value.trim().toLowerCase();
+}
 
 export function HistorySections({
   vehicleId,
@@ -35,6 +40,7 @@ export function HistorySections({
   const router = useRouter();
   const [loadingDone, setLoadingDone] = useState(false);
   const [loadingUpcoming, setLoadingUpcoming] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const [doneForm, setDoneForm] = useState({
     titre: "",
@@ -67,6 +73,17 @@ export function HistorySections({
       } = await supabase.auth.getUser();
       if (!user) return;
 
+      let planEntryId: string | null = doneForm.maintenance_plan_entry_id || null;
+      let autoLinked = false;
+      if (!planEntryId && doneForm.titre.trim()) {
+        const normalized = normalizeTitle(doneForm.titre);
+        const matched = planEntries.find((entry) => normalizeTitle(entry.titre) === normalized);
+        if (matched) {
+          planEntryId = matched.id;
+          autoLinked = true;
+        }
+      }
+
       const payload = {
         user_id: user.id,
         vehicle_id: vehicleId,
@@ -75,7 +92,7 @@ export function HistorySections({
         kilometrage: Number(doneForm.kilometrage),
         cout: doneForm.cout ? Number(doneForm.cout) : null,
         description: doneForm.description || null,
-        maintenance_plan_entry_id: doneForm.maintenance_plan_entry_id || null
+        maintenance_plan_entry_id: planEntryId
       };
       const { error } = await supabase.from("maintenance_entries").insert(payload as never);
       if (error) {
@@ -83,8 +100,8 @@ export function HistorySections({
         return;
       }
 
-      if (!error && doneForm.maintenance_plan_entry_id) {
-        const selectedPlan = planEntries.find((entry) => entry.id === doneForm.maintenance_plan_entry_id);
+      if (!error && planEntryId) {
+        const selectedPlan = planEntries.find((entry) => entry.id === planEntryId);
         if (selectedPlan) {
           const due = calculateNextMaintenanceDue({
             intervalKm: selectedPlan.interval_km,
@@ -99,7 +116,9 @@ export function HistorySections({
             nextDueDate: due.nextDueDate,
             currentKm,
             dueSoonKmThreshold: selectedPlan.due_soon_km_threshold,
-            dueSoonDaysThreshold: selectedPlan.due_soon_days_threshold
+            dueSoonDaysThreshold: selectedPlan.due_soon_days_threshold,
+            lastDoneKm: Number(doneForm.kilometrage),
+            lastDoneDate: doneForm.date_entretien
           });
           await supabase
             .from("maintenance_plan_entries")
@@ -111,7 +130,17 @@ export function HistorySections({
               status
             } as never)
             .eq("id", selectedPlan.id);
+
+          if (autoLinked) {
+            toast.success(
+              `Entretien ajouté et lié automatiquement à "${selectedPlan.titre}" du plan.`
+            );
+          } else {
+            toast.success("Entretien ajouté et plan mis à jour.");
+          }
         }
+      } else if (!error) {
+        toast.success("Entretien ajouté dans l'historique.");
       }
 
       setDoneForm({
@@ -125,6 +154,112 @@ export function HistorySections({
       router.refresh();
     } finally {
       setLoadingDone(false);
+    }
+  };
+
+  const resyncPlanFromHistory = async () => {
+    if (!isUuidVehicle) {
+      toast.error("Synchronisation indisponible sur véhicule démo.");
+      return;
+    }
+    if (planEntries.length === 0) {
+      toast.info("Aucun plan d'entretien à synchroniser.");
+      return;
+    }
+    if (completed.length === 0) {
+      toast.info("Aucun entretien dans l'historique pour synchroniser.");
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      const supabase = createClient();
+      let syncedPlans = 0;
+      let relinkedEntries = 0;
+
+      for (const plan of planEntries) {
+        const normalized = normalizeTitle(plan.titre);
+        const matches = completed.filter(
+          (entry) =>
+            entry.maintenance_plan_entry_id === plan.id ||
+            normalizeTitle(entry.titre) === normalized
+        );
+        if (matches.length === 0) continue;
+
+        const latest = [...matches].sort((a, b) => {
+          const dateA = new Date(a.date_entretien).getTime();
+          const dateB = new Date(b.date_entretien).getTime();
+          if (dateB !== dateA) return dateB - dateA;
+          return (b.kilometrage ?? 0) - (a.kilometrage ?? 0);
+        })[0];
+
+        const due = calculateNextMaintenanceDue({
+          intervalKm: plan.interval_km,
+          intervalMonths: plan.interval_months,
+          firstDueKm: plan.first_due_km,
+          firstDueDate: plan.first_due_date,
+          lastDoneKm: latest.kilometrage,
+          lastDoneDate: latest.date_entretien
+        });
+        const status = getMaintenanceStatus({
+          nextDueKm: due.nextDueKm,
+          nextDueDate: due.nextDueDate,
+          currentKm,
+          dueSoonKmThreshold: plan.due_soon_km_threshold,
+          dueSoonDaysThreshold: plan.due_soon_days_threshold,
+          lastDoneKm: latest.kilometrage,
+          lastDoneDate: latest.date_entretien
+        });
+
+        const { error: planError } = await supabase
+          .from("maintenance_plan_entries")
+          .update({
+            last_done_km: latest.kilometrage,
+            last_done_date: latest.date_entretien,
+            next_due_km: due.nextDueKm,
+            next_due_date: due.nextDueDate,
+            status,
+            updated_at: new Date().toISOString()
+          } as never)
+          .eq("id", plan.id);
+
+        if (planError) {
+          console.error("[resync] plan update error", planError);
+          continue;
+        }
+        syncedPlans += 1;
+
+        const unlinkedIds = matches
+          .filter((entry) => !entry.maintenance_plan_entry_id)
+          .map((entry) => entry.id);
+        if (unlinkedIds.length > 0) {
+          const { error: relinkError } = await supabase
+            .from("maintenance_entries")
+            .update({ maintenance_plan_entry_id: plan.id } as never)
+            .in("id", unlinkedIds);
+          if (!relinkError) {
+            relinkedEntries += unlinkedIds.length;
+          }
+        }
+      }
+
+      if (syncedPlans > 0) {
+        toast.success(
+          `${syncedPlans} tâche(s) du plan synchronisée(s)${
+            relinkedEntries > 0 ? ` · ${relinkedEntries} entrée(s) rattachée(s)` : ""
+          }.`
+        );
+        router.refresh();
+      } else {
+        toast.info(
+          "Aucune correspondance trouvée. Vérifiez que les titres de l'historique correspondent à ceux du plan."
+        );
+      }
+    } catch (err) {
+      console.error("[resync] failure", err);
+      toast.error("Erreur lors de la synchronisation.");
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -179,18 +314,20 @@ export function HistorySections({
     router.refresh();
   };
 
-  const generatedUpcoming = planEntries.map((entry) => ({
-    id: `plan-${entry.id}`,
-    titre: entry.titre,
-    categorie: entry.categorie,
-    due_date: entry.next_due_date,
-    due_km: entry.next_due_km,
-    due_soon_km_threshold: entry.due_soon_km_threshold,
-    due_soon_days_threshold: entry.due_soon_days_threshold,
-    niveau_urgence: entry.priority === "urgent" ? "urgent" : "normal",
-    description: entry.description,
-    source: "template" as const
-  }));
+  const generatedUpcoming = planEntries
+    .filter((entry) => entry.status !== "done")
+    .map((entry) => ({
+      id: `plan-${entry.id}`,
+      titre: entry.titre,
+      categorie: entry.categorie,
+      due_date: entry.next_due_date,
+      due_km: entry.next_due_km,
+      due_soon_km_threshold: entry.due_soon_km_threshold,
+      due_soon_days_threshold: entry.due_soon_days_threshold,
+      niveau_urgence: entry.priority === "urgent" ? "urgent" : "normal",
+      description: entry.description,
+      source: "template" as const
+    }));
 
   const unifiedUpcoming = useMemo(() => {
     const rawItems = [
@@ -235,8 +372,45 @@ export function HistorySections({
     });
   }, [upcoming, generatedUpcoming, currentKm]);
 
+  const hasUnlinkedHistory =
+    isUuidVehicle &&
+    planEntries.length > 0 &&
+    completed.some(
+      (entry) =>
+        !entry.maintenance_plan_entry_id &&
+        planEntries.some((plan) => normalizeTitle(plan.titre) === normalizeTitle(entry.titre))
+    );
+
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="space-y-4">
+      {hasUnlinkedHistory && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-blue-200 bg-blue-50/60 p-4 shadow-ride-xs sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+              <RefreshCw className="h-4 w-4" strokeWidth={2} />
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-sm font-medium text-slate-900">
+                Des entretiens passés ne sont pas liés au plan
+              </p>
+              <p className="text-xs text-slate-600">
+                Synchronisez votre historique pour mettre à jour les rappels et les prochaines échéances.
+              </p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            onClick={resyncPlanFromHistory}
+            disabled={syncing}
+            className="gap-2 bg-blue-700 text-white hover:bg-blue-800"
+          >
+            <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} strokeWidth={2.25} />
+            {syncing ? "Synchronisation…" : "Synchroniser le plan"}
+          </Button>
+        </div>
+      )}
+
+      <div className="grid gap-4 lg:grid-cols-2">
       <Card className="border-emerald-200 bg-emerald-50/40">
         <CardHeader><CardTitle className="text-emerald-700">Déjà effectué</CardTitle></CardHeader>
         <CardContent className="space-y-3">
@@ -252,7 +426,7 @@ export function HistorySections({
               value={doneForm.maintenance_plan_entry_id}
               onChange={(e) => setDoneForm((s) => ({ ...s, maintenance_plan_entry_id: e.target.value }))}
             >
-              <option value="">Associer à une tâche du plan (optionnel)</option>
+              <option value="">Auto · détection par titre (recommandé)</option>
               {planEntries.map((entry) => (
                 <option key={entry.id} value={entry.id}>
                   {entry.titre}
@@ -328,6 +502,7 @@ export function HistorySections({
           ))}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

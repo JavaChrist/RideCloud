@@ -29,6 +29,52 @@ async function ensureVehicleQuota(supabase: SupabaseClient, userId: string): Pro
   return used < limit;
 }
 
+async function getUserPlan(supabase: SupabaseClient, userId: string): Promise<keyof typeof PLANS> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("plan, plan_status")
+    .eq("id", userId)
+    .maybeSingle();
+  const profile = data as { plan?: keyof typeof PLANS; plan_status?: string } | null;
+  if (!profile?.plan) return "free";
+  if (profile.plan_status && profile.plan_status !== "active") return "free";
+  return profile.plan;
+}
+
+/**
+ * Déclenche la génération du plan IA pour ce véhicule en arrière-plan.
+ * Silencieux en cas d'erreur ou de 409 (profil constructeur déjà dispo).
+ * Toast de succès quand le plan IA est prêt.
+ */
+function triggerAiPlanGeneration(vehicleId: string, router: ReturnType<typeof useRouter>) {
+  void fetch("/api/maintenance/generate-plan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ vehicleId, force: false })
+  })
+    .then(async (response) => {
+      if (response.status === 409) return;
+      if (!response.ok) return;
+      const result = (await response.json()) as {
+        ok?: boolean;
+        templateCount?: number;
+        profileName?: string;
+        aiCallMade?: boolean;
+      };
+      if (result.ok) {
+        toast.success(
+          `Plan d'entretien personnalisé prêt (${result.templateCount ?? 0} tâches)${
+            result.aiCallMade ? "" : " — depuis le cache"
+          }.`
+        );
+        router.refresh();
+      }
+    })
+    .catch(() => {
+      // Échec silencieux : l'utilisateur a déjà son plan générique de secours
+    });
+}
+
 export function AddVehicleForm() {
   type VehicleFormInput = z.input<typeof vehicleFormSchema>;
   type VehicleFormOutput = z.output<typeof vehicleFormSchema>;
@@ -155,6 +201,13 @@ export function AddVehicleForm() {
       }
 
       toast.success("Véhicule enregistré avec succès.");
+
+      const userPlan = await getUserPlan(supabase, user.id);
+      if (userPlan === "premium" || userPlan === "family") {
+        toast.info("Génération du plan d'entretien personnalisé en cours…");
+        triggerAiPlanGeneration(insertedVehicle.id, router);
+      }
+
       router.push(`/vehicule/${insertedVehicle.id}?tab=historique`);
       router.refresh();
     } catch {
@@ -372,6 +425,13 @@ export function AddVehicleForm() {
       }
 
       toast.success("Dossier RideCloud importé avec succès.");
+
+      const userPlan = await getUserPlan(supabase, user.id);
+      if (userPlan === "premium" || userPlan === "family") {
+        toast.info("Génération du plan d'entretien personnalisé en cours…");
+        triggerAiPlanGeneration(insertedVehicle.id, router);
+      }
+
       router.push(`/vehicule/${insertedVehicle.id}?tab=historique`);
       router.refresh();
     } catch {

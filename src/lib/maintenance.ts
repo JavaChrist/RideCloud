@@ -28,8 +28,12 @@ export function calculateNextMaintenanceDue(input: {
       // Fallback quand seul un intervalle existe
       nextDueKm = input.intervalKm;
     }
-  } else {
+  } else if (input.lastDoneKm == null) {
+    // Tâche unique (one-shot) pas encore réalisée : on conserve l'échéance initiale
     nextDueKm = input.firstDueKm ?? null;
+  } else {
+    // Tâche unique déjà réalisée : plus d'échéance kilométrique
+    nextDueKm = null;
   }
 
   let nextDueDate: string | null = null;
@@ -39,8 +43,10 @@ export function calculateNextMaintenanceDue(input: {
     } else if (input.firstDueDate) {
       nextDueDate = input.firstDueDate;
     }
-  } else {
+  } else if (!input.lastDoneDate) {
     nextDueDate = input.firstDueDate ?? null;
+  } else {
+    nextDueDate = null;
   }
 
   return { nextDueKm, nextDueDate };
@@ -52,6 +58,12 @@ export function getMaintenanceStatus(input: MaintenanceStatusInput): Maintenance
   const daysDiff = input.nextDueDate ? differenceInCalendarDays(parseISO(input.nextDueDate), now) : null;
   const dueSoonKmThreshold = input.dueSoonKmThreshold ?? DEFAULT_DUE_SOON_KM_THRESHOLD;
   const dueSoonDaysThreshold = input.dueSoonDaysThreshold ?? DEFAULT_DUE_SOON_DAYS_THRESHOLD;
+
+  // Tâche one-shot terminée : aucune échéance future à respecter
+  const hasFutureDeadline = kmDiff != null || daysDiff != null;
+  if (!hasFutureDeadline) {
+    return input.lastDoneKm != null || input.lastDoneDate ? "done" : "upcoming";
+  }
 
   const isOverdue = (kmDiff != null && kmDiff < 0) || (daysDiff != null && daysDiff < 0);
   if (isOverdue) return "overdue";

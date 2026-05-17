@@ -70,6 +70,7 @@ export interface UpcomingMaintenance {
 export type MaintenancePriority = "normal" | "important" | "urgent";
 export type MaintenanceStatus = "upcoming" | "due_soon" | "overdue" | "done";
 export type MaintenanceSource = "manual" | "template";
+export type MaintenanceTemplateSource = "hardcoded" | "ai" | "community" | "approved";
 
 export interface MaintenancePlanEntry {
   id: UUID;
@@ -91,6 +92,25 @@ export interface MaintenancePlanEntry {
   priority: MaintenancePriority;
   status: MaintenanceStatus;
   source: MaintenanceSource;
+  template_source: MaintenanceTemplateSource | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MaintenanceTemplateCacheRow {
+  id: UUID;
+  category: VehicleCategory;
+  marque_normalized: string;
+  modele_normalized: string;
+  annee: number | null;
+  profile_name: string;
+  templates: unknown;
+  source: "ai" | "approved" | "community";
+  llm_model: string | null;
+  prompt_version: string;
+  generated_at: string;
+  validated_at: string | null;
+  validated_by: UUID | null;
   created_at: string;
   updated_at: string;
 }
@@ -185,6 +205,17 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<MaintenancePlanEntry>;
+        Relationships: [];
+      };
+      maintenance_template_cache: {
+        Row: MaintenanceTemplateCacheRow;
+        Insert: Omit<MaintenanceTemplateCacheRow, "id" | "created_at" | "updated_at" | "generated_at"> & {
+          id?: UUID;
+          created_at?: string;
+          updated_at?: string;
+          generated_at?: string;
+        };
+        Update: Partial<MaintenanceTemplateCacheRow>;
         Relationships: [];
       };
     };
