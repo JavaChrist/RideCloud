@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Archive, Download, FileJson, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/providers/confirm-provider";
 import { createClient } from "@/lib/supabase/client";
 
 interface VehicleActionsProps {
@@ -24,11 +25,17 @@ function normalizeStoragePath(input: string | null) {
 
 export function VehicleActions({ vehicleId, vehicleName }: VehicleActionsProps) {
   const router = useRouter();
+  const confirm = useConfirm();
 
   const deleteVehicle = async () => {
-    const confirmed = window.confirm(
-      `Supprimer définitivement ${vehicleName} ? Cette action supprimera aussi l'historique, les modifications et les documents associés.`
-    );
+    const confirmed = await confirm({
+      title: `Supprimer ${vehicleName} ?`,
+      description:
+        "Cette action est irréversible. Le véhicule, son historique d'entretien, ses modifications, ses documents et ses photos seront définitivement effacés.",
+      confirmText: "Supprimer définitivement",
+      cancelText: "Annuler",
+      variant: "danger"
+    });
     if (!confirmed) return;
 
     try {

@@ -18,6 +18,7 @@ import {
   getMaintenanceStatus
 } from "@/lib/maintenance";
 import { formatDateFr } from "@/lib/utils/date";
+import { useConfirm } from "@/components/providers/confirm-provider";
 import { toast } from "sonner";
 import type { MaintenancePlanEntry } from "@/types/database";
 
@@ -75,6 +76,7 @@ export function MaintenancePlanList({
 }) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
+  const confirm = useConfirm();
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
   const [activeAlertEntryId, setActiveAlertEntryId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -101,10 +103,16 @@ export function MaintenancePlanList({
       return;
     }
 
-    const confirmMessage = force
-      ? "Régénérer le plan d'entretien depuis l'IA ? Les seuils et descriptions seront mis à jour, mais votre historique d'entretiens reste intact."
-      : "Générer un plan d'entretien personnalisé pour ce véhicule via l'IA ?";
-    if (!window.confirm(confirmMessage)) return;
+    const ok = await confirm({
+      title: force ? "Régénérer le plan d'entretien ?" : "Générer un plan personnalisé ?",
+      description: force
+        ? "Les seuils et descriptions seront mis à jour via l'IA. Votre historique d'entretiens déjà effectués reste intact."
+        : "L'IA va analyser votre véhicule et générer un plan d'entretien préventif personnalisé basé sur les recommandations constructeur.",
+      confirmText: force ? "Régénérer" : "Générer le plan",
+      cancelText: "Annuler",
+      variant: "ai"
+    });
+    if (!ok) return;
 
     setGeneratingAi(true);
     try {
@@ -176,12 +184,16 @@ export function MaintenancePlanList({
       return;
     }
 
-    const confirmMessage =
-      "Marquer toutes les révisions périodiques comme à jour ?\n\n" +
-      `Toutes les tâches récurrentes (vidange, filtres, courroies, etc.) seront enregistrées comme effectuées aujourd'hui au kilométrage actuel (${currentKm.toLocaleString(
+    const ok = await confirm({
+      title: "Marquer toutes les révisions comme à jour ?",
+      description: `Toutes les tâches récurrentes (vidange, filtres, courroies, etc.) seront enregistrées comme effectuées aujourd'hui au kilométrage actuel (${currentKm.toLocaleString(
         "fr-FR"
-      )} km).\n\nUtile à l'ajout d'un véhicule d'occasion entretenu. Cette action n'écrase pas les entretiens déjà déclarés plus récents.`;
-    if (!window.confirm(confirmMessage)) return;
+      )} km).\n\nUtile à l'ajout d'un véhicule d'occasion entretenu. Cette action n'écrase pas les entretiens déjà déclarés plus récents.`,
+      confirmText: "Marquer comme à jour",
+      cancelText: "Annuler",
+      variant: "success"
+    });
+    if (!ok) return;
 
     setMarkingCurrent(true);
     try {

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useConfirm } from "@/components/providers/confirm-provider";
 
 interface UpdateKilometrageDialogProps {
   vehicleId: string;
@@ -22,6 +23,7 @@ export function UpdateKilometrageDialog({
   isDemoVehicle = false
 }: UpdateKilometrageDialogProps) {
   const router = useRouter();
+  const confirm = useConfirm();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [value, setValue] = useState<string>(String(currentKm));
@@ -74,11 +76,17 @@ export function UpdateKilometrageDialog({
       return;
     }
     if (parsed < currentKm) {
-      const confirmed = window.confirm(
-        `Vous saisissez ${parsed.toLocaleString("fr-FR")} km, ce qui est inférieur au compteur actuel (${currentKm.toLocaleString(
+      const confirmed = await confirm({
+        title: "Kilométrage inférieur au compteur actuel",
+        description: `Vous saisissez ${parsed.toLocaleString(
           "fr-FR"
-        )} km). Confirmer quand même ?`
-      );
+        )} km, ce qui est inférieur au compteur actuel (${currentKm.toLocaleString(
+          "fr-FR"
+        )} km).\n\nC'est inhabituel mais possible (compteur remplacé, erreur de saisie corrigée…). Voulez-vous confirmer cette valeur ?`,
+        confirmText: "Confirmer quand même",
+        cancelText: "Annuler",
+        variant: "warning"
+      });
       if (!confirmed) return;
     }
 
