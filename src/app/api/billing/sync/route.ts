@@ -10,6 +10,7 @@ import {
   toMollieAmount
 } from "@/lib/billing/mollie";
 import { PLANS } from "@/lib/billing/plans";
+import { ensureProfile } from "@/lib/billing/ensure-profile";
 import type { Plan, PlanInterval } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -54,20 +55,12 @@ export async function POST(request: Request) {
   // handle_new_user pas exécuté à l'inscription, ou compte créé avant son
   // déploiement). Sans cette étape, tous les UPDATE suivants n'affectent
   // aucune ligne et renvoient data=null.
-  if (user.email) {
-    const { error: ensureError } = await admin
-      .from("profiles")
-      .upsert(
-        { id: user.id, email: user.email, updated_at: nowTs } as never,
-        { onConflict: "id" }
-      );
-    if (ensureError) {
-      console.error("[billing/sync] profile ensure failed", ensureError);
-      return NextResponse.json(
-        { error: `Création du profil échouée : ${ensureError.message}` },
-        { status: 500 }
-      );
-    }
+  const ensured = await ensureProfile(admin, user.id, user.email);
+  if (!ensured.ok) {
+    return NextResponse.json(
+      { error: `Création du profil échouée : ${ensured.error}` },
+      { status: 500 }
+    );
   }
 
   const { data: profileData } = await admin

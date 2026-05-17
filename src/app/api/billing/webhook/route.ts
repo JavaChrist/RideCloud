@@ -9,6 +9,7 @@ import {
   toMollieAmount
 } from "@/lib/billing/mollie";
 import { PLANS } from "@/lib/billing/plans";
+import { ensureProfile } from "@/lib/billing/ensure-profile";
 import type { Plan, PlanInterval } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -95,6 +96,29 @@ export async function POST(request: Request) {
   const userId = profile?.id ?? metadata.userId ?? null;
   if (!userId) {
     return NextResponse.json({ ok: false, error: "unknown user" }, { status: 200 });
+  }
+
+  // Filet de sécurité : si le profil n'existe pas encore (trigger raté),
+  // on le crée avant les UPDATE suivants. Sans ça, le webhook réussit
+  // côté HTTP mais ne persiste aucun changement et l'utilisateur reste Free.
+  // L'email du customer Mollie est plus fiable que rien.
+  if (!profile) {
+    try {
+      const customer = await mollie.customers.get(customerId);
+      const ensureRes = await ensureProfile(admin, userId, customer.email ?? null);
+      if (!ensureRes.ok) {
+        console.error("[billing/webhook] ensureProfile failed", ensureRes.error);
+      } else {
+        // On colle aussi le mollie_customer_id pour que le prochain webhook
+        // retrouve le profil via le lookup `where mollie_customer_id = ...`.
+        await admin
+          .from("profiles")
+          .update({ mollie_customer_id: customerId } as never)
+          .eq("id", userId);
+      }
+    } catch (error) {
+      console.error("[billing/webhook] customer lookup failed", error);
+    }
   }
 
   const now = new Date().toISOString();

@@ -197,10 +197,14 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email)
-  values (new.id, new.email)
-  on conflict (id)
-  do update set email = excluded.email, updated_at = now();
+  begin
+    insert into public.profiles (id, email)
+    values (new.id, coalesce(new.email, ''))
+    on conflict (id)
+    do update set email = excluded.email, updated_at = now();
+  exception when others then
+    raise warning 'handle_new_user failed for %: %', new.id, sqlerrm;
+  end;
   return new;
 end;
 $$;

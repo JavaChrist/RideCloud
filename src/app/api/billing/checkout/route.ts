@@ -10,6 +10,7 @@ import {
   hasMollieEnv,
   toMollieAmount
 } from "@/lib/billing/mollie";
+import { ensureProfile } from "@/lib/billing/ensure-profile";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +65,17 @@ export async function POST(request: Request) {
   const mollie = getMollieClient();
   const admin = createAdminClient();
 
+  // Étape critique : garantir l'existence du profil AVANT toute opération
+  // de paiement. Sans ça, les .update() suivants n'affectent aucune ligne
+  // et le client repart sans mollie_customer_id en DB.
+  const ensured = await ensureProfile(admin, user.id, user.email);
+  if (!ensured.ok) {
+    return NextResponse.json(
+      { error: `Préparation du profil impossible : ${ensured.error}` },
+      { status: 500 }
+    );
+  }
+
   const { data: profileData } = await admin
     .from("profiles")
     .select("mollie_customer_id, plan, plan_status, mollie_subscription_id")
@@ -86,10 +98,18 @@ export async function POST(request: Request) {
       metadata: { userId: user.id }
     });
     customerId = customer.id;
-    await admin
+    const { error: linkError } = await admin
       .from("profiles")
       .update({ mollie_customer_id: customerId } as never)
       .eq("id", user.id);
+
+    if (linkError) {
+      console.error("[billing/checkout] customer id link failed", linkError);
+      return NextResponse.json(
+        { error: `Enregistrement du customer Mollie impossible : ${linkError.message}` },
+        { status: 500 }
+      );
+    }
   }
 
   if (profile?.mollie_subscription_id && profile.plan_status === "active") {
@@ -126,10 +146,16 @@ export async function POST(request: Request) {
     );
   }
 
-  await admin
+  const { error: pendingError } = await admin
     .from("profiles")
     .update({ plan_status: "pending", plan_interval: interval } as never)
     .eq("id", user.id);
+
+  if (pendingError) {
+    console.error("[billing/checkout] pending status update failed", pendingError);
+    // Non bloquant : la session de paiement Mollie est déjà créée, on laisse
+    // l'utilisateur poursuivre. Le webhook (ou /api/billing/sync) recollera.
+  }
 
   return NextResponse.json({ checkoutUrl });
 }
