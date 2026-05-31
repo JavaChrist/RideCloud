@@ -1,6 +1,8 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient, tryCreateAdminClient } from "@/lib/supabase/admin";
 import type { VehicleCategory, MaintenanceTemplateCacheRow } from "@/types/database";
 import type { MaintenanceTemplateEntry } from "@/types/maintenance";
+
+let warnedMissingAdminClient = false;
 
 export function normalizeForCache(input: string | null | undefined): string {
   return (input ?? "")
@@ -38,7 +40,17 @@ export interface CacheWriteInput extends CacheLookupInput {
 export async function findCachedMaintenanceTemplates(
   input: CacheLookupInput
 ): Promise<CachedMaintenanceTemplates | null> {
-  const admin = createAdminClient();
+  const admin = tryCreateAdminClient();
+  if (!admin) {
+    if (!warnedMissingAdminClient) {
+      warnedMissingAdminClient = true;
+      console.warn(
+        "[template-cache] SUPABASE_SERVICE_ROLE_KEY manquante : cache des templates de maintenance désactivé, repli sur les templates statiques."
+      );
+    }
+    return null;
+  }
+
   const marqueNormalized = normalizeForCache(input.marque);
   const modeleNormalized = normalizeForCache(input.modele);
 

@@ -36,7 +36,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_30px_80px_-20px_rgba(15,23,42,0.35)] outline-none duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        "fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_30px_80px_-20px_rgba(15,23,42,0.35)] outline-none duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         className
       )}
       {...props}
@@ -45,7 +45,7 @@ const DialogContent = React.forwardRef<
       {!hideClose && (
         <DialogPrimitive.Close
           aria-label="Fermer"
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400/60 disabled:pointer-events-none"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-500 dark:text-slate-400 transition hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-400/60 disabled:pointer-events-none"
         >
           <X className="h-4 w-4" aria-hidden />
         </DialogPrimitive.Close>
@@ -66,7 +66,7 @@ DialogHeader.displayName = "DialogHeader";
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse gap-2 border-t border-slate-200/70 bg-slate-50/60 px-6 py-4 sm:flex-row sm:justify-end sm:gap-2",
+      "flex flex-col-reverse gap-2 border-t border-slate-200/70 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/60 px-6 py-4 sm:flex-row sm:justify-end sm:gap-2",
       className
     )}
     {...props}
@@ -80,7 +80,7 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn("text-lg font-semibold tracking-tight text-slate-900", className)}
+    className={cn("text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50", className)}
     {...props}
   />
 ));
@@ -92,7 +92,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm leading-relaxed text-slate-600", className)}
+    className={cn("text-sm leading-relaxed text-slate-600 dark:text-slate-300", className)}
     {...props}
   />
 ));

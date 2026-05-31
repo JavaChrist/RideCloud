@@ -30,15 +30,15 @@ export default async function NewVehiclePage() {
         <div>
           <Badge
             variant="outline"
-            className="mb-3 gap-1.5 rounded-full border-amber-200 bg-amber-50/70 px-3 py-1 text-xs font-medium text-amber-800 shadow-ride-xs backdrop-blur"
+            className="mb-3 gap-1.5 rounded-full border-amber-200 dark:border-amber-900 bg-amber-50/70 dark:bg-amber-950/40 px-3 py-1 text-xs font-medium text-amber-800 dark:text-amber-300 shadow-ride-xs backdrop-blur"
           >
             <Lock className="h-3 w-3" strokeWidth={2.5} />
             Limite atteinte
           </Badge>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
             Vous avez atteint la limite du plan {currentPlanDef.name}
           </h1>
-          <p className="mt-2 max-w-2xl text-slate-600">
+          <p className="mt-2 max-w-2xl text-slate-600 dark:text-slate-300">
             Votre plan actuel autorise <strong>{state.vehicleLimit} véhicule
             {state.vehicleLimit > 1 ? "s" : ""}</strong>. Vous en avez déjà{" "}
             {state.vehicleCount}.{" "}
@@ -49,24 +49,24 @@ export default async function NewVehiclePage() {
         </div>
 
         {!isAtMax ? (
-          <article className="relative overflow-hidden rounded-3xl border border-blue-200 bg-white p-6 shadow-[0_24px_60px_-30px_rgba(29,78,216,0.45),0_1px_2px_rgba(15,23,42,0.04)] md:p-8">
+          <article className="relative overflow-hidden rounded-3xl border border-blue-200 dark:border-blue-900 bg-white dark:bg-slate-900 p-6 shadow-[0_24px_60px_-30px_rgba(29,78,216,0.45),0_1px_2px_rgba(15,23,42,0.04)] md:p-8">
             <span
               aria-hidden
               className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-700/60 to-transparent"
             />
             <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
               <div className="flex-1">
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-blue-700">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">
                   <Sparkles className="h-3 w-3" aria-hidden />
                   Recommandé
                 </div>
-                <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
+                <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                   Passez au plan {nextPlan.name}
                 </h2>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                   {nextPlan.description}
                 </p>
-                <ul className="mt-4 grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
+                <ul className="mt-4 grid gap-2 text-sm text-slate-700 dark:text-slate-200 sm:grid-cols-2">
                   {nextPlan.features.slice(0, 4).map((feature) => (
                     <li key={feature} className="flex items-start gap-2">
                       <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" />
@@ -77,13 +77,13 @@ export default async function NewVehiclePage() {
               </div>
               <div className="flex flex-col items-start gap-2 md:items-end md:text-right">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-semibold tracking-tight text-slate-900">
+                  <span className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                     {nextPlan.price.monthly.toString().replace(".", ",")}
                   </span>
-                  <span className="text-xl text-slate-400">€</span>
-                  <span className="ml-1 text-sm text-slate-500">/ mois</span>
+                  <span className="text-xl text-slate-400 dark:text-slate-500">€</span>
+                  <span className="ml-1 text-sm text-slate-500 dark:text-slate-400">/ mois</span>
                 </div>
-                <p className="text-xs text-slate-500">ou {nextPlan.price.yearly} €/an</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">ou {nextPlan.price.yearly} €/an</p>
                 <Link
                   href="/tarifs"
                   className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-blue-700 px-4 py-2.5 text-sm font-medium text-white shadow-[0_4px_14px_-4px_rgba(29,78,216,0.6)] transition hover:bg-blue-800"
@@ -95,10 +95,10 @@ export default async function NewVehiclePage() {
             </div>
           </article>
         ) : (
-          <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-ride-sm md:p-8">
-            <p className="text-sm text-slate-600">
+          <article className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-ride-sm md:p-8">
+            <p className="text-sm text-slate-600 dark:text-slate-300">
               Besoin d&apos;une offre flotte ?{" "}
-              <a href="mailto:support@javachrist.fr" className="font-medium text-blue-700 hover:underline">
+              <a href="mailto:support@javachrist.fr" className="font-medium text-blue-700 dark:text-blue-300 hover:underline">
                 Contactez-nous
               </a>
               .
@@ -108,7 +108,7 @@ export default async function NewVehiclePage() {
 
         <Link
           href="/categories"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-600 transition hover:text-slate-900"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300 transition hover:text-slate-900 dark:hover:text-slate-50"
         >
           ← Retour à mes véhicules
         </Link>
@@ -121,33 +121,33 @@ export default async function NewVehiclePage() {
       <div>
         <Badge
           variant="outline"
-          className="mb-3 gap-1.5 rounded-full border-blue-200 bg-white/70 px-3 py-1 text-xs font-medium text-blue-700 shadow-ride-xs backdrop-blur"
+          className="mb-3 gap-1.5 rounded-full border-blue-200 dark:border-blue-900 bg-white/70 dark:bg-slate-900/70 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 shadow-ride-xs backdrop-blur"
         >
           <Sparkles className="h-3 w-3" strokeWidth={2.5} />
           Nouveau véhicule
         </Badge>
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
           Ajouter un véhicule
         </h1>
-        <p className="text-slate-600">
+        <p className="text-slate-600 dark:text-slate-300">
           Créez une fiche complète avec les informations de base.
         </p>
         {state.plan === "free" ? (
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             Plan Free : {state.vehicleCount}/{state.vehicleLimit} véhicule utilisé ·{" "}
-            <Link href="/tarifs" className="font-medium text-blue-700 hover:underline">
+            <Link href="/tarifs" className="font-medium text-blue-700 dark:text-blue-300 hover:underline">
               Passez Premium
             </Link>{" "}
             pour en ajouter jusqu&apos;à {PLANS.premium.vehicleLimit}.
           </p>
         ) : (
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             Plan {PLANS[state.plan].name} : {state.vehicleCount}/{state.vehicleLimit} véhicules
             utilisés.
           </p>
         )}
       </div>
-      <Card className="relative overflow-hidden rounded-2xl border-slate-200/80 bg-ride-gradient-card shadow-ride-sm">
+      <Card className="relative overflow-hidden rounded-2xl border-slate-200/80 dark:border-slate-800/80 bg-ride-gradient-card shadow-ride-sm">
         <span
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-700/40 to-transparent"

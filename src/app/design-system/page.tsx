@@ -34,22 +34,22 @@ import type { ReactNode } from "react";
 
 export default function DesignSystemPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50">
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 -z-10 bg-ride-mesh opacity-80"
       />
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 -z-10 bg-ride-grid bg-ride-grid-sm [mask-image:radial-gradient(ellipse_50%_40%_at_50%_0%,black,transparent)]"
+        className="pointer-events-none fixed inset-0 -z-10 bg-ride-grid dark:bg-ride-grid-light bg-ride-grid-sm [mask-image:radial-gradient(ellipse_50%_40%_at_50%_0%,black,transparent)]"
       />
 
-      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-slate-50/70 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-slate-200/70 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-baseline justify-between px-6 py-6">
           <h1 className="text-2xl font-semibold tracking-tight">
             RideCloud · Design System
           </h1>
-          <span className="font-mono text-xs text-slate-500">v2.1 · patterns</span>
+          <span className="font-mono text-xs text-slate-500 dark:text-slate-400">v2.1 · patterns</span>
         </div>
       </header>
 
@@ -70,7 +70,7 @@ export default function DesignSystemPage() {
         <InputsSection />
       </main>
 
-      <footer className="relative border-t border-slate-200 py-8 text-center text-sm text-slate-500">
+      <footer className="relative border-t border-slate-200 dark:border-slate-800 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
         <span
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-700/30 to-transparent"
@@ -99,7 +99,7 @@ function Section({
       <div className="mb-8">
         <h2 className="text-3xl font-semibold tracking-tight">{title}</h2>
         {description ? (
-          <p className="mt-2 text-base text-slate-600">{description}</p>
+          <p className="mt-2 text-base text-slate-600 dark:text-slate-300">{description}</p>
         ) : null}
       </div>
       {children}
@@ -109,7 +109,7 @@ function Section({
 
 function SubTitle({ children }: { children: ReactNode }) {
   return (
-    <h3 className="mb-4 text-sm font-medium uppercase tracking-wide text-slate-500">
+    <h3 className="mb-4 text-sm font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
       {children}
     </h3>
   );
@@ -151,14 +151,14 @@ const pastelSwatches: Swatch[] = [
 
 function SwatchCard({ swatch }: { swatch: Swatch }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
       <div
-        className={`${swatch.tailwind} h-20 ${swatch.hex === "#f8fafc" || swatch.hex === "#ffffff" ? "border-b border-slate-200" : ""}`}
+        className={`${swatch.tailwind} h-20 ${swatch.hex === "#f8fafc" || swatch.hex === "#ffffff" ? "border-b border-slate-200 dark:border-slate-800" : ""}`}
       />
       <div className="px-3 py-3">
-        <p className="text-sm font-medium text-slate-900">{swatch.name}</p>
-        <p className="font-mono text-xs text-slate-500">{swatch.hex}</p>
-        <p className="font-mono text-xs text-slate-400">{swatch.tailwind}</p>
+        <p className="text-sm font-medium text-slate-900 dark:text-slate-50">{swatch.name}</p>
+        <p className="font-mono text-xs text-slate-500 dark:text-slate-400">{swatch.hex}</p>
+        <p className="font-mono text-xs text-slate-400 dark:text-slate-500">{swatch.tailwind}</p>
       </div>
     </div>
   );
@@ -244,7 +244,7 @@ const typeScale = [
     label: "Caption",
     sample: "CAPTION · LABEL",
     specs: "13 / 500 / +2%",
-    className: "text-[13px] font-medium uppercase tracking-wider text-slate-600",
+    className: "text-[13px] font-medium uppercase tracking-wider text-slate-600 dark:text-slate-300",
   },
   {
     label: "KPI",
@@ -260,18 +260,18 @@ function TypographySection() {
       title="Typographie"
       description="Geist Sans en principal, Geist Mono pour les valeurs chiffrées (KPI)."
     >
-      <div className="rounded-2xl border border-slate-200 bg-white p-8">
-        <p className="mb-6 font-mono text-xs text-slate-500">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8">
+        <p className="mb-6 font-mono text-xs text-slate-500 dark:text-slate-400">
           Geist Sans · fallback Inter
         </p>
-        <div className="divide-y divide-slate-200">
+        <div className="divide-y divide-slate-200 dark:divide-slate-800">
           {typeScale.map((item) => (
             <div
               key={item.label}
               className="flex items-baseline justify-between gap-6 py-4"
             >
               <span className={item.className}>{item.sample}</span>
-              <span className="shrink-0 font-mono text-xs text-slate-500">
+              <span className="shrink-0 font-mono text-xs text-slate-500 dark:text-slate-400">
                 {item.specs}
               </span>
             </div>
@@ -308,19 +308,19 @@ function SpacingRadiusSection() {
   return (
     <Section title="Spacing & Radius">
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white p-8">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8">
           <SubTitle>Spacing</SubTitle>
           <div className="space-y-3">
             {spacingScale.map((s) => (
               <div key={s.name} className="flex items-center gap-4">
-                <span className="w-12 font-mono text-xs text-slate-500">
+                <span className="w-12 font-mono text-xs text-slate-500 dark:text-slate-400">
                   {s.name}
                 </span>
                 <div
                   className="h-2 rounded-full bg-blue-700"
                   style={{ width: `${s.value * 4}px` }}
                 />
-                <span className="font-mono text-xs text-slate-500">
+                <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
                   {s.value}px
                 </span>
               </div>
@@ -328,7 +328,7 @@ function SpacingRadiusSection() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-8">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8">
           <SubTitle>Radius</SubTitle>
           <div className="grid grid-cols-3 gap-4 sm:grid-cols-5">
             {radiusScale.map((r) => (
@@ -337,10 +337,10 @@ function SpacingRadiusSection() {
                   className="h-16 w-16 bg-blue-700"
                   style={{ borderRadius: `${r.value}px` }}
                 />
-                <span className="font-mono text-xs text-slate-500">
+                <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
                   {r.name}
                 </span>
-                <span className="font-mono text-[10px] text-slate-400">
+                <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
                   {r.value === 9999 ? "full" : `${r.value}px`}
                 </span>
               </div>
@@ -377,11 +377,11 @@ function ShadowsSection() {
         {shadowScale.map((s) => (
           <div
             key={s.name}
-            className={`flex h-32 flex-col justify-end rounded-2xl border border-slate-200/70 bg-white p-4 ${s.className}`}
+            className={`flex h-32 flex-col justify-end rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 ${s.className}`}
           >
-            <p className="text-sm font-semibold text-slate-900">{s.name}</p>
-            <p className="font-mono text-[10px] text-slate-500">{s.className}</p>
-            <p className="mt-1 text-xs text-slate-500">{s.usage}</p>
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">{s.name}</p>
+            <p className="font-mono text-[10px] text-slate-500 dark:text-slate-400">{s.className}</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{s.usage}</p>
           </div>
         ))}
       </div>
@@ -414,24 +414,24 @@ function GradientsSection() {
         {gradientTokens.map((g) => (
           <div
             key={g.name}
-            className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white"
+            className="overflow-hidden rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-900"
           >
             <div className={`h-24 ${g.className}`} />
             <div className="px-3 py-3">
-              <p className="text-sm font-medium text-slate-900">{g.name}</p>
-              <p className="font-mono text-[10px] text-slate-500">{g.className}</p>
-              <p className="mt-1 text-xs text-slate-500">{g.note}</p>
+              <p className="text-sm font-medium text-slate-900 dark:text-slate-50">{g.name}</p>
+              <p className="font-mono text-[10px] text-slate-500 dark:text-slate-400">{g.className}</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{g.note}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-slate-200/70 bg-white p-6">
+      <div className="mt-6 rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
         <SubTitle>Texte gradient signature</SubTitle>
         <p className="bg-ride-gradient-text bg-clip-text text-4xl font-semibold tracking-tight text-transparent [background-size:200%_auto] animate-shimmer">
           de tous vos véhicules.
         </p>
-        <p className="mt-3 font-mono text-xs text-slate-500">
+        <p className="mt-3 font-mono text-xs text-slate-500 dark:text-slate-400">
           bg-ride-gradient-text · bg-clip-text · animate-shimmer
         </p>
       </div>
@@ -491,9 +491,9 @@ function AnimationsSection() {
         {animationTokens.map((a) => (
           <div
             key={a.name}
-            className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white"
+            className="overflow-hidden rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-900"
           >
-            <div className="flex h-24 items-center justify-center bg-slate-50/60">
+            <div className="flex h-24 items-center justify-center bg-slate-50/60 dark:bg-slate-950/60">
               {a.name === "shimmer" ? (
                 <span className="bg-ride-gradient-text bg-clip-text text-lg font-semibold text-transparent [background-size:200%_auto] animate-shimmer">
                   RideCloud
@@ -512,9 +512,9 @@ function AnimationsSection() {
               )}
             </div>
             <div className="px-3 py-3">
-              <p className="text-sm font-medium text-slate-900">{a.name}</p>
-              <p className="font-mono text-[10px] text-slate-500">{a.className}</p>
-              <p className="mt-1 text-xs text-slate-500">{a.note}</p>
+              <p className="text-sm font-medium text-slate-900 dark:text-slate-50">{a.name}</p>
+              <p className="font-mono text-[10px] text-slate-500 dark:text-slate-400">{a.className}</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{a.note}</p>
             </div>
           </div>
         ))}
@@ -548,21 +548,21 @@ function Button({
         "bg-ride-gradient-primary text-white shadow-ride-glow-sm hover:shadow-ride-glow hover:brightness-110",
       hover: "bg-ride-gradient-primary-hover text-white shadow-ride-glow",
       disabled:
-        "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none",
+        "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none",
     },
     secondary: {
       default:
-        "bg-white text-blue-700 border border-blue-200 shadow-ride-xs hover:border-blue-700 hover:bg-indigo-50 hover:shadow-ride-glow-sm",
-      hover: "bg-indigo-50 text-blue-700 border border-blue-700 shadow-ride-glow-sm",
+        "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 shadow-ride-xs hover:border-blue-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:shadow-ride-glow-sm",
+      hover: "bg-indigo-50 dark:bg-indigo-950/40 text-blue-700 dark:text-blue-300 border border-blue-700 shadow-ride-glow-sm",
       disabled:
-        "bg-white text-slate-400 border border-slate-200 cursor-not-allowed",
+        "bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-800 cursor-not-allowed",
     },
     ghost: {
       default:
-        "bg-transparent text-slate-900 border border-slate-200 hover:bg-white hover:shadow-ride-sm",
-      hover: "bg-white text-slate-900 border border-slate-200 shadow-ride-sm",
+        "bg-transparent text-slate-900 dark:text-slate-50 border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-900 hover:shadow-ride-sm",
+      hover: "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 border border-slate-200 dark:border-slate-800 shadow-ride-sm",
       disabled:
-        "bg-transparent text-slate-400 border border-slate-200 cursor-not-allowed",
+        "bg-transparent text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-800 cursor-not-allowed",
     },
   };
 
@@ -586,14 +586,14 @@ function ButtonsSection() {
       title="Boutons"
       description="3 variantes × 3 états. Padding 12/20, radius 16px, texte 15/Medium."
     >
-      <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-8">
+      <div className="space-y-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8">
         {variants.map((variant) => (
           <div key={variant}>
             <SubTitle>{variant}</SubTitle>
             <div className="flex flex-wrap items-center gap-4">
               {states.map((state) => (
                 <div key={state} className="flex flex-col gap-2">
-                  <span className="font-mono text-xs text-slate-500">
+                  <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
                     {state}
                   </span>
                   <Button variant={variant} state={state}>
@@ -629,7 +629,7 @@ function Card({
       className={`group/card relative flex flex-col gap-3 overflow-hidden rounded-2xl bg-ride-gradient-card p-6 transition-all duration-500 ease-ride-spring hover:-translate-y-1 ${
         featured
           ? "border-2 border-blue-700 shadow-ride-glow"
-          : "border border-slate-200/80 shadow-ride-xs hover:border-blue-200 hover:shadow-ride-lg"
+          : "border border-slate-200/80 dark:border-slate-800 shadow-ride-xs hover:border-blue-200 dark:hover:border-blue-900 hover:shadow-ride-lg"
       }`}
     >
       <span
@@ -637,19 +637,19 @@ function Card({
         className="pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover/card:opacity-100 bg-[radial-gradient(circle_at_50%_0%,rgba(29,78,216,0.07),transparent_60%)]"
       />
       {featured ? (
-        <span className="inline-flex w-fit items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-100">
+        <span className="inline-flex w-fit items-center rounded-full bg-indigo-50 dark:bg-indigo-950/40 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 ring-1 ring-blue-100 dark:ring-blue-900">
           Recommandé
         </span>
       ) : null}
       <div className="relative inline-flex">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-50 text-blue-700 ring-1 ring-blue-100/80 transition-all duration-500 group-hover/card:bg-ride-gradient-primary group-hover/card:text-white group-hover/card:shadow-ride-glow-sm">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 dark:from-indigo-950/40 to-blue-50 dark:to-blue-950/40 text-blue-700 dark:text-blue-300 ring-1 ring-blue-100/80 dark:ring-blue-900 transition-all duration-500 group-hover/card:bg-ride-gradient-primary group-hover/card:text-white group-hover/card:shadow-ride-glow-sm">
           <Icon className="h-5 w-5 transition-transform duration-500 group-hover/card:scale-110" strokeWidth={1.75} />
         </div>
       </div>
-      <h3 className="text-[22px] font-medium leading-snug text-slate-900">
+      <h3 className="text-[22px] font-medium leading-snug text-slate-900 dark:text-slate-50">
         {title}
       </h3>
-      <p className="text-base leading-relaxed text-slate-600">{description}</p>
+      <p className="text-base leading-relaxed text-slate-600 dark:text-slate-300">{description}</p>
     </div>
   );
 }
@@ -702,14 +702,14 @@ function KpiTile({
   suffix?: string;
 }) {
   return (
-    <div className="group/kpi relative overflow-hidden rounded-2xl border border-slate-200/80 bg-ride-gradient-card p-4 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-ride-md">
-      <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+    <div className="group/kpi relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-ride-gradient-card p-4 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-ride-md">
+      <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
         {label}
       </p>
-      <p className="mt-2 font-mono text-xl font-semibold tracking-tight tabular-nums text-slate-900">
+      <p className="mt-2 font-mono text-xl font-semibold tracking-tight tabular-nums text-slate-900 dark:text-slate-50">
         {value}
         {suffix ? (
-          <span className="ml-1 text-xs font-medium text-slate-500">{suffix}</span>
+          <span className="ml-1 text-xs font-medium text-slate-500 dark:text-slate-400">{suffix}</span>
         ) : null}
       </p>
       <span
@@ -731,7 +731,7 @@ function KpiTilesSection() {
           <KpiTile key={t.label} {...t} />
         ))}
       </div>
-      <p className="mt-3 font-mono text-[11px] text-slate-500">
+      <p className="mt-3 font-mono text-[11px] text-slate-500 dark:text-slate-400">
         bg-ride-gradient-card · shadow-ride-xs · hover: -translate-y-0.5 · shadow-ride-md ·
         valeurs en font-mono tabular-nums
       </p>
@@ -750,24 +750,24 @@ const statusLevelStyles: Record<
   { container: string; indicator: string; badge: string }
 > = {
   urgent: {
-    container: "border-red-200 bg-red-50/40 ring-1 ring-red-100",
+    container: "border-red-200 dark:border-red-900 bg-red-50/40 dark:bg-red-950/40 ring-1 ring-red-100 dark:ring-red-900",
     indicator: "bg-red-500",
-    badge: "bg-red-100 text-red-800",
+    badge: "bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-red-300",
   },
   important: {
-    container: "border-amber-200 bg-amber-50/40 ring-1 ring-amber-100",
+    container: "border-amber-200 dark:border-amber-900 bg-amber-50/40 dark:bg-amber-950/40 ring-1 ring-amber-100 dark:ring-amber-900",
     indicator: "bg-amber-500",
-    badge: "bg-amber-100 text-amber-800",
+    badge: "bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300",
   },
   normal: {
-    container: "border-slate-200 bg-white ring-1 ring-slate-100",
+    container: "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 ring-1 ring-slate-100 dark:ring-slate-800",
     indicator: "bg-slate-400",
-    badge: "bg-slate-100 text-slate-700",
+    badge: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200",
   },
   success: {
-    container: "border-emerald-200 bg-emerald-50/40 ring-1 ring-emerald-100",
+    container: "border-emerald-200 dark:border-emerald-900 bg-emerald-50/40 dark:bg-emerald-950/40 ring-1 ring-emerald-100 dark:ring-emerald-900",
     indicator: "bg-emerald-500",
-    badge: "bg-emerald-100 text-emerald-800",
+    badge: "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300",
   },
 };
 
@@ -791,7 +791,7 @@ function StatusItem({
       />
       <div className="ml-2">
         <div className="mb-1 flex flex-wrap items-center gap-2">
-          <p className="font-medium text-slate-900">{title}</p>
+          <p className="font-medium text-slate-900 dark:text-slate-50">{title}</p>
           <span
             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${s.badge}`}
           >
@@ -799,7 +799,7 @@ function StatusItem({
             {level}
           </span>
         </div>
-        <p className="font-mono text-xs text-slate-500">{meta}</p>
+        <p className="font-mono text-xs text-slate-500 dark:text-slate-400">{meta}</p>
       </div>
     </div>
   );
@@ -847,28 +847,28 @@ function PageHeadersSection() {
       title="Page Headers"
       description="Bandeau d'introduction utilisé en haut de chaque page interne. Badge contextuel + titre + texte d'explication + chip de stat optionnelle."
     >
-      <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-ride-gradient-card p-5 shadow-ride-sm md:p-7">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-ride-gradient-card p-5 shadow-ride-sm md:p-7">
         <span
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-700/40 to-transparent"
         />
-        <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-white/70 px-3 py-1 text-xs font-medium text-blue-700 shadow-ride-xs backdrop-blur">
+        <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-blue-200 dark:border-blue-900 bg-white/70 dark:bg-slate-900/70 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 shadow-ride-xs backdrop-blur">
           <Sparkles className="h-3 w-3" strokeWidth={2.5} />
           RideCloud · Garage
         </span>
-        <h3 className="text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
+        <h3 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50 md:text-4xl">
           Catégories de véhicules
         </h3>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300 md:text-base">
           Choisissez une catégorie pour ouvrir votre parc et accéder à
           l&apos;historique complet de chaque véhicule.
         </p>
-        <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-blue-200/70 bg-white/80 px-3 py-1 text-sm font-medium text-blue-700 shadow-ride-xs backdrop-blur">
+        <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-blue-200/70 dark:border-blue-900/70 bg-white/80 dark:bg-slate-900/80 px-3 py-1 text-sm font-medium text-blue-700 dark:text-blue-300 shadow-ride-xs backdrop-blur">
           <span className="font-mono tabular-nums">12</span>
           véhicule(s) enregistré(s)
         </div>
       </div>
-      <p className="mt-3 font-mono text-[11px] text-slate-500">
+      <p className="mt-3 font-mono text-[11px] text-slate-500 dark:text-slate-400">
         bg-ride-gradient-card · shadow-ride-sm · top-line gradient · badge contextuel ·
         chip stats avec font-mono tabular-nums
       </p>
@@ -888,14 +888,14 @@ function EmptyStatesSection() {
     >
       <div className="grid gap-4 md:grid-cols-2">
         {/* Variante 1 : invitation à créer */}
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-10 text-center shadow-ride-xs backdrop-blur-sm">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-50 text-blue-700 ring-1 ring-blue-100/80">
+        <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white/60 dark:bg-slate-900/60 p-10 text-center shadow-ride-xs backdrop-blur-sm">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 dark:from-indigo-950/40 to-blue-50 dark:to-blue-950/40 text-blue-700 dark:text-blue-300 ring-1 ring-blue-100/80 dark:ring-blue-900">
             <PlusCircle className="h-5 w-5" strokeWidth={2} />
           </div>
-          <p className="text-base font-medium text-slate-900">
+          <p className="text-base font-medium text-slate-900 dark:text-slate-50">
             Aucun véhicule dans cette catégorie.
           </p>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Ajoutez votre premier véhicule pour commencer le suivi.
           </p>
           <button
@@ -908,15 +908,15 @@ function EmptyStatesSection() {
         </div>
 
         {/* Variante 2 : succès / à jour */}
-        <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-6 shadow-ride-xs ring-1 ring-emerald-100">
-          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 ring-1 ring-emerald-200">
+        <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/40 p-6 shadow-ride-xs ring-1 ring-emerald-100 dark:ring-emerald-900">
+          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-900">
             <CheckCircle2 className="h-4 w-4" strokeWidth={2} />
           </div>
           <div>
-            <p className="text-base font-medium text-emerald-900">
+            <p className="text-base font-medium text-emerald-900 dark:text-emerald-200">
               Aucun rappel actif.
             </p>
-            <p className="mt-1 text-sm text-emerald-800/80">
+            <p className="mt-1 text-sm text-emerald-800/80 dark:text-emerald-300/80">
               Le véhicule est à jour pour le moment.
             </p>
           </div>
@@ -942,19 +942,19 @@ function Badge({
   const styles: Record<BadgeVariant, { bg: string; dot: string; text: string }> =
     {
       success: {
-        bg: "bg-emerald-50",
+        bg: "bg-emerald-50 dark:bg-emerald-950/40",
         dot: "bg-emerald-500",
-        text: "text-emerald-800",
+        text: "text-emerald-800 dark:text-emerald-300",
       },
       warning: {
-        bg: "bg-amber-50",
+        bg: "bg-amber-50 dark:bg-amber-950/40",
         dot: "bg-amber-500",
-        text: "text-amber-800",
+        text: "text-amber-800 dark:text-amber-300",
       },
       danger: {
-        bg: "bg-red-50",
+        bg: "bg-red-50 dark:bg-red-950/40",
         dot: "bg-red-500",
-        text: "text-red-800",
+        text: "text-red-800 dark:text-red-300",
       },
     };
 
@@ -976,7 +976,7 @@ function BadgesSection() {
       title="Badges de statut"
       description="Statuts entretien : À jour · Bientôt dû · En retard."
     >
-      <div className="rounded-2xl border border-slate-200 bg-white p-8">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8">
         <div className="flex flex-wrap items-center gap-4">
           <Badge variant="success">À jour</Badge>
           <Badge variant="warning">Bientôt dû</Badge>
@@ -1005,24 +1005,24 @@ function Input({
   error?: string;
 }) {
   const ring: Record<InputState, string> = {
-    default: "border border-slate-200",
+    default: "border border-slate-200 dark:border-slate-800",
     focus: "border-2 border-blue-700 ring-4 ring-blue-700/10",
     error: "border border-red-500",
   };
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-[13px] font-medium uppercase tracking-wider text-slate-600">
+      <label className="text-[13px] font-medium uppercase tracking-wider text-slate-600 dark:text-slate-300">
         {label}
       </label>
       <input
         type="text"
         placeholder={placeholder}
         readOnly={state !== "default"}
-        className={`h-11 rounded-2xl bg-white px-3.5 text-base text-slate-900 placeholder:text-slate-400 outline-none ${ring[state]}`}
+        className={`h-11 rounded-2xl bg-white dark:bg-slate-900 px-3.5 text-base text-slate-900 dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none ${ring[state]}`}
       />
       {state === "error" && error ? (
-        <p className="text-xs text-red-700">{error}</p>
+        <p className="text-xs text-red-700 dark:text-red-300">{error}</p>
       ) : null}
     </div>
   );
@@ -1031,7 +1031,7 @@ function Input({
 function InputsSection() {
   return (
     <Section title="Inputs">
-      <div className="grid gap-6 rounded-2xl border border-slate-200 bg-white p-8 md:grid-cols-3">
+      <div className="grid gap-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 md:grid-cols-3">
         <Input label="Default" placeholder="Marque du véhicule" />
         <Input
           label="Focus"

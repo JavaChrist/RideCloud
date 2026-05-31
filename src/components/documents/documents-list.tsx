@@ -82,11 +82,11 @@ export function DocumentsList({ vehicleId, items }: { vehicleId: string; items: 
       <CardHeader><CardTitle>Documents</CardTitle></CardHeader>
       <CardContent className="space-y-3">
         {!isUuidVehicle && (
-          <p className="rounded-md border border-amber-200 bg-amber-50 p-2 text-sm text-amber-800">
+          <p className="rounded-md border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 p-2 text-sm text-amber-800 dark:text-amber-300">
             Véhicule de démonstration : les actions CRUD sont désactivées.
           </p>
         )}
-        <div className="space-y-2 rounded-lg border bg-white p-3">
+        <div className="space-y-2 rounded-lg border bg-white dark:bg-slate-900 p-3">
           <Input type="file" onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)} />
           <Button onClick={uploadDocument} disabled={loading || !selectedFile || !isUuidVehicle} className="w-full">
             {loading ? "Envoi..." : "Ajouter un document"}
@@ -97,17 +97,17 @@ export function DocumentsList({ vehicleId, items }: { vehicleId: string; items: 
         {items.map((doc) => (
           <div key={doc.id} className="flex flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-slate-100 p-2"><FileText className="h-5 w-5 text-slate-600" /></div>
+              <div className="rounded-lg bg-slate-100 dark:bg-slate-800 p-2"><FileText className="h-5 w-5 text-slate-600 dark:text-slate-300" /></div>
               <div>
                 <p className="font-medium">{doc.nom_fichier}</p>
-                <p className="text-sm text-slate-600">Type : {doc.type_fichier} - Ajouté le {formatDateFr(doc.created_at)}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Type : {doc.type_fichier} - Ajouté le {formatDateFr(doc.created_at)}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" asChild>
                 <a href={doc.url} target="_blank" rel="noreferrer"><Download className="mr-2 h-4 w-4" />Ouvrir</a>
               </Button>
-              <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => deleteDocument(doc.id)}>
+              <Button variant="ghost" size="sm" className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300" onClick={() => deleteDocument(doc.id)}>
                 Supprimer
               </Button>
             </div>

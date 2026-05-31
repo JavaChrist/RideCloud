@@ -124,7 +124,7 @@ export function UpdateKilometrageDialog({
         onClick={openDialog}
         disabled={isDemoVehicle}
         aria-label="Mettre à jour le kilométrage"
-        className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 transition-colors duration-150 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 transition-colors duration-150 hover:border-blue-200 dark:hover:border-blue-900 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-700 dark:hover:text-blue-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Pencil className="h-3 w-3" aria-hidden strokeWidth={2.25} />
         Mettre à jour le KM
@@ -144,17 +144,17 @@ export function UpdateKilometrageDialog({
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
             disabled={isSaving}
           />
-          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-slate-200/80 bg-gradient-to-br from-blue-50 to-white p-6">
+          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-blue-50 dark:from-blue-950/40 to-white dark:to-slate-900 p-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-blue-200 bg-white text-blue-700 shadow-ride-xs">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-blue-200 dark:border-blue-900 bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-300 shadow-ride-xs">
                   <Gauge className="h-5 w-5" aria-hidden />
                 </div>
                 <div>
-                  <h3 id="km-dialog-title" className="text-base font-semibold text-slate-900">
+                  <h3 id="km-dialog-title" className="text-base font-semibold text-slate-900 dark:text-slate-50">
                     Mettre à jour le compteur
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Actuel : <span className="font-mono tabular-nums">
                       {currentKm.toLocaleString("fr-FR")} km
                     </span>
@@ -166,7 +166,7 @@ export function UpdateKilometrageDialog({
                 onClick={() => setIsOpen(false)}
                 disabled={isSaving}
                 aria-label="Annuler"
-                className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
+                className="rounded-lg p-1.5 text-slate-400 dark:text-slate-500 transition hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-50"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -176,7 +176,7 @@ export function UpdateKilometrageDialog({
               <div>
                 <label
                   htmlFor="km-input"
-                  className="mb-2 block text-sm font-medium text-slate-700"
+                  className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200"
                 >
                   Nouveau kilométrage
                 </label>
@@ -199,14 +199,14 @@ export function UpdateKilometrageDialog({
                     disabled={isSaving}
                     className="pr-12 font-mono text-lg tabular-nums"
                   />
-                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm font-medium text-slate-400">
+                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm font-medium text-slate-400 dark:text-slate-500">
                     km
                   </span>
                 </div>
               </div>
 
               <div>
-                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Ajouter rapidement
                 </p>
                 <div className="grid grid-cols-4 gap-2">
@@ -216,7 +216,7 @@ export function UpdateKilometrageDialog({
                       type="button"
                       onClick={() => handleIncrement(increment)}
                       disabled={isSaving}
-                      className="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs font-medium text-slate-700 transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 hover:shadow-ride-xs disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 transition hover:-translate-y-0.5 hover:border-blue-200 dark:hover:border-blue-900 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-ride-xs disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Plus className="h-3 w-3" strokeWidth={2.5} aria-hidden />
                       {increment >= 1000
@@ -233,7 +233,7 @@ export function UpdateKilometrageDialog({
                   variant="ghost"
                   onClick={() => setIsOpen(false)}
                   disabled={isSaving}
-                  className="text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  className="text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-50"
                 >
                   Annuler
                 </Button>

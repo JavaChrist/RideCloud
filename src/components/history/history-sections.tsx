@@ -384,16 +384,16 @@ export function HistorySections({
   return (
     <div className="space-y-4">
       {hasUnlinkedHistory && (
-        <div className="flex flex-col gap-3 rounded-2xl border border-blue-200 bg-blue-50/60 p-4 shadow-ride-xs sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50/60 dark:bg-blue-950/40 p-4 shadow-ride-xs sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300">
               <RefreshCw className="h-4 w-4" strokeWidth={2} />
             </div>
             <div className="space-y-0.5">
-              <p className="text-sm font-medium text-slate-900">
+              <p className="text-sm font-medium text-slate-900 dark:text-slate-50">
                 Des entretiens passés ne sont pas liés au plan
               </p>
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
                 Synchronisez votre historique pour mettre à jour les rappels et les prochaines échéances.
               </p>
             </div>
@@ -411,15 +411,15 @@ export function HistorySections({
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">
-      <Card className="border-emerald-200 bg-emerald-50/40">
-        <CardHeader><CardTitle className="text-emerald-700">Déjà effectué</CardTitle></CardHeader>
+      <Card className="border-emerald-200 dark:border-emerald-900 bg-emerald-50/40 dark:bg-emerald-950/40">
+        <CardHeader><CardTitle className="text-emerald-700 dark:text-emerald-300">Déjà effectué</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           {!isUuidVehicle && (
-            <p className="rounded-md border border-amber-200 bg-amber-50 p-2 text-sm text-amber-800">
+            <p className="rounded-md border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 p-2 text-sm text-amber-800 dark:text-amber-300">
               Véhicule de démonstration : les actions CRUD sont désactivées. Créez un véhicule réel pour modifier les données.
             </p>
           )}
-          <div className="space-y-2 rounded-lg border border-emerald-200 bg-white p-3">
+          <div className="space-y-2 rounded-lg border border-emerald-200 dark:border-emerald-900 bg-white dark:bg-slate-900 p-3">
             <Input placeholder="Titre (ex: Vidange moteur)" value={doneForm.titre} onChange={(e) => setDoneForm((s) => ({ ...s, titre: e.target.value }))} />
             <select
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
@@ -444,12 +444,12 @@ export function HistorySections({
 
           {completed.length === 0 && <p className="text-sm text-muted-foreground">Aucune opération enregistrée.</p>}
           {completed.map((item) => (
-            <div key={item.id} className="rounded-lg border border-emerald-200 bg-white p-3">
+            <div key={item.id} className="rounded-lg border border-emerald-200 dark:border-emerald-900 bg-white dark:bg-slate-900 p-3">
               <p className="font-medium">{item.titre}</p>
-              <p className="text-sm text-slate-600">Date : {formatDateFr(item.date_entretien)} - {item.kilometrage.toLocaleString("fr-FR")} km</p>
-              <p className="text-sm text-slate-600">Coût : {item.cout ? `${item.cout} €` : "Non renseigné"}</p>
-              {item.description && <p className="mt-1 text-sm text-slate-600">{item.description}</p>}
-              <Button variant="ghost" size="sm" className="mt-1 text-red-600 hover:text-red-700" onClick={() => deleteCompleted(item.id)}>
+              <p className="text-sm text-slate-600 dark:text-slate-300">Date : {formatDateFr(item.date_entretien)} - {item.kilometrage.toLocaleString("fr-FR")} km</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">Coût : {item.cout ? `${item.cout} €` : "Non renseigné"}</p>
+              {item.description && <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{item.description}</p>}
+              <Button variant="ghost" size="sm" className="mt-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300" onClick={() => deleteCompleted(item.id)}>
                 Supprimer
               </Button>
             </div>
@@ -457,10 +457,10 @@ export function HistorySections({
         </CardContent>
       </Card>
 
-      <Card className="border-amber-200 bg-amber-50/40">
-        <CardHeader><CardTitle className="text-amber-700">À prévoir</CardTitle></CardHeader>
+      <Card className="border-amber-200 dark:border-amber-900 bg-amber-50/40 dark:bg-amber-950/40">
+        <CardHeader><CardTitle className="text-amber-700 dark:text-amber-300">À prévoir</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          <div className="space-y-2 rounded-lg border border-amber-200 bg-white p-3">
+          <div className="space-y-2 rounded-lg border border-amber-200 dark:border-amber-900 bg-white dark:bg-slate-900 p-3">
             <Input placeholder="Titre (ex: Contrôle pneus)" value={upcomingForm.titre} onChange={(e) => setUpcomingForm((s) => ({ ...s, titre: e.target.value }))} />
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <Input type="date" value={upcomingForm.due_date} onChange={(e) => setUpcomingForm((s) => ({ ...s, due_date: e.target.value }))} />
@@ -480,7 +480,7 @@ export function HistorySections({
 
           {unifiedUpcoming.length === 0 && <p className="text-sm text-muted-foreground">Aucune échéance à prévoir.</p>}
           {unifiedUpcoming.map((item) => (
-            <div key={item.id} className="rounded-lg border border-amber-200 bg-white p-3">
+            <div key={item.id} className="rounded-lg border border-amber-200 dark:border-amber-900 bg-white dark:bg-slate-900 p-3">
               <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
                 <p className="min-w-0 flex-1 font-medium leading-tight">{item.titre}</p>
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -498,11 +498,11 @@ export function HistorySections({
                   </Badge>
                 </div>
               </div>
-              <p className="text-sm text-slate-600">{item.due_km ? `Échéance à ${item.due_km.toLocaleString("fr-FR")} km` : "Kilométrage non défini"}</p>
-              <p className="text-sm text-slate-600">{item.due_date ? `Date cible : ${formatDateFr(item.due_date)}` : "Date non définie"}</p>
-              {item.description && <p className="mt-1 text-sm text-slate-600">{item.description}</p>}
+              <p className="text-sm text-slate-600 dark:text-slate-300">{item.due_km ? `Échéance à ${item.due_km.toLocaleString("fr-FR")} km` : "Kilométrage non défini"}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">{item.due_date ? `Date cible : ${formatDateFr(item.due_date)}` : "Date non définie"}</p>
+              {item.description && <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{item.description}</p>}
               {item.source !== "template" && (
-                <Button variant="ghost" size="sm" className="mt-1 text-red-600 hover:text-red-700" onClick={() => deleteUpcoming(item.id)}>
+                <Button variant="ghost" size="sm" className="mt-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300" onClick={() => deleteUpcoming(item.id)}>
                   Supprimer
                 </Button>
               )}

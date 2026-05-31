@@ -2,6 +2,15 @@ import { createClient as createSupabaseClient, type SupabaseClient } from "@supa
 import type { Database } from "@/types/database";
 import { supabaseServiceRoleKey, supabaseUrl } from "@/lib/supabase/env";
 
+function buildAdminClient(url: string, serviceRoleKey: string): SupabaseClient<Database> {
+  return createSupabaseClient<Database>(url, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+}
+
 /**
  * Crée un client Supabase administrateur (service role).
  *
@@ -10,6 +19,7 @@ import { supabaseServiceRoleKey, supabaseUrl } from "@/lib/supabase/env";
  * l'ensemble de l'API d'administration.
  *
  * Lance une erreur explicite si SUPABASE_SERVICE_ROLE_KEY n'est pas configurée.
+ * Réservé aux opérations d'écriture/admin déclenchées explicitement.
  */
 export function createAdminClient(): SupabaseClient<Database> {
   if (!supabaseUrl || !supabaseServiceRoleKey) {
@@ -18,10 +28,20 @@ export function createAdminClient(): SupabaseClient<Database> {
     );
   }
 
-  return createSupabaseClient<Database>(supabaseUrl, supabaseServiceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  });
+  return buildAdminClient(supabaseUrl, supabaseServiceRoleKey);
+}
+
+/**
+ * Variante non-levée du client administrateur.
+ *
+ * Retourne `null` (au lieu de lancer une erreur) quand l'URL Supabase ou la
+ * clé service role est absente. À utiliser sur les chemins de LECTURE/affichage
+ * qui doivent se dégrader silencieusement plutôt que de planter le rendu.
+ */
+export function tryCreateAdminClient(): SupabaseClient<Database> | null {
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    return null;
+  }
+
+  return buildAdminClient(supabaseUrl, supabaseServiceRoleKey);
 }

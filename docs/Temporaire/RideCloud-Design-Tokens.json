@@ -1,0 +1,713 @@
+{
+  "$meta": {
+    "version": "2.1.0",
+    "status": "production-ready",
+    "description": "Tokens RideCloud · alignés avec tailwind.config.ts (ride-* tokens) et le hook useConfirm (5 variantes).",
+    "updated": "2026-05-17"
+  },
+  "global": {
+    "color": {
+      "brand": {
+        "value": "#1d4ed8",
+        "type": "color",
+        "description": "Couleur de marque RideCloud · CTA, accents, focus · Tailwind blue-700"
+      },
+      "brand-hover": {
+        "value": "#1e40af",
+        "type": "color",
+        "description": "État hover du bouton primaire · Tailwind blue-800"
+      },
+      "accent-indigo": {
+        "value": "#4338ca",
+        "type": "color",
+        "description": "Accent indigo · second pôle des gradients de marque · Tailwind indigo-700"
+      },
+      "indigo-deep": {
+        "value": "#1e1b4b",
+        "type": "color",
+        "description": "Indigo profond · fonds sombres premium, hero immersif · Tailwind indigo-950"
+      },
+      "background": {
+        "value": "#f8fafc",
+        "type": "color",
+        "description": "Fond standard application & marketing · Tailwind slate-50"
+      },
+      "surface": {
+        "value": "#ffffff",
+        "type": "color",
+        "description": "Surfaces cartes, modales, mockups"
+      },
+      "text-primary": {
+        "value": "#0f172a",
+        "type": "color",
+        "description": "Texte principal · titres et corps · Tailwind slate-900"
+      },
+      "text-secondary": {
+        "value": "#475569",
+        "type": "color",
+        "description": "Texte secondaire · labels et métadonnées · Tailwind slate-600"
+      },
+      "text-disabled": {
+        "value": "#94a3b8",
+        "type": "color",
+        "description": "Texte désactivé · Tailwind slate-400"
+      },
+      "border": {
+        "value": "#e2e8f0",
+        "type": "color",
+        "description": "Bordures neutres et séparateurs · Tailwind slate-200"
+      },
+      "success": {
+        "value": "#10b981",
+        "type": "color",
+        "description": "Succès · statut À jour · validation · Tailwind emerald-500"
+      },
+      "success-bg": {
+        "value": "#ecfdf5",
+        "type": "color",
+        "description": "Fond badge succès · Tailwind emerald-50"
+      },
+      "success-text": {
+        "value": "#065f46",
+        "type": "color",
+        "description": "Texte badge succès · Tailwind emerald-800"
+      },
+      "success-border": {
+        "value": "#a7f3d0",
+        "type": "color",
+        "description": "Bordure badge succès · Tailwind emerald-200"
+      },
+      "warning": {
+        "value": "#f59e0b",
+        "type": "color",
+        "description": "Avertissement · statut À anticiper · Tailwind amber-500"
+      },
+      "warning-bg": {
+        "value": "#fffbeb",
+        "type": "color",
+        "description": "Fond badge avertissement · Tailwind amber-50"
+      },
+      "warning-text": {
+        "value": "#92400e",
+        "type": "color",
+        "description": "Texte badge avertissement · Tailwind amber-800"
+      },
+      "warning-border": {
+        "value": "#fde68a",
+        "type": "color",
+        "description": "Bordure badge avertissement · Tailwind amber-200"
+      },
+      "danger": {
+        "value": "#ef4444",
+        "type": "color",
+        "description": "Urgent · statut En retard · suppression · Tailwind red-500"
+      },
+      "danger-bg": {
+        "value": "#fef2f2",
+        "type": "color",
+        "description": "Fond badge urgent · Tailwind red-50"
+      },
+      "danger-text": {
+        "value": "#991b1b",
+        "type": "color",
+        "description": "Texte badge urgent · Tailwind red-800"
+      },
+      "danger-border": {
+        "value": "#fecaca",
+        "type": "color",
+        "description": "Bordure badge urgent · Tailwind red-200"
+      },
+      "info": {
+        "value": "#0ea5e9",
+        "type": "color",
+        "description": "Information neutre · statut À prévoir · Tailwind sky-500"
+      },
+      "info-bg": {
+        "value": "#f0f9ff",
+        "type": "color",
+        "description": "Fond badge info · Tailwind sky-50"
+      },
+      "info-text": {
+        "value": "#075985",
+        "type": "color",
+        "description": "Texte badge info · Tailwind sky-800"
+      },
+      "info-border": {
+        "value": "#bae6fd",
+        "type": "color",
+        "description": "Bordure badge info · Tailwind sky-200"
+      },
+      "ai": {
+        "value": "#8b5cf6",
+        "type": "color",
+        "description": "Couleur primaire IA · génération Mistral, badges & boutons IA · Tailwind violet-500"
+      },
+      "ai-end": {
+        "value": "#6366f1",
+        "type": "color",
+        "description": "Couleur fin du gradient AI · Tailwind indigo-500"
+      },
+      "ai-bg": {
+        "value": "#f5f3ff",
+        "type": "color",
+        "description": "Fond pastel IA · badge & wrapper d'icône · Tailwind violet-50"
+      },
+      "ai-text": {
+        "value": "#5b21b6",
+        "type": "color",
+        "description": "Texte sur fond IA pastel · Tailwind violet-800"
+      },
+      "ai-border": {
+        "value": "#ddd6fe",
+        "type": "color",
+        "description": "Bordure badge IA · Tailwind violet-200"
+      },
+      "pastel-sky": {
+        "value": "#e0f2fe",
+        "type": "color",
+        "description": "Pastel ciel · fonds mockups marketing · Tailwind sky-100"
+      },
+      "pastel-indigo": {
+        "value": "#eef2ff",
+        "type": "color",
+        "description": "Pastel indigo · fonds hero secondaire · Tailwind indigo-50"
+      },
+      "pastel-slate": {
+        "value": "#f1f5f9",
+        "type": "color",
+        "description": "Pastel slate · fonds fiche produit · Tailwind slate-100"
+      },
+      "pastel-mint": {
+        "value": "#ecfdf5",
+        "type": "color",
+        "description": "Pastel mint · visuels valeur économique · Tailwind emerald-50"
+      },
+      "pastel-violet": {
+        "value": "#f5f3ff",
+        "type": "color",
+        "description": "Pastel violet · visuels IA · Tailwind violet-50"
+      },
+      "pastel-amber": {
+        "value": "#fffbeb",
+        "type": "color",
+        "description": "Pastel ambre · visuels prévention / anticipation · Tailwind amber-50"
+      }
+    },
+    "gradient": {
+      "primary": {
+        "value": "linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%)",
+        "type": "gradient",
+        "description": "ride-gradient-primary · CTA principal, en-têtes premium"
+      },
+      "primary-hover": {
+        "value": "linear-gradient(135deg, #1e40af 0%, #3730a3 100%)",
+        "type": "gradient",
+        "description": "ride-gradient-primary-hover · état survol CTA principal"
+      },
+      "dark": {
+        "value": "linear-gradient(135deg, #1e1b4b 0%, #1d4ed8 50%, #4338ca 100%)",
+        "type": "gradient",
+        "description": "ride-gradient-dark · hero immersif, sections sombres"
+      },
+      "surface": {
+        "value": "linear-gradient(180deg, #ffffff 0%, rgba(248, 250, 252, 0.6) 100%)",
+        "type": "gradient",
+        "description": "ride-gradient-surface · cartes premium, fonds subtils"
+      },
+      "card": {
+        "value": "linear-gradient(180deg, #ffffff 0%, rgba(248, 250, 252, 0.4) 100%)",
+        "type": "gradient",
+        "description": "ride-gradient-card · cartes au repos"
+      },
+      "text": {
+        "value": "linear-gradient(135deg, #1d4ed8 0%, #6366f1 50%, #1d4ed8 100%)",
+        "type": "gradient",
+        "description": "ride-gradient-text · titres marketing · à appliquer via bg-clip-text"
+      },
+      "ai": {
+        "value": "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
+        "type": "gradient",
+        "description": "ride-gradient-ai · boutons & badges IA"
+      },
+      "ai-hover": {
+        "value": "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)",
+        "type": "gradient",
+        "description": "ride-gradient-ai-hover · état survol boutons IA"
+      },
+      "ai-pastel": {
+        "value": "linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%)",
+        "type": "gradient",
+        "description": "Gradient pastel pour wrapper icône / badge IA"
+      }
+    },
+    "font": {
+      "family-sans": {
+        "value": "Geist Sans",
+        "type": "fontFamilies",
+        "description": "Famille principale · fallback Inter"
+      },
+      "family-mono": {
+        "value": "Geist Mono",
+        "type": "fontFamilies",
+        "description": "Famille mono · KPI, valeurs chiffrées · fallback JetBrains Mono"
+      },
+      "weight-regular": {
+        "value": 400,
+        "type": "fontWeights"
+      },
+      "weight-medium": {
+        "value": 500,
+        "type": "fontWeights"
+      },
+      "weight-semibold": {
+        "value": 600,
+        "type": "fontWeights"
+      }
+    },
+    "typography": {
+      "hero": {
+        "value": {
+          "fontFamily": "{font.family-sans}",
+          "fontWeight": "{font.weight-semibold}",
+          "fontSize": "56",
+          "lineHeight": "1.1",
+          "letterSpacing": "-2%"
+        },
+        "type": "typography",
+        "description": "Hero title · landing et vidéo"
+      },
+      "h1": {
+        "value": {
+          "fontFamily": "{font.family-sans}",
+          "fontWeight": "{font.weight-semibold}",
+          "fontSize": "36",
+          "lineHeight": "1.2",
+          "letterSpacing": "-1.5%"
+        },
+        "type": "typography",
+        "description": "Titre de section"
+      },
+      "h2": {
+        "value": {
+          "fontFamily": "{font.family-sans}",
+          "fontWeight": "{font.weight-medium}",
+          "fontSize": "22",
+          "lineHeight": "1.3",
+          "letterSpacing": "-1%"
+        },
+        "type": "typography",
+        "description": "Sous-titre · accroche"
+      },
+      "body": {
+        "value": {
+          "fontFamily": "{font.family-sans}",
+          "fontWeight": "{font.weight-regular}",
+          "fontSize": "16",
+          "lineHeight": "1.5",
+          "letterSpacing": "0"
+        },
+        "type": "typography",
+        "description": "Corps de texte"
+      },
+      "caption": {
+        "value": {
+          "fontFamily": "{font.family-sans}",
+          "fontWeight": "{font.weight-medium}",
+          "fontSize": "13",
+          "lineHeight": "1.4",
+          "letterSpacing": "2%"
+        },
+        "type": "typography",
+        "description": "Légende · métadonnée · label"
+      },
+      "kpi": {
+        "value": {
+          "fontFamily": "{font.family-mono}",
+          "fontWeight": "{font.weight-semibold}",
+          "fontSize": "48",
+          "lineHeight": "1.1",
+          "letterSpacing": "-2%"
+        },
+        "type": "typography",
+        "description": "Chiffre vedette · KPI · tabular numbers"
+      },
+      "button": {
+        "value": {
+          "fontFamily": "{font.family-sans}",
+          "fontWeight": "{font.weight-medium}",
+          "fontSize": "15",
+          "lineHeight": "1",
+          "letterSpacing": "0"
+        },
+        "type": "typography",
+        "description": "Texte de bouton"
+      },
+      "price": {
+        "value": {
+          "fontFamily": "{font.family-mono}",
+          "fontWeight": "{font.weight-semibold}",
+          "fontSize": "32",
+          "lineHeight": "1.1",
+          "letterSpacing": "-2%"
+        },
+        "type": "typography",
+        "description": "Prix sur cartes tarifaires"
+      }
+    },
+    "radius": {
+      "sm": {
+        "value": "8",
+        "type": "borderRadius",
+        "description": "Inputs compacts, chips"
+      },
+      "md": {
+        "value": "12",
+        "type": "borderRadius",
+        "description": "Boutons (rounded-xl) et petits composants"
+      },
+      "lg": {
+        "value": "16",
+        "type": "borderRadius",
+        "description": "Cartes (rounded-2xl) et mockups"
+      },
+      "xl": {
+        "value": "20",
+        "type": "borderRadius",
+        "description": "Mockups produit, modales"
+      },
+      "full": {
+        "value": "9999",
+        "type": "borderRadius",
+        "description": "Pills, badges, avatars"
+      }
+    },
+    "spacing": {
+      "xs": { "value": "4", "type": "spacing" },
+      "sm": { "value": "8", "type": "spacing" },
+      "md": { "value": "12", "type": "spacing" },
+      "lg": { "value": "16", "type": "spacing" },
+      "xl": { "value": "24", "type": "spacing" },
+      "2xl": { "value": "32", "type": "spacing" },
+      "3xl": { "value": "48", "type": "spacing" }
+    },
+    "shadow": {
+      "ride-xs": {
+        "value": {
+          "x": "0",
+          "y": "1",
+          "blur": "2",
+          "spread": "0",
+          "color": "rgba(15, 23, 42, 0.04)",
+          "type": "dropShadow"
+        },
+        "type": "boxShadow",
+        "description": "Ombre minimale · boutons, inputs"
+      },
+      "ride-sm": {
+        "value": [
+          { "x": "0", "y": "1", "blur": "3", "spread": "0", "color": "rgba(15, 23, 42, 0.06)", "type": "dropShadow" },
+          { "x": "0", "y": "1", "blur": "2", "spread": "0", "color": "rgba(15, 23, 42, 0.04)", "type": "dropShadow" }
+        ],
+        "type": "boxShadow",
+        "description": "Ombre subtile · cartes de liste"
+      },
+      "ride-md": {
+        "value": [
+          { "x": "0", "y": "4", "blur": "12", "spread": "-2", "color": "rgba(15, 23, 42, 0.08)", "type": "dropShadow" },
+          { "x": "0", "y": "2", "blur": "4", "spread": "0", "color": "rgba(15, 23, 42, 0.04)", "type": "dropShadow" }
+        ],
+        "type": "boxShadow",
+        "description": "Ombre moyenne · cartes au repos"
+      },
+      "ride-lg": {
+        "value": [
+          { "x": "0", "y": "12", "blur": "32", "spread": "-8", "color": "rgba(15, 23, 42, 0.12)", "type": "dropShadow" },
+          { "x": "0", "y": "4", "blur": "8", "spread": "0", "color": "rgba(15, 23, 42, 0.04)", "type": "dropShadow" }
+        ],
+        "type": "boxShadow",
+        "description": "Ombre prononcée · cartes survolées, modales"
+      },
+      "ride-xl": {
+        "value": [
+          { "x": "0", "y": "24", "blur": "60", "spread": "-16", "color": "rgba(15, 23, 42, 0.18)", "type": "dropShadow" },
+          { "x": "0", "y": "8", "blur": "20", "spread": "0", "color": "rgba(15, 23, 42, 0.06)", "type": "dropShadow" }
+        ],
+        "type": "boxShadow",
+        "description": "Ombre forte · éléments en mise en scène"
+      },
+      "ride-float": {
+        "value": [
+          { "x": "0", "y": "32", "blur": "80", "spread": "-24", "color": "rgba(29, 78, 216, 0.22)", "type": "dropShadow" },
+          { "x": "0", "y": "12", "blur": "32", "spread": "-16", "color": "rgba(15, 23, 42, 0.12)", "type": "dropShadow" }
+        ],
+        "type": "boxShadow",
+        "description": "Ombre flottante teintée bleu · hero, sections marketing"
+      },
+      "ride-glow": {
+        "value": [
+          { "x": "0", "y": "0", "blur": "0", "spread": "1", "color": "rgba(29, 78, 216, 0.10)", "type": "dropShadow" },
+          { "x": "0", "y": "8", "blur": "32", "spread": "-8", "color": "rgba(29, 78, 216, 0.35)", "type": "dropShadow" }
+        ],
+        "type": "boxShadow",
+        "description": "Bague lumineuse · CTA Premium, plan recommandé"
+      },
+      "ride-ai-glow": {
+        "value": [
+          { "x": "0", "y": "0", "blur": "0", "spread": "1", "color": "rgba(139, 92, 246, 0.10)", "type": "dropShadow" },
+          { "x": "0", "y": "8", "blur": "32", "spread": "-8", "color": "rgba(139, 92, 246, 0.35)", "type": "dropShadow" }
+        ],
+        "type": "boxShadow",
+        "description": "Bague lumineuse violette · boutons & badges IA"
+      },
+      "soft": {
+        "value": {
+          "x": "0",
+          "y": "24",
+          "blur": "48",
+          "spread": "0",
+          "color": "rgba(15, 23, 42, 0.08)",
+          "type": "dropShadow"
+        },
+        "type": "boxShadow",
+        "description": "Ombre douce pour mockups produit (legacy v1)"
+      }
+    },
+    "motion": {
+      "duration-fast": {
+        "value": "150",
+        "type": "duration",
+        "description": "Hover, focus rings, micro-feedback"
+      },
+      "duration-base": {
+        "value": "200",
+        "type": "duration",
+        "description": "Transitions standard boutons, cartes"
+      },
+      "duration-slow": {
+        "value": "300",
+        "type": "duration",
+        "description": "Apparition modales, drawers"
+      },
+      "easing-spring": {
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "type": "cubicBezier",
+        "description": "ride-spring · easing par défaut RideCloud"
+      },
+      "easing-out": {
+        "value": "cubic-bezier(0, 0, 0.2, 1)",
+        "type": "cubicBezier",
+        "description": "ease-out · entrées discrètes"
+      }
+    }
+  },
+  "component": {
+    "button-primary": {
+      "background": {
+        "value": "{gradient.primary}",
+        "type": "gradient",
+        "description": "Fond CTA principal · gradient bleu → indigo"
+      },
+      "background-hover": {
+        "value": "{gradient.primary-hover}",
+        "type": "gradient"
+      },
+      "text": {
+        "value": "{color.surface}",
+        "type": "color"
+      },
+      "shadow": {
+        "value": "{shadow.ride-md}",
+        "type": "boxShadow"
+      },
+      "shadow-hover": {
+        "value": "{shadow.ride-lg}",
+        "type": "boxShadow"
+      },
+      "radius": {
+        "value": "{radius.md}",
+        "type": "borderRadius",
+        "description": "12 px (rounded-xl)"
+      },
+      "padding-y": {
+        "value": "{spacing.md}",
+        "type": "spacing"
+      },
+      "padding-x": {
+        "value": "{spacing.xl}",
+        "type": "spacing"
+      },
+      "typography": {
+        "value": "{typography.button}",
+        "type": "typography"
+      }
+    },
+    "button-secondary": {
+      "background": { "value": "{color.surface}", "type": "color" },
+      "background-hover": { "value": "{color.pastel-indigo}", "type": "color" },
+      "text": { "value": "{color.brand}", "type": "color" },
+      "border": { "value": "{color.brand}", "type": "color" },
+      "radius": { "value": "{radius.md}", "type": "borderRadius" },
+      "padding-y": { "value": "{spacing.md}", "type": "spacing" },
+      "padding-x": { "value": "{spacing.xl}", "type": "spacing" },
+      "typography": { "value": "{typography.button}", "type": "typography" }
+    },
+    "button-ghost": {
+      "background": { "value": "transparent", "type": "color" },
+      "background-hover": { "value": "{color.pastel-slate}", "type": "color" },
+      "text": { "value": "{color.text-primary}", "type": "color" },
+      "border": { "value": "{color.border}", "type": "color" },
+      "radius": { "value": "{radius.md}", "type": "borderRadius" },
+      "padding-y": { "value": "{spacing.md}", "type": "spacing" },
+      "padding-x": { "value": "{spacing.xl}", "type": "spacing" },
+      "typography": { "value": "{typography.button}", "type": "typography" }
+    },
+    "button-ai": {
+      "background": { "value": "{gradient.ai}", "type": "gradient" },
+      "background-hover": { "value": "{gradient.ai-hover}", "type": "gradient" },
+      "text": { "value": "{color.surface}", "type": "color" },
+      "shadow": { "value": "{shadow.ride-ai-glow}", "type": "boxShadow" },
+      "icon": {
+        "value": "Sparkles",
+        "type": "icon",
+        "description": "Icône Lucide Sparkles obligatoire à gauche"
+      },
+      "radius": { "value": "{radius.md}", "type": "borderRadius" },
+      "padding-y": { "value": "{spacing.md}", "type": "spacing" },
+      "padding-x": { "value": "{spacing.xl}", "type": "spacing" },
+      "typography": { "value": "{typography.button}", "type": "typography" }
+    },
+    "badge-success": {
+      "background": { "value": "{color.success-bg}", "type": "color" },
+      "border": { "value": "{color.success-border}", "type": "color" },
+      "text": { "value": "{color.success-text}", "type": "color" },
+      "dot": { "value": "{color.success}", "type": "color" },
+      "radius": { "value": "{radius.full}", "type": "borderRadius" }
+    },
+    "badge-warning": {
+      "background": { "value": "{color.warning-bg}", "type": "color" },
+      "border": { "value": "{color.warning-border}", "type": "color" },
+      "text": { "value": "{color.warning-text}", "type": "color" },
+      "dot": { "value": "{color.warning}", "type": "color" },
+      "radius": { "value": "{radius.full}", "type": "borderRadius" }
+    },
+    "badge-danger": {
+      "background": { "value": "{color.danger-bg}", "type": "color" },
+      "border": { "value": "{color.danger-border}", "type": "color" },
+      "text": { "value": "{color.danger-text}", "type": "color" },
+      "dot": { "value": "{color.danger}", "type": "color" },
+      "radius": { "value": "{radius.full}", "type": "borderRadius" }
+    },
+    "badge-info": {
+      "background": { "value": "{color.info-bg}", "type": "color" },
+      "border": { "value": "{color.info-border}", "type": "color" },
+      "text": { "value": "{color.info-text}", "type": "color" },
+      "dot": { "value": "{color.info}", "type": "color" },
+      "radius": { "value": "{radius.full}", "type": "borderRadius" }
+    },
+    "badge-ai": {
+      "background": { "value": "{gradient.ai-pastel}", "type": "gradient" },
+      "border": { "value": "{color.ai-border}", "type": "color" },
+      "text": { "value": "{color.ai-text}", "type": "color" },
+      "icon": {
+        "value": "Sparkles",
+        "type": "icon",
+        "description": "Icône Lucide Sparkles à gauche · remplace le dot"
+      },
+      "radius": { "value": "{radius.full}", "type": "borderRadius" }
+    },
+    "card": {
+      "background": { "value": "{color.surface}", "type": "color" },
+      "border": { "value": "{color.border}", "type": "color" },
+      "radius": { "value": "{radius.lg}", "type": "borderRadius" },
+      "padding": { "value": "{spacing.xl}", "type": "spacing" },
+      "shadow": { "value": "{shadow.ride-md}", "type": "boxShadow" }
+    },
+    "card-featured": {
+      "background": { "value": "{gradient.surface}", "type": "gradient" },
+      "border": { "value": "{color.brand}", "type": "color" },
+      "border-width": { "value": "2", "type": "borderWidth" },
+      "radius": { "value": "{radius.lg}", "type": "borderRadius" },
+      "padding": { "value": "{spacing.xl}", "type": "spacing" },
+      "shadow": { "value": "{shadow.ride-glow}", "type": "boxShadow" }
+    },
+    "dialog-info": {
+      "icon-background": { "value": "{color.info-bg}", "type": "color" },
+      "icon-color": { "value": "{color.info-text}", "type": "color" },
+      "footer-background": { "value": "{color.info-bg}", "type": "color" },
+      "footer-border": { "value": "{color.info-border}", "type": "color" },
+      "confirm-background": { "value": "{color.info}", "type": "color" },
+      "icon": { "value": "Info", "type": "icon", "description": "Icône Lucide Info" }
+    },
+    "dialog-success": {
+      "icon-background": { "value": "{color.success-bg}", "type": "color" },
+      "icon-color": { "value": "{color.success-text}", "type": "color" },
+      "footer-background": { "value": "{color.success-bg}", "type": "color" },
+      "footer-border": { "value": "{color.success-border}", "type": "color" },
+      "confirm-background": { "value": "{color.success}", "type": "color" },
+      "icon": { "value": "CheckCircle2", "type": "icon", "description": "Icône Lucide CheckCircle2" }
+    },
+    "dialog-warning": {
+      "icon-background": { "value": "{color.warning-bg}", "type": "color" },
+      "icon-color": { "value": "{color.warning-text}", "type": "color" },
+      "footer-background": { "value": "{color.warning-bg}", "type": "color" },
+      "footer-border": { "value": "{color.warning-border}", "type": "color" },
+      "confirm-background": { "value": "{color.warning}", "type": "color" },
+      "icon": { "value": "AlertTriangle", "type": "icon", "description": "Icône Lucide AlertTriangle" }
+    },
+    "dialog-danger": {
+      "icon-background": { "value": "{color.danger-bg}", "type": "color" },
+      "icon-color": { "value": "{color.danger-text}", "type": "color" },
+      "footer-background": { "value": "{color.danger-bg}", "type": "color" },
+      "footer-border": { "value": "{color.danger-border}", "type": "color" },
+      "confirm-background": { "value": "{color.danger}", "type": "color" },
+      "icon": { "value": "Trash2", "type": "icon", "description": "Icône Lucide Trash2 ou AlertOctagon" }
+    },
+    "dialog-ai": {
+      "icon-background": { "value": "{gradient.ai-pastel}", "type": "gradient" },
+      "icon-color": { "value": "{color.ai-text}", "type": "color" },
+      "footer-background": { "value": "{gradient.ai-pastel}", "type": "gradient" },
+      "footer-border": { "value": "{color.ai-border}", "type": "color" },
+      "confirm-background": { "value": "{gradient.ai}", "type": "gradient" },
+      "icon": { "value": "Sparkles", "type": "icon", "description": "Icône Lucide Sparkles" }
+    },
+    "input": {
+      "background": { "value": "{color.surface}", "type": "color" },
+      "border": { "value": "{color.border}", "type": "color" },
+      "border-focus": { "value": "{color.brand}", "type": "color" },
+      "ring-focus": { "value": "rgba(29, 78, 216, 0.10)", "type": "color" },
+      "border-error": { "value": "{color.danger}", "type": "color" },
+      "text": { "value": "{color.text-primary}", "type": "color" },
+      "placeholder": { "value": "{color.text-disabled}", "type": "color" },
+      "radius": { "value": "{radius.md}", "type": "borderRadius" },
+      "padding-y": { "value": "{spacing.sm}", "type": "spacing" },
+      "padding-x": { "value": "{spacing.md}", "type": "spacing" },
+      "height": { "value": "44", "type": "sizing" }
+    },
+    "plan-card-free": {
+      "background": { "value": "{color.surface}", "type": "color" },
+      "border": { "value": "{color.border}", "type": "color" },
+      "radius": { "value": "{radius.lg}", "type": "borderRadius" },
+      "price": { "value": "0 €", "type": "string" },
+      "vehicles": { "value": "1", "type": "number" }
+    },
+    "plan-card-premium": {
+      "background": { "value": "{gradient.surface}", "type": "gradient" },
+      "border": { "value": "{color.brand}", "type": "color" },
+      "border-width": { "value": "2", "type": "borderWidth" },
+      "radius": { "value": "{radius.lg}", "type": "borderRadius" },
+      "shadow": { "value": "{shadow.ride-glow}", "type": "boxShadow" },
+      "price-monthly": { "value": "3,99 €", "type": "string" },
+      "price-yearly": { "value": "39 €", "type": "string", "description": "Économie de 18 %" },
+      "vehicles": { "value": "5", "type": "number" },
+      "badge": { "value": "Recommandé", "type": "string" }
+    },
+    "plan-card-family": {
+      "background": { "value": "{color.surface}", "type": "color" },
+      "border": { "value": "{color.border}", "type": "color" },
+      "radius": { "value": "{radius.lg}", "type": "borderRadius" },
+      "price-monthly": { "value": "6,99 €", "type": "string" },
+      "price-yearly": { "value": "69 €", "type": "string", "description": "Économie de 18 %" },
+      "vehicles": { "value": "15", "type": "number" }
+    }
+  }
+}

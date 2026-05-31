@@ -100,7 +100,7 @@ export function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-1 top-1 inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                  className="absolute right-1 top-1 inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200"
                   aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -118,22 +118,22 @@ export function LoginForm() {
 
         <div className="pt-1">
           <div
-            className={`rounded-2xl border bg-slate-50/60 px-3 py-2.5 transition-all duration-300 ${
+            className={`rounded-2xl border bg-slate-50/60 dark:bg-slate-950/60 px-3 py-2.5 transition-all duration-300 ${
               needsConfirmation
-                ? "border-amber-200 bg-amber-50/70 shadow-[0_0_0_4px_rgba(251,191,36,0.08)]"
-                : "border-slate-200/70"
+                ? "border-amber-200 dark:border-amber-900 bg-amber-50/70 dark:bg-amber-950/40 shadow-[0_0_0_4px_rgba(251,191,36,0.08)]"
+                : "border-slate-200/70 dark:border-slate-800/70"
             }`}
           >
             <button
               type="button"
               onClick={handleResend}
               disabled={isResending}
-              className="group flex w-full items-center justify-center gap-2 text-sm text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+              className="group flex w-full items-center justify-center gap-2 text-sm text-slate-600 dark:text-slate-300 transition-colors hover:text-slate-900 dark:hover:text-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
               aria-label="Renvoyer l'e-mail de confirmation"
             >
               <MailCheck
                 className={`h-4 w-4 transition-transform duration-300 group-hover:scale-110 ${
-                  needsConfirmation ? "text-amber-600" : "text-slate-500"
+                  needsConfirmation ? "text-amber-600 dark:text-amber-400" : "text-slate-500 dark:text-slate-400"
                 }`}
                 aria-hidden
               />

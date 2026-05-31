@@ -34,15 +34,15 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
 
   const accentClass =
     state.plan === "family"
-      ? "border-purple-200 bg-purple-50 text-purple-700"
+      ? "border-purple-200 dark:border-purple-900 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300"
       : state.plan === "premium"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
-      : "border-slate-200 bg-slate-50 text-slate-700";
+      ? "border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300"
+      : "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-200";
 
   return (
     <section
       aria-labelledby="subscription-heading"
-      className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-6 shadow-ride-sm md:p-8"
+      className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-6 shadow-ride-sm md:p-8"
     >
       <span
         aria-hidden
@@ -60,25 +60,25 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
             <div className="flex flex-wrap items-center gap-2">
               <h2
                 id="subscription-heading"
-                className="text-lg font-semibold tracking-tight text-slate-900"
+                className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50"
               >
                 Abonnement {planDef.name}
               </h2>
               {isPastDue ? (
-                <Badge className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-800">
+                <Badge className="rounded-full border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-300">
                   Paiement en attente
                 </Badge>
               ) : isCanceled ? (
-                <Badge className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+                <Badge className="rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-200">
                   Annulé
                 </Badge>
               ) : isPaid ? (
-                <Badge className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+                <Badge className="rounded-full border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
                   Actif
                 </Badge>
               ) : null}
             </div>
-            <p className="mt-1 text-sm text-slate-600">{planDef.description}</p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{planDef.description}</p>
           </div>
         </div>
         {!isPaid ? (
@@ -92,7 +92,7 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
         ) : (
           <Link
             href="/tarifs"
-            className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 text-sm font-medium text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-slate-950"
           >
             Voir les plans
             <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
@@ -100,33 +100,33 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
         )}
       </div>
 
-      <Separator className="my-5 bg-slate-200/70" />
+      <Separator className="my-5 bg-slate-200/70 dark:bg-slate-800/70" />
 
       <dl className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200/70 bg-slate-50/50 p-4">
-          <dt className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-slate-500">
+        <div className="rounded-2xl border border-slate-200/70 dark:border-slate-800/70 bg-slate-50/50 dark:bg-slate-950/50 p-4">
+          <dt className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
             <Car className="h-3.5 w-3.5" aria-hidden />
             Véhicules
           </dt>
-          <dd className="mt-1.5 flex items-baseline gap-1.5 text-sm font-semibold text-slate-900">
+          <dd className="mt-1.5 flex items-baseline gap-1.5 text-sm font-semibold text-slate-900 dark:text-slate-50">
             <span className="text-2xl">{state.vehicleCount}</span>
-            <span className="text-sm font-normal text-slate-500">
+            <span className="text-sm font-normal text-slate-500 dark:text-slate-400">
               / {state.vehicleLimit}
             </span>
           </dd>
           {state.hasReachedVehicleLimit && state.plan !== "family" ? (
-            <p className="mt-1.5 text-[11px] font-medium text-amber-700">
+            <p className="mt-1.5 text-[11px] font-medium text-amber-700 dark:text-amber-300">
               Limite atteinte. <Link href="/tarifs" className="underline">Voir plans</Link>
             </p>
           ) : null}
         </div>
 
-        <div className="rounded-2xl border border-slate-200/70 bg-slate-50/50 p-4">
-          <dt className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-slate-500">
+        <div className="rounded-2xl border border-slate-200/70 dark:border-slate-800/70 bg-slate-50/50 dark:bg-slate-950/50 p-4">
+          <dt className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
             Cycle
           </dt>
-          <dd className="mt-1.5 text-sm font-medium text-slate-900">
+          <dd className="mt-1.5 text-sm font-medium text-slate-900 dark:text-slate-50">
             {state.planInterval === "monthly"
               ? "Mensuel"
               : state.planInterval === "yearly"
@@ -135,23 +135,23 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
           </dd>
         </div>
 
-        <div className="rounded-2xl border border-slate-200/70 bg-slate-50/50 p-4">
-          <dt className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-slate-500">
+        <div className="rounded-2xl border border-slate-200/70 dark:border-slate-800/70 bg-slate-50/50 dark:bg-slate-950/50 p-4">
+          <dt className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
             <Calendar className="h-3.5 w-3.5" aria-hidden />
             {isCanceled ? "Fin de période" : "Prochain prélèvement"}
           </dt>
-          <dd className="mt-1.5 text-sm font-medium text-slate-900">
+          <dd className="mt-1.5 text-sm font-medium text-slate-900 dark:text-slate-50">
             {renewsFormatted ?? "—"}
           </dd>
         </div>
       </dl>
 
       {isPastDue ? (
-        <div className="mt-5 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-amber-900">
+        <div className="mt-5 flex items-start gap-3 rounded-2xl border border-amber-200 dark:border-amber-900 bg-amber-50/70 dark:bg-amber-950/40 p-4 text-sm text-amber-900 dark:text-amber-200">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <div>
             <p className="font-medium">Paiement en échec</p>
-            <p className="mt-0.5 text-amber-800">
+            <p className="mt-0.5 text-amber-800 dark:text-amber-300">
               Mollie va retenter automatiquement. Si le problème persiste, vérifiez
               votre moyen de paiement ou réessayez depuis la page Tarifs.
             </p>
@@ -160,14 +160,14 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
       ) : null}
 
       {showSyncFallback ? (
-        <div className="mt-5 flex flex-col items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50/70 p-4 text-sm text-blue-900 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-5 flex flex-col items-start gap-3 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50/70 dark:bg-blue-950/40 p-4 text-sm text-blue-900 dark:text-blue-200 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <RefreshCw className="mt-0.5 h-4 w-4 shrink-0 text-blue-700" aria-hidden />
+            <RefreshCw className="mt-0.5 h-4 w-4 shrink-0 text-blue-700 dark:text-blue-300" aria-hidden />
             <div>
               <p className="font-medium">
                 Vous avez réglé un paiement, mais votre plan est toujours Free ?
               </p>
-              <p className="mt-0.5 text-blue-800">
+              <p className="mt-0.5 text-blue-800 dark:text-blue-200">
                 {hasMollieCustomer
                   ? "Cela peut arriver si la notification Mollie n'a pas été reçue. Cliquez ci-contre pour resynchroniser votre abonnement."
                   : "Cliquez ci-contre pour rechercher votre paiement chez Mollie via votre e-mail et activer votre plan."}
@@ -180,7 +180,7 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
 
       {isPaid && !isCanceled ? (
         <div className="mt-5 flex flex-col items-start gap-2 border-t border-slate-200/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Vous pouvez annuler à tout moment. Votre plan reste actif jusqu&apos;à la
             fin de la période payée.
           </p>
@@ -189,8 +189,8 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
       ) : null}
 
       {isCanceled ? (
-        <div className="mt-5 flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-sm text-slate-700">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden />
+        <div className="mt-5 flex items-start gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/70 p-4 text-sm text-slate-700 dark:text-slate-200">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />
           <p>
             Votre abonnement est annulé. Vous restez en {planDef.name} jusqu&apos;au{" "}
             <strong>{renewsFormatted ?? "—"}</strong>, puis vous repasserez automatiquement

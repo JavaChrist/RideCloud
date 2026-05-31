@@ -88,18 +88,18 @@ export function VehicleTimeline({
       </CardHeader>
       <CardContent className="space-y-3">
         {items.length === 0 && (
-          <p className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-600">
+          <p className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 text-sm text-slate-600 dark:text-slate-300">
             Aucun événement pour ce véhicule.
           </p>
         )}
         {items.map((item) => (
-          <div key={item.id} className="rounded-lg border bg-white p-3">
+          <div key={item.id} className="rounded-lg border bg-white dark:bg-slate-900 p-3">
             <div className="mb-1 flex flex-wrap items-center gap-2">
               <p className="font-medium">{item.title}</p>
               <Badge variant={item.statusVariant}>{item.statusLabel}</Badge>
             </div>
-            <p className="text-sm text-slate-600">Date : {formatDateFr(item.date)}</p>
-            <p className="text-sm text-slate-600">{item.subtitle}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300">Date : {formatDateFr(item.date)}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300">{item.subtitle}</p>
           </div>
         ))}
       </CardContent>

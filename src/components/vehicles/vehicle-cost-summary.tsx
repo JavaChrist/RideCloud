@@ -14,14 +14,14 @@ type Tile = { label: string; value: string; suffix?: string };
 
 function KpiTile({ tile }: { tile: Tile }) {
   return (
-    <div className="group/kpi relative overflow-hidden rounded-2xl border border-slate-200/80 bg-ride-gradient-card p-4 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-ride-md">
-      <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+    <div className="group/kpi relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-ride-gradient-card p-4 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-ride-md">
+      <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
         {tile.label}
       </p>
-      <p className="mt-2 font-mono text-xl font-semibold tracking-tight tabular-nums text-slate-900">
+      <p className="mt-2 font-mono text-xl font-semibold tracking-tight tabular-nums text-slate-900 dark:text-slate-50">
         {tile.value}
         {tile.suffix ? (
-          <span className="ml-1 text-xs font-medium text-slate-500">{tile.suffix}</span>
+          <span className="ml-1 text-xs font-medium text-slate-500 dark:text-slate-400">{tile.suffix}</span>
         ) : null}
       </p>
       <span
@@ -43,9 +43,9 @@ export function VehicleCostSummaryCard({ summary }: { summary: VehicleCostSummar
   ];
 
   return (
-    <Card className="overflow-hidden rounded-2xl border-slate-200/80 bg-white shadow-ride-sm">
+    <Card className="overflow-hidden rounded-2xl border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-ride-sm">
       <CardHeader className="flex flex-row items-center gap-3 space-y-0">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-100">
           <TrendingUp className="h-4 w-4" strokeWidth={2} />
         </div>
         <CardTitle className="text-lg font-semibold tracking-tight">

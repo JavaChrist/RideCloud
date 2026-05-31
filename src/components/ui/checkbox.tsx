@@ -28,7 +28,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         <span
           aria-hidden
           className={cn(
-            "flex h-5 w-5 items-center justify-center rounded-md border border-slate-300 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all duration-200",
+            "flex h-5 w-5 items-center justify-center rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all duration-200",
             "group-hover:border-slate-400",
             "group-has-[:checked]:border-blue-600 group-has-[:checked]:bg-blue-600 group-has-[:checked]:shadow-[0_4px_12px_-4px_rgba(29,78,216,0.5)]",
             "group-has-[:checked]:group-hover:bg-blue-700",

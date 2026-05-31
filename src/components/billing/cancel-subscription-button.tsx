@@ -49,7 +49,7 @@ export function CancelSubscriptionButton({ renewsAt }: CancelSubscriptionButtonP
         type="button"
         variant="ghost"
         onClick={() => setConfirmOpen(true)}
-        className="text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+        className="text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-50"
       >
         Annuler l&apos;abonnement
       </Button>
@@ -58,10 +58,10 @@ export function CancelSubscriptionButton({ renewsAt }: CancelSubscriptionButtonP
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-      <span className="text-sm text-slate-600">
+      <span className="text-sm text-slate-600 dark:text-slate-300">
         Confirmer ?{" "}
         {renewsFormatted ? (
-          <span className="text-slate-500">
+          <span className="text-slate-500 dark:text-slate-400">
             (plan actif jusqu&apos;au {renewsFormatted})
           </span>
         ) : null}

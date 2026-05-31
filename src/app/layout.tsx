@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import { Toaster } from "sonner";
 import { CookieBanner } from "@/components/common/cookie-banner";
+import { ThemedToaster } from "@/components/common/themed-toaster";
 import { ConfirmProvider } from "@/components/providers/confirm-provider";
+import { ThemeProvider, themeInitScript } from "@/components/providers/theme-provider";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"] });
@@ -34,13 +35,18 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="fr" data-scroll-behavior="smooth">
+    <html lang="fr" data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className={plusJakartaSans.className}>
-        <ConfirmProvider>
-          {children}
-          <CookieBanner />
-          <Toaster position="top-right" richColors />
-        </ConfirmProvider>
+        <ThemeProvider>
+          <ConfirmProvider>
+            {children}
+            <CookieBanner />
+            <ThemedToaster />
+          </ConfirmProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

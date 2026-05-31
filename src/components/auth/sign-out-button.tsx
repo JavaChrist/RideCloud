@@ -38,7 +38,7 @@ export function SignOutButton() {
       onClick={handleSignOut}
       disabled={isLoading}
       aria-label="Se déconnecter"
-      className="gap-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+      className="gap-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-50"
     >
       <LogOut className="h-4 w-4" strokeWidth={2} aria-hidden />
       <span className="hidden sm:inline">

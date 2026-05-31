@@ -1,7 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  CalendarClock,
+  Check,
+  ChevronDown,
+  ClipboardList,
+  FileText,
+  History,
+  Info,
+  Wrench,
+  type LucideIcon
+} from "lucide-react";
 import { DocumentsList } from "@/components/documents/documents-list";
 import { HistorySections } from "@/components/history/history-sections";
 import { MaintenancePlanList } from "@/components/history/maintenance-plan-list";
@@ -24,6 +35,123 @@ import type {
 } from "@/types/database";
 
 type TabValue = "historique" | "chronologie" | "plan-entretien" | "modifications" | "documents" | "informations";
+
+interface TabItem {
+  value: TabValue;
+  label: string;
+  icon: LucideIcon;
+}
+
+const TAB_ITEMS: TabItem[] = [
+  { value: "historique", label: "Historique", icon: History },
+  { value: "chronologie", label: "Chronologie", icon: CalendarClock },
+  { value: "plan-entretien", label: "Plan d'entretien", icon: ClipboardList },
+  { value: "modifications", label: "Modifications", icon: Wrench },
+  { value: "documents", label: "Documents", icon: FileText },
+  { value: "informations", label: "Informations", icon: Info }
+];
+
+function MobileTabSelect({
+  value,
+  onValueChange
+}: {
+  value: TabValue;
+  onValueChange: (value: TabValue) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const activeItem = TAB_ITEMS.find((item) => item.value === value) ?? TAB_ITEMS[0];
+  const ActiveIcon = activeItem.icon;
+
+  const close = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        close();
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        close();
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, close]);
+
+  const handleSelect = (next: TabValue) => {
+    onValueChange(next);
+    close();
+  };
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex h-11 w-full items-center justify-between gap-2 rounded-xl border border-border bg-card px-3.5 text-sm font-medium text-foreground shadow-ride-sm transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      >
+        <span className="flex items-center gap-2.5">
+          <ActiveIcon className="h-4 w-4 text-primary" aria-hidden="true" />
+          {activeItem.label}
+        </span>
+        <ChevronDown
+          className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          aria-hidden="true"
+        />
+      </button>
+
+      {open && (
+        <ul
+          role="listbox"
+          aria-label="Sélectionner une section"
+          className="absolute z-50 mt-2 w-full overflow-hidden rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-ride-lg"
+        >
+          {TAB_ITEMS.map((item) => {
+            const ItemIcon = item.icon;
+            const isActive = item.value === value;
+
+            return (
+              <li key={item.value} role="option" aria-selected={isActive}>
+                <button
+                  type="button"
+                  onClick={() => handleSelect(item.value)}
+                  className={`flex w-full items-center justify-between gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    isActive
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "text-foreground hover:bg-accent/60"
+                  }`}
+                >
+                  <span className="flex items-center gap-2.5">
+                    <ItemIcon
+                      className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`}
+                      aria-hidden="true"
+                    />
+                    {item.label}
+                  </span>
+                  {isActive && <Check className="h-4 w-4 text-primary" aria-hidden="true" />}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 interface VehicleDetailTabsProps {
   vehicleId: string;
@@ -139,18 +267,7 @@ export function VehicleDetailTabs({
   return (
     <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabValue)} className="w-full">
       <div className="md:hidden">
-        <select
-          value={activeTab}
-          onChange={(event) => setActiveTab(event.target.value as TabValue)}
-          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="historique">Historique</option>
-          <option value="chronologie">Chronologie</option>
-          <option value="plan-entretien">Plan d&apos;entretien</option>
-          <option value="modifications">Modifications</option>
-          <option value="documents">Documents</option>
-          <option value="informations">Informations</option>
-        </select>
+        <MobileTabSelect value={activeTab} onValueChange={setActiveTab} />
       </div>
 
       <TabsList className="hidden w-full justify-start md:inline-flex">
@@ -197,15 +314,15 @@ export function VehicleDetailTabs({
       </TabsContent>
       <TabsContent value="informations">
         <Card>
-          <CardContent className="space-y-4 p-4 text-sm text-slate-700">
+          <CardContent className="space-y-4 p-4 text-sm text-slate-700 dark:text-slate-200">
             {!isUuidVehicle && (
-              <p className="rounded-md border border-amber-200 bg-amber-50 p-2 text-sm text-amber-800">
+              <p className="rounded-md border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 p-2 text-sm text-amber-800 dark:text-amber-300">
                 Véhicule de démonstration : les modifications sont désactivées.
               </p>
             )}
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-500">Type de véhicule</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Type de véhicule</p>
                 <select
                   value={infoForm.category}
                   onChange={(event) => setInfoForm((state) => ({ ...state, category: event.target.value as VehicleCategory }))}
@@ -219,7 +336,7 @@ export function VehicleDetailTabs({
                 </select>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-500">Marque</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Marque</p>
                 <Input
                   value={infoForm.marque}
                   onChange={(event) => setInfoForm((state) => ({ ...state, marque: event.target.value }))}
@@ -227,7 +344,7 @@ export function VehicleDetailTabs({
                 />
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-500">Modèle</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Modèle</p>
                 <Input
                   value={infoForm.modele}
                   onChange={(event) => setInfoForm((state) => ({ ...state, modele: event.target.value }))}
@@ -235,7 +352,7 @@ export function VehicleDetailTabs({
                 />
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-500">Année</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Année</p>
                 <Input
                   type="number"
                   value={infoForm.annee}
@@ -244,7 +361,7 @@ export function VehicleDetailTabs({
                 />
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-500">Kilométrage actuel</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Kilométrage actuel</p>
                 <Input
                   type="number"
                   value={infoForm.kilometrage}
@@ -253,7 +370,7 @@ export function VehicleDetailTabs({
                 />
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-500">Date de mise en circulation</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Date de mise en circulation</p>
                 <Input
                   type="date"
                   value={infoForm.date_mise_en_circulation}
@@ -264,7 +381,7 @@ export function VehicleDetailTabs({
                 />
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-500">Date d&apos;achat</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Date d&apos;achat</p>
                 <Input
                   type="date"
                   value={infoForm.date_achat}
@@ -273,7 +390,7 @@ export function VehicleDetailTabs({
                 />
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-500">Immatriculation</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Immatriculation</p>
                 <Input
                   value={infoForm.immatriculation}
                   onChange={(event) => setInfoForm((state) => ({ ...state, immatriculation: event.target.value }))}
@@ -281,7 +398,7 @@ export function VehicleDetailTabs({
                 />
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-500">VIN</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">VIN</p>
                 <Input
                   value={infoForm.vin}
                   onChange={(event) => setInfoForm((state) => ({ ...state, vin: event.target.value }))}
@@ -289,7 +406,7 @@ export function VehicleDetailTabs({
                 />
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-500">Surnom</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Surnom</p>
                 <Input
                   value={infoForm.surnom}
                   onChange={(event) => setInfoForm((state) => ({ ...state, surnom: event.target.value }))}
@@ -297,7 +414,7 @@ export function VehicleDetailTabs({
                 />
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-500">Carburant</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Carburant</p>
                 <select
                   value={infoForm.carburant}
                   onChange={(event) => setInfoForm((state) => ({ ...state, carburant: event.target.value }))}

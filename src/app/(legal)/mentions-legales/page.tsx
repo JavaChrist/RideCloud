@@ -30,7 +30,7 @@ export default function MentionsLegalesPage() {
     >
       <LegalSection id="editeur" title="1. Éditeur du site">
         <p>Le site et l&apos;application RideCloud, accessibles à l&apos;adresse <strong>https://ridecloud.app</strong>, sont édités par&nbsp;:</p>
-        <ul className="ml-4 list-disc space-y-1 text-slate-700">
+        <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li><strong>Nom commercial</strong> : JavaChrist</li>
           <li><strong>Statut juridique</strong> : Entrepreneur individuel (micro-entreprise)</li>
           <li><strong>Représentant légal</strong> : Christian Grohens</li>
@@ -39,8 +39,8 @@ export default function MentionsLegalesPage() {
           <li><strong>SIREN</strong> : 338 593 312</li>
           <li><strong>Code APE / NAF</strong> : 4791A — Vente à distance sur catalogue spécialisé</li>
           <li><strong>TVA intracommunautaire</strong> : non applicable, article 293 B du Code général des impôts (franchise en base de TVA)</li>
-          <li><strong>Adresse e-mail</strong> : <a href="mailto:support@javachrist.fr" className="text-blue-700 hover:underline">support@javachrist.fr</a></li>
-          <li><strong>Téléphone</strong> : <a href="tel:+33952623171" className="text-blue-700 hover:underline">09 52 62 31 71</a></li>
+          <li><strong>Adresse e-mail</strong> : <a href="mailto:support@javachrist.fr" className="text-blue-700 dark:text-blue-300 hover:underline">support@javachrist.fr</a></li>
+          <li><strong>Téléphone</strong> : <a href="tel:+33952623171" className="text-blue-700 dark:text-blue-300 hover:underline">09 52 62 31 71</a></li>
         </ul>
       </LegalSection>
 
@@ -88,10 +88,10 @@ export default function MentionsLegalesPage() {
           Pour toute question relative au service, au site ou aux présentes mentions légales, vous pouvez nous contacter à l&apos;adresse&nbsp;:
         </p>
         <p>
-          <a href="mailto:support@javachrist.fr" className="font-medium text-blue-700 hover:underline">support@javachrist.fr</a>
+          <a href="mailto:support@javachrist.fr" className="font-medium text-blue-700 dark:text-blue-300 hover:underline">support@javachrist.fr</a>
         </p>
-        <p className="text-sm text-slate-600">
-          Pour les demandes liées aux données personnelles, voir la page <a href="/rgpd" className="text-blue-700 hover:underline">RGPD</a>.
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          Pour les demandes liées aux données personnelles, voir la page <a href="/rgpd" className="text-blue-700 dark:text-blue-300 hover:underline">RGPD</a>.
         </p>
       </LegalSection>
 
@@ -114,7 +114,7 @@ export default function MentionsLegalesPage() {
         <p>
           L&apos;utilisateur reconnaît utiliser RideCloud sous sa seule responsabilité. L&apos;éditeur ne saurait être tenu responsable des dommages directs ou indirects résultant&nbsp;:
         </p>
-        <ul className="ml-4 list-disc space-y-1 text-slate-700">
+        <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li>de l&apos;utilisation du service&nbsp;;</li>
           <li>d&apos;un dysfonctionnement technique, d&apos;une indisponibilité temporaire ou d&apos;une perte de données&nbsp;;</li>
           <li>d&apos;une mauvaise interprétation des recommandations d&apos;entretien fournies à titre indicatif&nbsp;;</li>
@@ -136,7 +136,7 @@ export default function MentionsLegalesPage() {
           Les présentes mentions légales sont régies par le droit français. En cas de litige, et après tentative de résolution amiable, les tribunaux français seront seuls compétents.
         </p>
         <p>
-          Conformément aux articles L.611-1 et suivants du Code de la consommation, l&apos;utilisateur consommateur peut recourir gratuitement à un médiateur de la consommation en vue de la résolution amiable d&apos;un éventuel litige. Les coordonnées du médiateur désigné par l&apos;éditeur ainsi que les modalités de saisine sont précisées dans les <a href="/cgu#mediateur" className="text-blue-700 hover:underline">Conditions Générales d&apos;Utilisation, section 13</a>.
+          Conformément aux articles L.611-1 et suivants du Code de la consommation, l&apos;utilisateur consommateur peut recourir gratuitement à un médiateur de la consommation en vue de la résolution amiable d&apos;un éventuel litige. Les coordonnées du médiateur désigné par l&apos;éditeur ainsi que les modalités de saisine sont précisées dans les <a href="/cgu#mediateur" className="text-blue-700 dark:text-blue-300 hover:underline">Conditions Générales d&apos;Utilisation, section 13</a>.
         </p>
       </LegalSection>
     </LegalPage>

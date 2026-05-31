@@ -66,7 +66,7 @@ export function SyncSubscriptionButton({ variant = "default" }: SyncSubscription
         type="button"
         onClick={handleSync}
         disabled={loading}
-        className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 transition hover:text-blue-900 disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 transition hover:text-blue-900 dark:hover:text-blue-200 disabled:opacity-50"
       >
         {loading ? (
           <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
@@ -84,7 +84,7 @@ export function SyncSubscriptionButton({ variant = "default" }: SyncSubscription
       onClick={handleSync}
       disabled={loading}
       variant="outline"
-      className="gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+      className="gap-2 border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40"
     >
       {loading ? (
         <>

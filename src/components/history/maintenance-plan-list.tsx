@@ -389,14 +389,14 @@ export function MaintenancePlanList({
   };
 
   return (
-    <Card className="border-sky-200 bg-sky-50/40">
+    <Card className="border-sky-200 dark:border-sky-900 bg-sky-50/40 dark:bg-sky-950/40">
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <CardTitle className="text-sky-700">Plan d&apos;entretien</CardTitle>
-          <p className="text-sm text-slate-600">
+          <CardTitle className="text-sky-700 dark:text-sky-300">Plan d&apos;entretien</CardTitle>
+          <p className="text-sm text-slate-600 dark:text-slate-300">
             Profil actif : {maintenanceProfileName}
             {hasAnyAiTemplate && !hasHardcodedTemplate && (
-              <span className="ml-2 inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700">
+              <span className="ml-2 inline-flex items-center gap-1 rounded-full border border-violet-200 dark:border-violet-900 bg-violet-50 dark:bg-violet-950/40 px-2 py-0.5 text-[11px] font-medium text-violet-700 dark:text-violet-300">
                 <Sparkles className="h-3 w-3" strokeWidth={2.25} aria-hidden />
                 Plan généré par IA
               </span>
@@ -411,7 +411,7 @@ export function MaintenancePlanList({
                 onClick={markAllAsCurrent}
                 disabled={markingCurrent}
                 variant="outline"
-                className="gap-2 border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50"
+                className="gap-2 border-emerald-200 dark:border-emerald-900 bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
                 title="Marquer toutes les révisions périodiques comme effectuées aujourd'hui (utile pour un véhicule d'occasion entretenu)."
               >
                 {markingCurrent ? (
@@ -447,7 +447,7 @@ export function MaintenancePlanList({
                 )}
               </Button>
             ) : (
-              <Button asChild variant="outline" className="gap-2 border-violet-200 text-violet-700 hover:bg-violet-50">
+              <Button asChild variant="outline" className="gap-2 border-violet-200 dark:border-violet-900 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/40">
                 <Link href="/tarifs">
                   <Sparkles className="h-4 w-4" strokeWidth={2.25} aria-hidden />
                   IA : passer Premium
@@ -459,7 +459,7 @@ export function MaintenancePlanList({
       </CardHeader>
       <CardContent className="space-y-3">
         {items.length === 0 && (
-          <p className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-600">
+          <p className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 text-sm text-slate-600 dark:text-slate-300">
             Aucun plan disponible pour ce véhicule.
           </p>
         )}
@@ -467,7 +467,7 @@ export function MaintenancePlanList({
           const statusBadge = getStatusBadge(item.status);
           const isAi = item.template_source === "ai" || item.template_source === "approved";
           return (
-            <div key={item.id} className="rounded-lg border border-sky-200 bg-white p-3">
+            <div key={item.id} className="rounded-lg border border-sky-200 dark:border-sky-900 bg-white dark:bg-slate-900 p-3">
               <div className="mb-1 flex flex-wrap items-center gap-2">
                 <p className="font-medium leading-tight">{item.titre}</p>
                 <Badge variant={statusBadge.variant} className="whitespace-nowrap">
@@ -480,7 +480,7 @@ export function MaintenancePlanList({
                   {item.source === "template" ? "Template" : "Manuel"}
                 </Badge>
                 {isAi && (
-                  <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700">
+                  <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-violet-200 dark:border-violet-900 bg-violet-50 dark:bg-violet-950/40 px-2 py-0.5 text-[11px] font-medium text-violet-700 dark:text-violet-300">
                     <Sparkles className="h-3 w-3" strokeWidth={2.25} aria-hidden />
                     IA
                   </span>
@@ -489,22 +489,22 @@ export function MaintenancePlanList({
                   {item.priority === "urgent" ? "Urgent" : item.priority === "important" ? "Important" : "Normal"}
                 </Badge>
               </div>
-              <p className="text-sm text-slate-600">Catégorie : {item.categorie}</p>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-slate-600 dark:text-slate-300">Catégorie : {item.categorie}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
                 Prochaine échéance km :{" "}
                 {item.next_due_km != null ? `${item.next_due_km.toLocaleString("fr-FR")} km` : "non définie"}
               </p>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-slate-600 dark:text-slate-300">
                 Prochaine échéance date : {item.next_due_date ? formatDateFr(item.next_due_date) : "non définie"}
               </p>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-slate-600 dark:text-slate-300">
                 Alerte bientôt due : ≤ {item.due_soon_km_threshold} km ou ≤ {item.due_soon_days_threshold} jours
               </p>
-              {item.description && <p className="mt-1 text-sm text-slate-600">{item.description}</p>}
+              {item.description && <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{item.description}</p>}
 
               <div className="mt-2">
                 {activeEntryId === item.id ? (
-                  <div className="space-y-2 rounded-md border border-slate-200 bg-slate-50 p-3">
+                  <div className="space-y-2 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-3">
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       <Input
                         type="date"
@@ -550,8 +550,8 @@ export function MaintenancePlanList({
                 )}
               </div>
               {activeAlertEntryId === item.id && (
-                <div className="mt-2 space-y-2 rounded-md border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-sm font-medium text-slate-700">Règles d&apos;alerte personnalisées</p>
+                <div className="mt-2 space-y-2 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-3">
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Règles d&apos;alerte personnalisées</p>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <Input
                       type="number"

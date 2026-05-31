@@ -163,14 +163,14 @@ export function ModificationsList({ vehicleId, items }: { vehicleId: string; ite
 
   return (
     <Card>
-      <CardHeader><CardTitle className="flex items-center gap-2"><Wrench className="h-5 w-5 text-indigo-600" />Modifications</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="flex items-center gap-2"><Wrench className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />Modifications</CardTitle></CardHeader>
       <CardContent className="space-y-3">
         {!isUuidVehicle && (
-          <p className="rounded-md border border-amber-200 bg-amber-50 p-2 text-sm text-amber-800">
+          <p className="rounded-md border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 p-2 text-sm text-amber-800 dark:text-amber-300">
             Véhicule de démonstration : les actions CRUD sont désactivées.
           </p>
         )}
-        <div className="space-y-2 rounded-lg border bg-white p-3">
+        <div className="space-y-2 rounded-lg border bg-white dark:bg-slate-900 p-3">
           <Input placeholder="Titre (ex: Support téléphone)" value={form.titre} onChange={(e) => setForm((s) => ({ ...s, titre: e.target.value }))} />
           <div className="grid grid-cols-2 gap-2">
             <Input placeholder="Marque" value={form.marque} onChange={(e) => setForm((s) => ({ ...s, marque: e.target.value }))} />
@@ -232,9 +232,9 @@ export function ModificationsList({ vehicleId, items }: { vehicleId: string; ite
             ) : (
               <>
                 <p className="font-medium">{item.titre}</p>
-                <p className="text-sm text-slate-600">Marque : {item.marque ?? "-"} - Modèle : {item.modele ?? "-"}</p>
-                <p className="text-sm text-slate-600">Date de pose : {formatDateFr(item.date_pose)} - Coût : {item.cout ? `${item.cout} €` : "-"}</p>
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-slate-600 dark:text-slate-300">Marque : {item.marque ?? "-"} - Modèle : {item.modele ?? "-"}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Date de pose : {formatDateFr(item.date_pose)} - Coût : {item.cout ? `${item.cout} €` : "-"}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
                   Facture :{" "}
                   {item.facture_url ? (
                     <a className="text-primary hover:underline" href={item.facture_url} target="_blank" rel="noreferrer">
@@ -248,7 +248,7 @@ export function ModificationsList({ vehicleId, items }: { vehicleId: string; ite
                   <Button variant="ghost" size="sm" onClick={() => startEditing(item)} disabled={!isUuidVehicle}>
                     Modifier
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => deleteModification(item.id)}>
+                  <Button variant="ghost" size="sm" className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300" onClick={() => deleteModification(item.id)}>
                     Supprimer
                   </Button>
                 </div>

@@ -28,10 +28,10 @@ export default async function CategoryVehiclesPage({ params }: { params: Promise
     <section className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
             {categoryLabels[categorie as VehicleCategory]}
           </h1>
-          <p className="text-slate-600">
+          <p className="text-slate-600 dark:text-slate-300">
             <span className="font-mono tabular-nums">{vehicles.length}</span>{" "}
             véhicule(s) dans cette catégorie.
           </p>
@@ -48,7 +48,7 @@ export default async function CategoryVehiclesPage({ params }: { params: Promise
       </div>
       <div className="relative max-w-md">
         <Search
-          className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400"
+          className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400 dark:text-slate-500"
           strokeWidth={2}
         />
         <Input
@@ -57,11 +57,11 @@ export default async function CategoryVehiclesPage({ params }: { params: Promise
         />
       </div>
       {vehicles.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-10 text-center text-slate-600 shadow-ride-xs backdrop-blur-sm">
-          <p className="text-base font-medium text-slate-900">
+        <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white/60 dark:bg-slate-900/60 p-10 text-center text-slate-600 dark:text-slate-300 shadow-ride-xs backdrop-blur-sm">
+          <p className="text-base font-medium text-slate-900 dark:text-slate-50">
             Aucun véhicule dans cette catégorie.
           </p>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Ajoutez votre premier véhicule pour commencer le suivi.
           </p>
           <Button

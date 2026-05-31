@@ -23,7 +23,7 @@ export default async function VehicleExportPage({ params }: { params: Promise<{ 
   const { completed, upcoming, modifications, documents } = await getVehicleHistory(user.id, vehicle.id);
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 bg-white p-6 text-slate-900 print:max-w-none print:p-0">
+    <main className="ride-force-light mx-auto max-w-4xl space-y-6 bg-white p-6 text-slate-900 print:max-w-none print:p-0">
       <header className="space-y-2 border-b pb-4">
         <h1 className="text-2xl font-semibold">Dossier de cession véhicule</h1>
         <p className="text-sm text-slate-600">Export RideCloud généré le {formatDateFr(new Date().toISOString())}</p>

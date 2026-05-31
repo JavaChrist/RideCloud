@@ -6,22 +6,22 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import type { Vehicle } from "@/types/database";
 
 function FallbackIcon({ category }: { category: Vehicle["category"] }) {
-  if (category === "voitures") return <Car className="h-10 w-10 text-slate-400" />;
-  if (category === "utilitaires") return <Truck className="h-10 w-10 text-slate-400" />;
-  return <Bike className="h-10 w-10 text-slate-400" />;
+  if (category === "voitures") return <Car className="h-10 w-10 text-slate-400 dark:text-slate-500" />;
+  if (category === "utilitaires") return <Truck className="h-10 w-10 text-slate-400 dark:text-slate-500" />;
+  return <Bike className="h-10 w-10 text-slate-400 dark:text-slate-500" />;
 }
 
 export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
   const isExternalImage = Boolean(vehicle.photo_url?.startsWith("http"));
 
   return (
-    <Card className="group/card relative overflow-hidden rounded-2xl border-slate-200/80 bg-ride-gradient-card shadow-ride-xs transition-all duration-500 ease-ride-spring hover:-translate-y-1 hover:border-blue-200 hover:shadow-ride-lg">
+    <Card className="group/card relative overflow-hidden rounded-2xl border-slate-200/80 dark:border-slate-800/80 bg-ride-gradient-card shadow-ride-xs transition-all duration-500 ease-ride-spring hover:-translate-y-1 hover:border-blue-200 dark:hover:border-blue-900 hover:shadow-ride-lg">
       <span
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-700/40 to-transparent opacity-0 transition-opacity duration-500 group-hover/card:opacity-100"
       />
 
-      <div className="relative h-48 w-full overflow-hidden bg-gradient-to-b from-white to-slate-50">
+      <div className="relative h-48 w-full overflow-hidden bg-gradient-to-b from-white dark:from-slate-900 to-slate-50 dark:to-slate-950">
         {vehicle.photo_url ? (
           <Image
             src={vehicle.photo_url}
@@ -38,7 +38,7 @@ export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
         )}
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white/80 to-transparent"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white/80 dark:from-slate-900/80 to-transparent"
         />
       </div>
 
@@ -49,16 +49,16 @@ export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
           </span>
           <span
             aria-hidden
-            className="text-[11px] font-medium uppercase tracking-wider text-slate-400"
+            className="text-[11px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500"
           >
             {vehicle.annee}
           </span>
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-1.5 text-sm text-slate-600">
+      <CardContent className="space-y-1.5 text-sm text-slate-600 dark:text-slate-300">
         <p className="flex items-center gap-2">
-          <Gauge className="h-3.5 w-3.5 text-slate-400" strokeWidth={2} />
+          <Gauge className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" strokeWidth={2} />
           <span className="font-mono tabular-nums">
             {vehicle.kilometrage.toLocaleString("fr-FR")} km
           </span>

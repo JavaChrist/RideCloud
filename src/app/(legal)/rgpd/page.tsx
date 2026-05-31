@@ -40,7 +40,7 @@ export default function RgpdPage() {
           Le <strong>Règlement Général sur la Protection des Données</strong> (RGPD), entré en application le 25 mai 2018, est un texte réglementaire européen qui encadre le traitement des données personnelles sur le territoire de l&apos;Union européenne. Il vous reconnaît un ensemble de droits visant à garantir le contrôle de vos données et leur protection.
         </p>
         <p>
-          RideCloud applique strictement le RGPD ainsi que la loi française <strong>n° 78-17 du 6 janvier 1978 modifiée</strong>, dite « Informatique et Libertés ». Pour comprendre comment vos données sont collectées et traitées, consultez notre <a href="/confidentialite" className="text-blue-700 hover:underline">Politique de confidentialité</a>.
+          RideCloud applique strictement le RGPD ainsi que la loi française <strong>n° 78-17 du 6 janvier 1978 modifiée</strong>, dite « Informatique et Libertés ». Pour comprendre comment vos données sont collectées et traitées, consultez notre <a href="/confidentialite" className="text-blue-700 dark:text-blue-300 hover:underline">Politique de confidentialité</a>.
         </p>
       </LegalSection>
 
@@ -51,7 +51,7 @@ export default function RgpdPage() {
         <p>
           Vous recevrez notamment&nbsp;:
         </p>
-        <ul className="ml-4 list-disc space-y-1 text-slate-700">
+        <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li>la liste complète des catégories de données vous concernant&nbsp;;</li>
           <li>les finalités de chaque traitement&nbsp;;</li>
           <li>les destinataires ou catégories de destinataires des données&nbsp;;</li>
@@ -65,7 +65,7 @@ export default function RgpdPage() {
           <strong>Article 16 du RGPD</strong>. Vous avez le droit de demander la correction de toute donnée inexacte ou incomplète vous concernant. Pour la plupart des informations, la rectification est immédiate via votre interface RideCloud (page de profil, paramètres de compte).
         </p>
         <p>
-          Pour les données qui ne sont pas directement modifiables (par exemple l&apos;adresse e-mail principale dans certains cas), adressez-nous une demande à <a href="mailto:support@javachrist.fr" className="text-blue-700 hover:underline">support@javachrist.fr</a>.
+          Pour les données qui ne sont pas directement modifiables (par exemple l&apos;adresse e-mail principale dans certains cas), adressez-nous une demande à <a href="mailto:support@javachrist.fr" className="text-blue-700 dark:text-blue-300 hover:underline">support@javachrist.fr</a>.
         </p>
       </LegalSection>
 
@@ -73,7 +73,7 @@ export default function RgpdPage() {
         <p>
           <strong>Article 17 du RGPD</strong>. Vous pouvez demander la suppression définitive de l&apos;ensemble des données personnelles vous concernant, lorsque l&apos;une des conditions suivantes est remplie&nbsp;:
         </p>
-        <ul className="ml-4 list-disc space-y-1 text-slate-700">
+        <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li>les données ne sont plus nécessaires au regard des finalités initiales&nbsp;;</li>
           <li>vous retirez votre consentement&nbsp;;</li>
           <li>vous vous opposez au traitement sans motif légitime impérieux&nbsp;;</li>
@@ -84,7 +84,7 @@ export default function RgpdPage() {
           <p>
             Vous pouvez également supprimer vous-même votre compte depuis l&apos;interface du Service&nbsp;: page <em>Paramètres → Compte → Supprimer mon compte</em>. La suppression effective intervient sous <strong>30 jours maximum</strong>.
           </p>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
             Certaines données peuvent être conservées au-delà de ce délai si la loi nous y oblige (obligations comptables, lutte contre la fraude). Dans ce cas, elles sont strictement isolées et inaccessibles en dehors de ces finalités légales.
           </p>
         </LegalSubsection>
@@ -94,7 +94,7 @@ export default function RgpdPage() {
         <p>
           <strong>Article 18 du RGPD</strong>. Vous pouvez demander la suspension temporaire de l&apos;utilisation de vos données, notamment&nbsp;:
         </p>
-        <ul className="ml-4 list-disc space-y-1 text-slate-700">
+        <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li>pendant la vérification de l&apos;exactitude de vos données contestées&nbsp;;</li>
           <li>lorsque vous vous êtes opposé à un traitement, le temps que nous vérifiions nos motifs légitimes&nbsp;;</li>
           <li>en cas de traitement illicite si vous préférez la limitation à l&apos;effacement.</li>
@@ -108,7 +108,7 @@ export default function RgpdPage() {
         <p>
           RideCloud propose nativement, depuis l&apos;interface du Service, l&apos;export complet de vos données aux formats&nbsp;:
         </p>
-        <ul className="ml-4 list-disc space-y-1 text-slate-700">
+        <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li><strong>JSON</strong> — structuré, exploitable par tout outil de programmation&nbsp;;</li>
           <li><strong>ZIP</strong> — archive complète incluant documents PDF et photos&nbsp;;</li>
           <li><strong>PDF</strong> — synthèse imprimable pour archive personnelle ou cession de véhicule.</li>
@@ -140,9 +140,9 @@ export default function RgpdPage() {
         <p>
           <strong>Article 85 de la loi Informatique et Libertés</strong>. Vous pouvez définir des directives relatives à la conservation, l&apos;effacement et la communication de vos données après votre décès. Ces directives peuvent être&nbsp;:
         </p>
-        <ul className="ml-4 list-disc space-y-1 text-slate-700">
+        <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li><strong>générales</strong> et porter sur l&apos;ensemble de vos données personnelles, enregistrées auprès d&apos;un tiers de confiance certifié par la CNIL&nbsp;;</li>
-          <li><strong>particulières</strong>, spécifiques à RideCloud, à formuler par e-mail à <a href="mailto:support@javachrist.fr" className="text-blue-700 hover:underline">support@javachrist.fr</a>.</li>
+          <li><strong>particulières</strong>, spécifiques à RideCloud, à formuler par e-mail à <a href="mailto:support@javachrist.fr" className="text-blue-700 dark:text-blue-300 hover:underline">support@javachrist.fr</a>.</li>
         </ul>
       </LegalSection>
 
@@ -151,14 +151,14 @@ export default function RgpdPage() {
           Pour exercer l&apos;un de ces droits, contactez-nous à l&apos;adresse&nbsp;:
         </p>
 
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-5 shadow-ride-xs">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-700">
+        <div className="rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50/60 dark:bg-blue-950/40 p-5 shadow-ride-xs">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-300">
             E-mail dédié
           </p>
-          <p className="text-lg font-medium text-blue-900">
+          <p className="text-lg font-medium text-blue-900 dark:text-blue-200">
             <a href="mailto:support@javachrist.fr" className="hover:underline">support@javachrist.fr</a>
           </p>
-          <p className="mt-2 text-sm text-blue-800">
+          <p className="mt-2 text-sm text-blue-800 dark:text-blue-300">
             Précisez <strong>« Demande RGPD »</strong> en objet de votre message.
           </p>
         </div>
@@ -167,7 +167,7 @@ export default function RgpdPage() {
           <p>
             Afin de garantir la sécurité et la confidentialité de vos données, nous pouvons être amenés à vous demander&nbsp;:
           </p>
-          <ul className="ml-4 list-disc space-y-1 text-slate-700">
+          <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
             <li>l&apos;adresse e-mail associée à votre compte RideCloud&nbsp;;</li>
             <li>en cas de doute sérieux sur votre identité, une copie d&apos;une pièce d&apos;identité officielle (carte d&apos;identité, passeport). Ce document est utilisé exclusivement pour vérifier votre identité et est supprimé dans un délai maximal de <strong>30 jours</strong>.</li>
           </ul>
@@ -188,9 +188,9 @@ export default function RgpdPage() {
           Si vous estimez, après nous avoir contactés, que vos droits ne sont pas respectés, vous avez la possibilité d&apos;introduire une réclamation auprès de la <strong>Commission Nationale de l&apos;Informatique et des Libertés</strong> (CNIL)&nbsp;:
         </p>
 
-        <div className="rounded-2xl border border-slate-200/70 bg-white/60 p-5 shadow-ride-xs">
-          <p className="font-semibold text-slate-900">CNIL</p>
-          <p className="text-sm text-slate-700">
+        <div className="rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 p-5 shadow-ride-xs">
+          <p className="font-semibold text-slate-900 dark:text-slate-50">CNIL</p>
+          <p className="text-sm text-slate-700 dark:text-slate-200">
             3 Place de Fontenoy<br />
             TSA 80715<br />
             75334 Paris Cedex 07<br />
@@ -199,7 +199,7 @@ export default function RgpdPage() {
               href="https://www.cnil.fr/fr/plaintes"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-700 hover:underline"
+              className="text-blue-700 dark:text-blue-300 hover:underline"
             >
               www.cnil.fr/fr/plaintes
             </a>

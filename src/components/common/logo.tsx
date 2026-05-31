@@ -31,8 +31,8 @@ export function Logo({ compact = false }: LogoProps) {
       <span
         className={
           compact
-            ? "text-[15px] font-semibold tracking-tight text-slate-900"
-            : "text-xl font-semibold tracking-tight text-slate-900"
+            ? "text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-50"
+            : "text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50"
         }
       >
         RideCloud

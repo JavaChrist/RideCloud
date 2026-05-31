@@ -444,10 +444,10 @@ export function AddVehicleForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-3 rounded-xl border-2 border-blue-200 bg-blue-50 p-4 shadow-sm">
+        <div className="space-y-3 rounded-xl border-2 border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 p-4 shadow-sm">
           <div className="space-y-1">
-            <p className="text-base font-semibold text-blue-900">Reprise d’un véhicule existant</p>
-            <p className="text-sm text-blue-800">Importez un dossier RideCloud (.json) reçu lors d’une vente.</p>
+            <p className="text-base font-semibold text-blue-900 dark:text-blue-200">Reprise d’un véhicule existant</p>
+            <p className="text-sm text-blue-800 dark:text-blue-200">Importez un dossier RideCloud (.json) reçu lors d’une vente.</p>
           </div>
           <Input type="file" accept="application/json,.json" onChange={(e) => setImportFile(e.target.files?.[0] ?? null)} />
           <Button type="button" onClick={importVehiclePackage} disabled={importLoading || !importFile} className="w-full sm:w-auto">

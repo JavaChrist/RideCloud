@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RideCloud · Design System v2.1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    .shadow-ride-xs { box-shadow: 0 1px 2px rgba(15,23,42,0.04); }
+    .shadow-ride-md { box-shadow: 0 4px 12px -2px rgba(15,23,42,0.08), 0 2px 4px rgba(15,23,42,0.04); }
+    .shadow-ride-lg { box-shadow: 0 12px 32px -8px rgba(15,23,42,0.12), 0 4px 8px rgba(15,23,42,0.04); }
+    .shadow-ride-float { box-shadow: 0 32px 80px -24px rgba(29,78,216,0.22), 0 12px 32px -16px rgba(15,23,42,0.12); }
+    .shadow-ride-glow { box-shadow: 0 0 0 1px rgba(29,78,216,0.10), 0 8px 32px -8px rgba(29,78,216,0.35); }
+    .shadow-ride-ai { box-shadow: 0 4px 12px -2px rgba(139,92,246,0.35); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+  <!-- Header -->
+  <header class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-6xl items-baseline justify-between px-6 py-6">
+      <h1 class="text-2xl font-semibold tracking-tight">RideCloud · Design System</h1>
+      <span class="font-mono text-xs text-slate-500">v2.1 · production ready</span>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl space-y-24 px-6 py-16">
+
+    <!-- ─────────────────── COULEURS ─────────────────── -->
+    <section>
+      <div class="mb-8">
+        <h2 class="text-3xl font-semibold tracking-tight">Couleurs</h2>
+        <p class="mt-2 text-base text-slate-600">Palette officielle RideCloud, alignée Tailwind.</p>
+      </div>
+
+      <!-- Brand -->
+      <div class="mb-8">
+        <h3 class="mb-4 text-sm font-medium uppercase tracking-wider text-slate-500">Brand</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-blue-700"></div>
+            <div class="px-3 py-3">
+              <p class="text-sm font-medium">Brand</p>
+              <p class="font-mono text-xs text-slate-500">#1d4ed8</p>
+              <p class="font-mono text-xs text-slate-400">bg-blue-700</p>
+            </div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-blue-800"></div>
+            <div class="px-3 py-3">
+              <p class="text-sm font-medium">Brand hover</p>
+              <p class="font-mono text-xs text-slate-500">#1e40af</p>
+              <p class="font-mono text-xs text-slate-400">bg-blue-800</p>
+            </div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-indigo-700"></div>
+            <div class="px-3 py-3">
+              <p class="text-sm font-medium">Accent indigo</p>
+              <p class="font-mono text-xs text-slate-500">#4338ca</p>
+              <p class="font-mono text-xs text-slate-400">bg-indigo-700</p>
+            </div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-indigo-950"></div>
+            <div class="px-3 py-3">
+              <p class="text-sm font-medium">Indigo deep</p>
+              <p class="font-mono text-xs text-slate-500">#1e1b4b</p>
+              <p class="font-mono text-xs text-slate-400">bg-indigo-950</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Neutres -->
+      <div class="mb-8">
+        <h3 class="mb-4 text-sm font-medium uppercase tracking-wider text-slate-500">Neutres</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-slate-50 border-b border-slate-200"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Background</p><p class="font-mono text-xs text-slate-500">#f8fafc</p><p class="font-mono text-xs text-slate-400">bg-slate-50</p></div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-white border-b border-slate-200"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Surface</p><p class="font-mono text-xs text-slate-500">#ffffff</p><p class="font-mono text-xs text-slate-400">bg-white</p></div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-slate-900"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Text primary</p><p class="font-mono text-xs text-slate-500">#0f172a</p><p class="font-mono text-xs text-slate-400">text-slate-900</p></div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-slate-600"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Text secondary</p><p class="font-mono text-xs text-slate-500">#475569</p><p class="font-mono text-xs text-slate-400">text-slate-600</p></div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-slate-400"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Text disabled</p><p class="font-mono text-xs text-slate-500">#94a3b8</p><p class="font-mono text-xs text-slate-400">text-slate-400</p></div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-slate-200"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Border</p><p class="font-mono text-xs text-slate-500">#e2e8f0</p><p class="font-mono text-xs text-slate-400">bg-slate-200</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statuts -->
+      <div class="mb-8">
+        <h3 class="mb-4 text-sm font-medium uppercase tracking-wider text-slate-500">Statuts &amp; sémantique</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-emerald-500"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Success</p><p class="font-mono text-xs text-slate-500">#10b981</p><p class="font-mono text-xs text-slate-400">bg-emerald-500</p></div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-amber-500"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Warning</p><p class="font-mono text-xs text-slate-500">#f59e0b</p><p class="font-mono text-xs text-slate-400">bg-amber-500</p></div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-red-500"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Danger</p><p class="font-mono text-xs text-slate-500">#ef4444</p><p class="font-mono text-xs text-slate-400">bg-red-500</p></div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-sky-500"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Info</p><p class="font-mono text-xs text-slate-500">#0ea5e9</p><p class="font-mono text-xs text-slate-400">bg-sky-500</p></div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-gradient-to-br from-violet-500 to-indigo-500"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">AI</p><p class="font-mono text-xs text-slate-500">#8b5cf6 → #6366f1</p><p class="font-mono text-xs text-slate-400">violet-500 → indigo-500</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pastels -->
+      <div>
+        <h3 class="mb-4 text-sm font-medium uppercase tracking-wider text-slate-500">Pastels</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-sky-100"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Sky</p><p class="font-mono text-xs text-slate-500">#e0f2fe</p><p class="font-mono text-xs text-slate-400">bg-sky-100</p></div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-indigo-50"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Indigo</p><p class="font-mono text-xs text-slate-500">#eef2ff</p><p class="font-mono text-xs text-slate-400">bg-indigo-50</p></div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-slate-100"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Slate</p><p class="font-mono text-xs text-slate-500">#f1f5f9</p><p class="font-mono text-xs text-slate-400">bg-slate-100</p></div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-emerald-50"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Mint</p><p class="font-mono text-xs text-slate-500">#ecfdf5</p><p class="font-mono text-xs text-slate-400">bg-emerald-50</p></div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-violet-50"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Violet</p><p class="font-mono text-xs text-slate-500">#f5f3ff</p><p class="font-mono text-xs text-slate-400">bg-violet-50</p></div>
+          </div>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div class="h-20 bg-amber-50"></div>
+            <div class="px-3 py-3"><p class="text-sm font-medium">Amber</p><p class="font-mono text-xs text-slate-500">#fffbeb</p><p class="font-mono text-xs text-slate-400">bg-amber-50</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────── GRADIENTS ─────────────────── -->
+    <section>
+      <div class="mb-8">
+        <h2 class="text-3xl font-semibold tracking-tight">Gradients de marque</h2>
+        <p class="mt-2 text-base text-slate-600">Utilisés pour les CTA premium, les en-têtes immersifs et les éléments IA.</p>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div class="h-24 bg-gradient-to-br from-blue-700 to-indigo-700"></div>
+          <div class="px-4 py-3">
+            <p class="font-mono text-xs text-slate-700">ride-gradient-primary</p>
+            <p class="font-mono text-[11px] text-slate-500">#1d4ed8 → #4338ca</p>
+          </div>
+        </div>
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div class="h-24 bg-gradient-to-br from-indigo-950 via-blue-700 to-indigo-700"></div>
+          <div class="px-4 py-3">
+            <p class="font-mono text-xs text-slate-700">ride-gradient-dark</p>
+            <p class="font-mono text-[11px] text-slate-500">#1e1b4b → #1d4ed8 → #4338ca</p>
+          </div>
+        </div>
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div class="h-24 bg-gradient-to-b from-white to-slate-50 border-b border-slate-200"></div>
+          <div class="px-4 py-3">
+            <p class="font-mono text-xs text-slate-700">ride-gradient-surface</p>
+            <p class="font-mono text-[11px] text-slate-500">#ffffff → #f8fafc/60</p>
+          </div>
+        </div>
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div class="h-24 bg-gradient-to-br from-violet-500 to-indigo-500"></div>
+          <div class="px-4 py-3">
+            <p class="font-mono text-xs text-slate-700">ride-gradient-ai</p>
+            <p class="font-mono text-[11px] text-slate-500">#8b5cf6 → #6366f1</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div class="flex h-24 items-center justify-center bg-gradient-to-br from-blue-700 via-indigo-500 to-blue-700">
+          <span class="text-2xl font-semibold tracking-tight text-white">RideCloud</span>
+        </div>
+        <div class="px-4 py-3">
+          <p class="font-mono text-xs text-slate-700">ride-gradient-text</p>
+          <p class="font-mono text-[11px] text-slate-500">#1d4ed8 → #6366f1 → #1d4ed8 · appliqué via <code>bg-clip-text text-transparent</code></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────── OMBRES ─────────────────── -->
+    <section>
+      <div class="mb-8">
+        <h2 class="text-3xl font-semibold tracking-tight">Ombres premium</h2>
+        <p class="mt-2 text-base text-slate-600">5 niveaux d'élévation pour traduire la hiérarchie sans bruit visuel.</p>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-slate-50 p-8">
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+          <div class="flex flex-col items-center gap-3">
+            <div class="h-20 w-full rounded-xl bg-white shadow-ride-xs"></div>
+            <div class="text-center">
+              <p class="font-mono text-xs text-slate-700">ride-xs</p>
+              <p class="text-[11px] text-slate-500">Boutons, inputs</p>
+            </div>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <div class="h-20 w-full rounded-xl bg-white shadow-ride-md"></div>
+            <div class="text-center">
+              <p class="font-mono text-xs text-slate-700">ride-md</p>
+              <p class="text-[11px] text-slate-500">Cartes au repos</p>
+            </div>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <div class="h-20 w-full rounded-xl bg-white shadow-ride-lg"></div>
+            <div class="text-center">
+              <p class="font-mono text-xs text-slate-700">ride-lg</p>
+              <p class="text-[11px] text-slate-500">Cartes survolées · modales</p>
+            </div>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <div class="h-20 w-full rounded-xl bg-white shadow-ride-float"></div>
+            <div class="text-center">
+              <p class="font-mono text-xs text-slate-700">ride-float</p>
+              <p class="text-[11px] text-slate-500">Hero, sections marketing</p>
+            </div>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <div class="h-20 w-full rounded-xl bg-white shadow-ride-glow"></div>
+            <div class="text-center">
+              <p class="font-mono text-xs text-slate-700">ride-glow</p>
+              <p class="text-[11px] text-slate-500">CTA Premium, plan recommandé</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────── TYPOGRAPHIE ─────────────────── -->
+    <section>
+      <div class="mb-8">
+        <h2 class="text-3xl font-semibold tracking-tight">Typographie</h2>
+        <p class="mt-2 text-base text-slate-600">Geist Sans (Inter en fallback affiché ici). Geist Mono pour les KPI.</p>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-8">
+        <p class="mb-6 font-mono text-xs text-slate-500">Inter · fallback de Geist Sans</p>
+        <div class="divide-y divide-slate-200">
+          <div class="flex items-baseline justify-between gap-6 py-4">
+            <span class="font-semibold tracking-tight" style="font-size: 56px; line-height: 1.1; letter-spacing: -0.02em;">Hero title</span>
+            <span class="shrink-0 font-mono text-xs text-slate-500">56 / 600 / -2%</span>
+          </div>
+          <div class="flex items-baseline justify-between gap-6 py-4">
+            <span class="text-4xl font-semibold leading-tight tracking-tight">Section title</span>
+            <span class="shrink-0 font-mono text-xs text-slate-500">36 / 600 / -1.5%</span>
+          </div>
+          <div class="flex items-baseline justify-between gap-6 py-4">
+            <span class="font-medium leading-snug" style="font-size: 22px;">Sous-titre · accroche</span>
+            <span class="shrink-0 font-mono text-xs text-slate-500">22 / 500 / -1%</span>
+          </div>
+          <div class="flex items-baseline justify-between gap-6 py-4">
+            <span class="text-base leading-relaxed">Corps de texte courant pour les paragraphes.</span>
+            <span class="shrink-0 font-mono text-xs text-slate-500">16 / 400 / 0%</span>
+          </div>
+          <div class="flex items-baseline justify-between gap-6 py-4">
+            <span class="font-medium uppercase tracking-wider text-slate-600" style="font-size: 13px;">Caption · label</span>
+            <span class="shrink-0 font-mono text-xs text-slate-500">13 / 500 / +2%</span>
+          </div>
+          <div class="flex items-baseline justify-between gap-6 py-4">
+            <span class="font-mono text-5xl font-semibold tracking-tight tabular-nums">€1 247,80</span>
+            <span class="shrink-0 font-mono text-xs text-slate-500">48 / 600 / mono</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────── SPACING & RADIUS ─────────────────── -->
+    <section>
+      <div class="mb-8">
+        <h2 class="text-3xl font-semibold tracking-tight">Spacing &amp; Radius</h2>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-2">
+        <div class="rounded-2xl border border-slate-200 bg-white p-8">
+          <h3 class="mb-4 text-sm font-medium uppercase tracking-wider text-slate-500">Spacing</h3>
+          <div class="space-y-3">
+            <div class="flex items-center gap-4"><span class="w-12 font-mono text-xs text-slate-500">xs</span><div class="h-2 rounded-full bg-blue-700" style="width: 16px;"></div><span class="font-mono text-xs text-slate-500">4px</span></div>
+            <div class="flex items-center gap-4"><span class="w-12 font-mono text-xs text-slate-500">sm</span><div class="h-2 rounded-full bg-blue-700" style="width: 32px;"></div><span class="font-mono text-xs text-slate-500">8px</span></div>
+            <div class="flex items-center gap-4"><span class="w-12 font-mono text-xs text-slate-500">md</span><div class="h-2 rounded-full bg-blue-700" style="width: 48px;"></div><span class="font-mono text-xs text-slate-500">12px</span></div>
+            <div class="flex items-center gap-4"><span class="w-12 font-mono text-xs text-slate-500">lg</span><div class="h-2 rounded-full bg-blue-700" style="width: 64px;"></div><span class="font-mono text-xs text-slate-500">16px</span></div>
+            <div class="flex items-center gap-4"><span class="w-12 font-mono text-xs text-slate-500">xl</span><div class="h-2 rounded-full bg-blue-700" style="width: 96px;"></div><span class="font-mono text-xs text-slate-500">24px</span></div>
+            <div class="flex items-center gap-4"><span class="w-12 font-mono text-xs text-slate-500">2xl</span><div class="h-2 rounded-full bg-blue-700" style="width: 128px;"></div><span class="font-mono text-xs text-slate-500">32px</span></div>
+            <div class="flex items-center gap-4"><span class="w-12 font-mono text-xs text-slate-500">3xl</span><div class="h-2 rounded-full bg-blue-700" style="width: 192px;"></div><span class="font-mono text-xs text-slate-500">48px</span></div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-8">
+          <h3 class="mb-4 text-sm font-medium uppercase tracking-wider text-slate-500">Radius</h3>
+          <div class="grid grid-cols-5 gap-4">
+            <div class="flex flex-col items-center gap-2"><div class="h-16 w-16 bg-blue-700" style="border-radius: 8px;"></div><span class="font-mono text-xs text-slate-500">sm</span><span class="font-mono text-xs text-slate-400">8px</span></div>
+            <div class="flex flex-col items-center gap-2"><div class="h-16 w-16 bg-blue-700" style="border-radius: 12px;"></div><span class="font-mono text-xs text-slate-500">md</span><span class="font-mono text-xs text-slate-400">12px</span></div>
+            <div class="flex flex-col items-center gap-2"><div class="h-16 w-16 bg-blue-700" style="border-radius: 16px;"></div><span class="font-mono text-xs text-slate-500">lg</span><span class="font-mono text-xs text-slate-400">16px</span></div>
+            <div class="flex flex-col items-center gap-2"><div class="h-16 w-16 bg-blue-700" style="border-radius: 20px;"></div><span class="font-mono text-xs text-slate-500">xl</span><span class="font-mono text-xs text-slate-400">20px</span></div>
+            <div class="flex flex-col items-center gap-2"><div class="h-16 w-16 bg-blue-700 rounded-full"></div><span class="font-mono text-xs text-slate-500">full</span><span class="font-mono text-xs text-slate-400">9999px</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────── BOUTONS ─────────────────── -->
+    <section>
+      <div class="mb-8">
+        <h2 class="text-3xl font-semibold tracking-tight">Boutons</h2>
+        <p class="mt-2 text-base text-slate-600">4 variantes × 3 états. Padding 12/20, radius 12px (rounded-xl), texte 15/Medium.</p>
+      </div>
+
+      <div class="space-y-6 rounded-2xl border border-slate-200 bg-white p-8">
+        <div>
+          <h3 class="mb-4 text-sm font-medium uppercase tracking-wider text-slate-500">Primary</h3>
+          <div class="flex flex-wrap items-center gap-4">
+            <div class="flex flex-col gap-2"><span class="font-mono text-xs text-slate-500">default</span><button class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-medium bg-gradient-to-br from-blue-700 to-indigo-700 text-white shadow-ride-md hover:from-blue-800 hover:to-indigo-800 transition-colors">Créer mon compte</button></div>
+            <div class="flex flex-col gap-2"><span class="font-mono text-xs text-slate-500">hover</span><button class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-medium bg-gradient-to-br from-blue-800 to-indigo-800 text-white shadow-ride-lg">Créer mon compte</button></div>
+            <div class="flex flex-col gap-2"><span class="font-mono text-xs text-slate-500">disabled</span><button disabled class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-medium bg-slate-300 text-white cursor-not-allowed">Créer mon compte</button></div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="mb-4 text-sm font-medium uppercase tracking-wider text-slate-500">Secondary</h3>
+          <div class="flex flex-wrap items-center gap-4">
+            <div class="flex flex-col gap-2"><span class="font-mono text-xs text-slate-500">default</span><button class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-medium bg-white text-blue-700 border border-blue-700 hover:bg-indigo-50 transition-colors">Découvrir les tarifs</button></div>
+            <div class="flex flex-col gap-2"><span class="font-mono text-xs text-slate-500">hover</span><button class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-medium bg-indigo-50 text-blue-700 border border-blue-700">Découvrir les tarifs</button></div>
+            <div class="flex flex-col gap-2"><span class="font-mono text-xs text-slate-500">disabled</span><button disabled class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-medium bg-white text-slate-400 border border-slate-200 cursor-not-allowed">Découvrir les tarifs</button></div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="mb-4 text-sm font-medium uppercase tracking-wider text-slate-500">Ghost</h3>
+          <div class="flex flex-wrap items-center gap-4">
+            <div class="flex flex-col gap-2"><span class="font-mono text-xs text-slate-500">default</span><button class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-medium bg-transparent text-slate-900 border border-slate-200 hover:bg-slate-100 transition-colors">Plus tard</button></div>
+            <div class="flex flex-col gap-2"><span class="font-mono text-xs text-slate-500">hover</span><button class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-medium bg-slate-100 text-slate-900 border border-slate-200">Plus tard</button></div>
+            <div class="flex flex-col gap-2"><span class="font-mono text-xs text-slate-500">disabled</span><button disabled class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-medium bg-transparent text-slate-400 border border-slate-200 cursor-not-allowed">Plus tard</button></div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="mb-4 text-sm font-medium uppercase tracking-wider text-slate-500">AI</h3>
+          <div class="flex flex-wrap items-center gap-4">
+            <div class="flex flex-col gap-2"><span class="font-mono text-xs text-slate-500">default</span><button class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-medium bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-ride-ai hover:from-violet-600 hover:to-indigo-600 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
+              Générer avec l'IA
+            </button></div>
+            <div class="flex flex-col gap-2"><span class="font-mono text-xs text-slate-500">hover</span><button class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-medium bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-ride-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
+              Générer avec l'IA
+            </button></div>
+            <div class="flex flex-col gap-2"><span class="font-mono text-xs text-slate-500">disabled</span><button disabled class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-medium bg-slate-300 text-white cursor-not-allowed">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+              Générer avec l'IA
+            </button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────── CARDS ─────────────────── -->
+    <section>
+      <div class="mb-8"><h2 class="text-3xl font-semibold tracking-tight">Cards</h2></div>
+
+      <div class="grid gap-4 md:grid-cols-3">
+        <div class="flex flex-col gap-3 rounded-2xl bg-white p-6 border border-slate-200">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-blue-700">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          </div>
+          <h3 class="font-medium leading-snug" style="font-size: 22px;">Plan d'entretien intelligent</h3>
+          <p class="text-base leading-relaxed text-slate-600">Adapté à votre marque et modèle. Échéances calculées automatiquement.</p>
+        </div>
+
+        <div class="flex flex-col gap-3 rounded-2xl bg-white p-6 border-2 border-blue-700 shadow-ride-glow">
+          <span class="inline-flex w-fit items-center rounded-full bg-gradient-to-br from-violet-50 to-indigo-50 px-3 py-1 text-xs font-medium text-violet-700 border border-violet-200">Recommandé</span>
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-50 to-indigo-50 text-violet-700">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
+          </div>
+          <h3 class="font-medium leading-snug" style="font-size: 22px;">Plan généré par IA</h3>
+          <p class="text-base leading-relaxed text-slate-600">Pour les modèles rares, l'IA Mistral propose un plan complet en 10 s.</p>
+        </div>
+
+        <div class="flex flex-col gap-3 rounded-2xl bg-white p-6 border border-slate-200">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-blue-700">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          </div>
+          <h3 class="font-medium leading-snug" style="font-size: 22px;">Suivi des coûts</h3>
+          <p class="text-base leading-relaxed text-slate-600">Mois, année, coût total, coût au kilomètre. En temps réel.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────── BADGES ─────────────────── -->
+    <section>
+      <div class="mb-8">
+        <h2 class="text-3xl font-semibold tracking-tight">Badges de statut</h2>
+        <p class="mt-2 text-base text-slate-600">Statuts entretien (à jour, à anticiper, en retard, à prévoir) et source du template (IA).</p>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-8">
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">
+            <span class="h-2 w-2 rounded-full bg-emerald-500"></span>À jour
+          </span>
+          <span class="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">
+            <span class="h-2 w-2 rounded-full bg-amber-500"></span>À anticiper
+          </span>
+          <span class="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-medium text-red-800">
+            <span class="h-2 w-2 rounded-full bg-red-500"></span>En retard
+          </span>
+          <span class="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-800">
+            <span class="h-2 w-2 rounded-full bg-sky-500"></span>À prévoir
+          </span>
+          <span class="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-violet-200 bg-gradient-to-br from-violet-50 to-indigo-50 px-3 py-1 text-xs font-medium text-violet-800">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/></svg>
+            Plan généré par IA
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────── INPUTS ─────────────────── -->
+    <section>
+      <div class="mb-8"><h2 class="text-3xl font-semibold tracking-tight">Inputs</h2></div>
+
+      <div class="grid gap-6 rounded-2xl border border-slate-200 bg-white p-8 md:grid-cols-3">
+        <div class="flex flex-col gap-1.5">
+          <label class="font-medium uppercase tracking-wider text-slate-600" style="font-size: 13px;">Default</label>
+          <input type="text" placeholder="Marque du véhicule" class="h-11 rounded-xl bg-white px-3.5 text-base text-slate-900 placeholder:text-slate-400 outline-none border border-slate-200 focus:border-2 focus:border-blue-700" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="font-medium uppercase tracking-wider text-slate-600" style="font-size: 13px;">Focus</label>
+          <input type="text" placeholder="Marque du véhicule" readonly class="h-11 rounded-xl bg-white px-3.5 text-base text-slate-900 placeholder:text-slate-400 outline-none border-2 border-blue-700 ring-4 ring-blue-700/10" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="font-medium uppercase tracking-wider text-slate-600" style="font-size: 13px;">Error</label>
+          <input type="text" placeholder="Marque du véhicule" readonly class="h-11 rounded-xl bg-white px-3.5 text-base text-slate-900 placeholder:text-slate-400 outline-none border border-red-500" />
+          <p class="text-xs text-red-700">Ce champ est requis</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────── MODALES ─────────────────── -->
+    <section>
+      <div class="mb-8">
+        <h2 class="text-3xl font-semibold tracking-tight">Modales contextuelles</h2>
+        <p class="mt-2 text-base text-slate-600">5 variantes du hook <code class="font-mono text-sm">useConfirm()</code> — remplace tous les <code class="font-mono text-sm">window.confirm()</code>.</p>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+        <!-- success -->
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-ride-lg">
+          <div class="flex gap-3 p-4">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-slate-900">Marquer comme à jour ?</p>
+              <p class="mt-1 text-sm leading-relaxed text-slate-600">Toutes les révisions périodiques seront considérées effectuées au kilométrage actuel.</p>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 px-4 pb-4">
+            <button type="button" class="rounded-xl border border-slate-200 px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">Annuler</button>
+            <button type="button" class="rounded-xl bg-emerald-500 px-3.5 py-2 text-xs font-medium text-white hover:bg-emerald-600">Confirmer</button>
+          </div>
+          <div class="border-t border-emerald-200 bg-emerald-50 px-3 py-1.5 font-mono text-[11px] text-emerald-700">variant: success</div>
+        </div>
+
+        <!-- warning -->
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-ride-lg">
+          <div class="flex gap-3 p-4">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-slate-900">Kilométrage inférieur au compteur</p>
+              <p class="mt-1 text-sm leading-relaxed text-slate-600">Vous saisissez une valeur plus basse que la précédente. Continuer ?</p>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 px-4 pb-4">
+            <button type="button" class="rounded-xl border border-slate-200 px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">Annuler</button>
+            <button type="button" class="rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-medium text-white hover:bg-amber-600">Confirmer quand même</button>
+          </div>
+          <div class="border-t border-amber-200 bg-amber-50 px-3 py-1.5 font-mono text-[11px] text-amber-700">variant: warning</div>
+        </div>
+
+        <!-- danger -->
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-ride-lg">
+          <div class="flex gap-3 p-4">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-700">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-slate-900">Supprimer Yamaha MT-07 ?</p>
+              <p class="mt-1 text-sm leading-relaxed text-slate-600">Le véhicule et tout son historique seront effacés. Action irréversible.</p>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 px-4 pb-4">
+            <button type="button" class="rounded-xl border border-slate-200 px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">Annuler</button>
+            <button type="button" class="rounded-xl bg-red-500 px-3.5 py-2 text-xs font-medium text-white hover:bg-red-600">Supprimer définitivement</button>
+          </div>
+          <div class="border-t border-red-200 bg-red-50 px-3 py-1.5 font-mono text-[11px] text-red-700">variant: danger</div>
+        </div>
+
+        <!-- ai -->
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-ride-lg">
+          <div class="flex gap-3 p-4">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-50 to-indigo-50 text-violet-700">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-slate-900">Générer un plan personnalisé ?</p>
+              <p class="mt-1 text-sm leading-relaxed text-slate-600">L'IA analyse votre véhicule et propose un plan d'entretien complet. ~10 secondes.</p>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 px-4 pb-4">
+            <button type="button" class="rounded-xl border border-slate-200 px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">Annuler</button>
+            <button type="button" class="rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 px-3.5 py-2 text-xs font-medium text-white hover:from-violet-600 hover:to-indigo-600">Lancer la génération</button>
+          </div>
+          <div class="border-t border-violet-200 bg-gradient-to-br from-violet-50 to-indigo-50 px-3 py-1.5 font-mono text-[11px] text-violet-700">variant: ai</div>
+        </div>
+
+        <!-- info -->
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-ride-lg">
+          <div class="flex gap-3 p-4">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-slate-900">Exporter votre dossier ?</p>
+              <p class="mt-1 text-sm leading-relaxed text-slate-600">Le dossier complet sera téléchargé au format JSON, ZIP ou PDF selon votre choix.</p>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 px-4 pb-4">
+            <button type="button" class="rounded-xl border border-slate-200 px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">Annuler</button>
+            <button type="button" class="rounded-xl bg-sky-500 px-3.5 py-2 text-xs font-medium text-white hover:bg-sky-600">Continuer</button>
+          </div>
+          <div class="border-t border-sky-200 bg-sky-50 px-3 py-1.5 font-mono text-[11px] text-sky-700">variant: info</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─────────────────── TARIFS ─────────────────── -->
+    <section>
+      <div class="mb-8">
+        <h2 class="text-3xl font-semibold tracking-tight">Plans &amp; tarification</h2>
+        <p class="mt-2 text-base text-slate-600">3 plans facturés via Mollie (SEPA + carte). Annulation immédiate, pas d'engagement.</p>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-3">
+        <div class="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-6">
+          <p class="text-xs font-medium uppercase tracking-wider text-slate-500">Free</p>
+          <p class="font-mono text-3xl font-semibold tracking-tight">0 €</p>
+          <p class="font-mono text-xs text-slate-500">/ mois · 1 véhicule</p>
+          <ul class="mt-2 space-y-1.5 text-sm text-slate-700">
+            <li class="flex items-start gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0 text-emerald-500"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg>
+              Plan d'entretien intelligent
+            </li>
+            <li class="flex items-start gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0 text-emerald-500"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg>
+              Export JSON / ZIP / PDF
+            </li>
+            <li class="flex items-start gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0 text-emerald-500"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg>
+              PWA installable
+            </li>
+          </ul>
+        </div>
+
+        <div class="relative flex flex-col gap-3 rounded-2xl border-2 border-blue-700 bg-gradient-to-b from-white to-slate-50 p-6 shadow-ride-glow">
+          <span class="absolute -top-2.5 right-4 inline-flex items-center rounded-full bg-gradient-to-br from-blue-700 to-indigo-700 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">Recommandé</span>
+          <p class="text-xs font-medium uppercase tracking-wider text-blue-700">Premium</p>
+          <p class="font-mono text-3xl font-semibold tracking-tight">3,99 €</p>
+          <p class="font-mono text-xs text-slate-500">/ mois · 5 véhicules</p>
+          <p class="font-mono text-[11px] text-blue-700">ou 39 €/an · -18 %</p>
+          <ul class="mt-2 space-y-1.5 text-sm text-slate-700">
+            <li class="flex items-start gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0 text-emerald-500"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg>
+              Tout du plan Free
+            </li>
+            <li class="flex items-start gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0 text-emerald-500"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg>
+              Plan d'entretien IA (Mistral)
+            </li>
+            <li class="flex items-start gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0 text-emerald-500"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg>
+              Support prioritaire
+            </li>
+          </ul>
+        </div>
+
+        <div class="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-6">
+          <p class="text-xs font-medium uppercase tracking-wider text-slate-500">Family</p>
+          <p class="font-mono text-3xl font-semibold tracking-tight">6,99 €</p>
+          <p class="font-mono text-xs text-slate-500">/ mois · 15 véhicules</p>
+          <p class="font-mono text-[11px] text-slate-600">ou 69 €/an · -18 %</p>
+          <ul class="mt-2 space-y-1.5 text-sm text-slate-700">
+            <li class="flex items-start gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0 text-emerald-500"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg>
+              Tout du plan Premium
+            </li>
+            <li class="flex items-start gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0 text-emerald-500"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg>
+              Partage familial (V1)
+            </li>
+            <li class="flex items-start gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0 text-emerald-500"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg>
+              15 véhicules suivis
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="border-t border-slate-200 py-8 text-center text-sm text-slate-500">
+    RideCloud · Charte officielle · 2026
+  </footer>
+
+</body>
+</html>

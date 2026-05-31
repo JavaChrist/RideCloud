@@ -24,9 +24,9 @@ const categoryLabels = {
 } as const;
 
 function VehicleIcon({ category }: { category: "voitures" | "motos" | "scooters" | "utilitaires" }) {
-  if (category === "voitures") return <Car className="h-12 w-12 text-slate-400" />;
-  if (category === "utilitaires") return <Truck className="h-12 w-12 text-slate-400" />;
-  return <Bike className="h-12 w-12 text-slate-400" />;
+  if (category === "voitures") return <Car className="h-12 w-12 text-slate-400 dark:text-slate-500" />;
+  if (category === "utilitaires") return <Truck className="h-12 w-12 text-slate-400 dark:text-slate-500" />;
+  return <Bike className="h-12 w-12 text-slate-400 dark:text-slate-500" />;
 }
 
 export default async function VehicleDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -44,7 +44,7 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
 
   if (!vehicle) {
     return (
-      <div className="rounded-2xl border border-slate-200/80 bg-white p-8 text-center text-slate-600 shadow-ride-sm">
+      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-8 text-center text-slate-600 dark:text-slate-300 shadow-ride-sm">
         Véhicule introuvable.
       </div>
     );
@@ -76,14 +76,14 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
 
   return (
     <section className="space-y-6">
-      <Card className="relative overflow-hidden rounded-2xl border-slate-200/80 bg-ride-gradient-card shadow-ride-md">
+      <Card className="relative overflow-hidden rounded-2xl border-slate-200/80 dark:border-slate-800/80 bg-ride-gradient-card shadow-ride-md">
         <span
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-700/40 to-transparent"
         />
         <CardContent className="p-0">
           <div className="grid gap-0 md:grid-cols-[280px_1fr]">
-            <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-slate-50 to-white sm:h-56 md:h-full">
+            <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-slate-50 dark:from-slate-950 to-white dark:to-slate-900 sm:h-56 md:h-full">
               {vehicle.photo_url ? (
                 <Image
                   src={vehicle.photo_url}
@@ -103,14 +103,14 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
               <div>
                 <Badge
                   variant="outline"
-                  className="mb-2 rounded-full border-blue-200 bg-white/70 px-3 py-0.5 text-xs font-medium text-blue-700 shadow-ride-xs"
+                  className="mb-2 rounded-full border-blue-200 dark:border-blue-900 bg-white/70 dark:bg-slate-900/70 px-3 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 shadow-ride-xs"
                 >
                   {categoryLabels[vehicle.category]}
                 </Badge>
-                <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                   {vehicle.marque} {vehicle.modele}
                 </h1>
-                <p className="text-slate-600">
+                <p className="text-slate-600 dark:text-slate-300">
                   Année {vehicle.annee} ·{" "}
                   <span className="font-mono tabular-nums">
                     {vehicle.kilometrage.toLocaleString("fr-FR")} km
@@ -118,8 +118,8 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                 </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="group/tile relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-3 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ride-md">
-                  <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                <div className="group/tile relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-3 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ride-md">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     État entretien
                   </p>
                   <Badge
@@ -135,29 +135,29 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                     {summary.globalLabel}
                   </Badge>
                 </div>
-                <div className="group/tile relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-3 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ride-md">
-                  <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                <div className="group/tile relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-3 shadow-ride-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ride-md">
+                  <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     <CalendarClock className="h-3 w-3" strokeWidth={2.25} />
                     Prochaine échéance
                   </p>
-                  <p className="mt-1 font-medium text-slate-900">
+                  <p className="mt-1 font-medium text-slate-900 dark:text-slate-50">
                     {summary.nextLabel}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {summary.overdueCount} en retard · {summary.dueSoonCount} à prévoir bientôt
                   </p>
                   {summary.dueSoonTitles.length > 0 && (
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                       Entretiens bientôt dus : {summary.dueSoonTitles.join(", ")}
                     </p>
                   )}
                 </div>
-                <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-3 shadow-ride-xs">
-                  <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-3 shadow-ride-xs">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     Compteur
                   </p>
-                  <p className="mt-1 flex items-center gap-2 font-mono text-lg font-semibold tabular-nums text-slate-900">
-                    <Gauge className="h-4 w-4 text-blue-700" strokeWidth={2} />
+                  <p className="mt-1 flex items-center gap-2 font-mono text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-50">
+                    <Gauge className="h-4 w-4 text-blue-700 dark:text-blue-300" strokeWidth={2} />
                     {vehicle.kilometrage.toLocaleString("fr-FR")} km
                   </p>
                   <div className="mt-2.5">

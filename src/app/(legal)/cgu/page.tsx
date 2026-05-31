@@ -60,7 +60,7 @@ export default function CguPage() {
         <p>
           RideCloud est une plateforme de gestion d&apos;entretien automobile, conçue pour les particuliers propriétaires de véhicules. Elle permet notamment, sans s&apos;y limiter&nbsp;:
         </p>
-        <ul className="ml-4 list-disc space-y-1 text-slate-700">
+        <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li>la centralisation des informations relatives à un ou plusieurs véhicules (voiture, moto, scooter, utilitaire)&nbsp;;</li>
           <li>le suivi des entretiens, réparations et révisions effectués&nbsp;;</li>
           <li>la conservation et l&apos;archivage de documents (factures, contrôles techniques, certificats)&nbsp;;</li>
@@ -83,7 +83,7 @@ export default function CguPage() {
         <p>
           L&apos;accès au Service nécessite&nbsp;:
         </p>
-        <ul className="ml-4 list-disc space-y-1 text-slate-700">
+        <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li>une connexion internet fonctionnelle&nbsp;;</li>
           <li>un navigateur web moderne (Chrome, Firefox, Safari, Edge — versions récentes)&nbsp;;</li>
           <li>la création d&apos;un compte personnel.</li>
@@ -95,7 +95,7 @@ export default function CguPage() {
           La création d&apos;un compte est nécessaire pour accéder à l&apos;ensemble des fonctionnalités du Service. L&apos;Utilisateur s&apos;engage à fournir des informations exactes, complètes et à jour lors de son inscription, notamment une adresse e-mail valide.
         </p>
         <p>
-          L&apos;Utilisateur est seul responsable de la confidentialité de ses identifiants. Toute action effectuée depuis son compte est réputée effectuée par lui. En cas d&apos;utilisation frauduleuse ou de soupçon de compromission, l&apos;Utilisateur doit immédiatement modifier son mot de passe et en informer l&apos;Éditeur par e-mail à <a href="mailto:support@javachrist.fr" className="text-blue-700 hover:underline">support@javachrist.fr</a>.
+          L&apos;Utilisateur est seul responsable de la confidentialité de ses identifiants. Toute action effectuée depuis son compte est réputée effectuée par lui. En cas d&apos;utilisation frauduleuse ou de soupçon de compromission, l&apos;Utilisateur doit immédiatement modifier son mot de passe et en informer l&apos;Éditeur par e-mail à <a href="mailto:support@javachrist.fr" className="text-blue-700 dark:text-blue-300 hover:underline">support@javachrist.fr</a>.
         </p>
         <p>
           L&apos;Utilisateur peut supprimer son compte à tout moment depuis l&apos;interface du Service. La suppression entraîne l&apos;effacement définitif de l&apos;ensemble des données associées au compte, dans un délai maximal de <strong>30 jours</strong>, sous réserve des obligations légales de conservation incombant à l&apos;Éditeur.
@@ -104,7 +104,7 @@ export default function CguPage() {
 
       <LegalSection id="obligations" title="6. Obligations de l'utilisateur">
         <p>L&apos;Utilisateur s&apos;engage à&nbsp;:</p>
-        <ul className="ml-4 list-disc space-y-1 text-slate-700">
+        <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li>utiliser le Service conformément à sa destination et dans le respect des lois en vigueur&nbsp;;</li>
           <li>ne pas porter atteinte aux droits de tiers, notamment aux droits de propriété intellectuelle&nbsp;;</li>
           <li>ne pas tenter d&apos;accéder de manière non autorisée au Service, à ses serveurs ou aux comptes d&apos;autres utilisateurs&nbsp;;</li>
@@ -125,7 +125,7 @@ export default function CguPage() {
           L&apos;Utilisateur concède à l&apos;Éditeur, à titre gratuit et pour la seule durée d&apos;utilisation du Service, une licence non exclusive et non transférable d&apos;hébergement, de stockage et d&apos;affichage de ces contenus, strictement limitée aux fins de fonctionnement du Service.
         </p>
         <p>
-          Les modalités de traitement des données personnelles sont détaillées dans la <a href="/confidentialite" className="text-blue-700 hover:underline">Politique de confidentialité</a> et la page <a href="/rgpd" className="text-blue-700 hover:underline">RGPD</a>.
+          Les modalités de traitement des données personnelles sont détaillées dans la <a href="/confidentialite" className="text-blue-700 dark:text-blue-300 hover:underline">Politique de confidentialité</a> et la page <a href="/rgpd" className="text-blue-700 dark:text-blue-300 hover:underline">RGPD</a>.
         </p>
       </LegalSection>
 
@@ -145,7 +145,7 @@ export default function CguPage() {
         <p>
           L&apos;Éditeur ne saurait être tenu responsable&nbsp;:
         </p>
-        <ul className="ml-4 list-disc space-y-1 text-slate-700">
+        <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li>de la perte de données résultant d&apos;une mauvaise utilisation du Service ou de la suppression volontaire du compte par l&apos;Utilisateur&nbsp;;</li>
           <li>des dommages indirects (perte d&apos;exploitation, perte de chance, préjudice commercial)&nbsp;;</li>
           <li>des conséquences d&apos;une indisponibilité technique imputable à un tiers (hébergeur, FAI, fournisseur d&apos;e-mail).</li>
@@ -160,7 +160,7 @@ export default function CguPage() {
           L&apos;Éditeur se réserve le droit de suspendre ou de supprimer le compte d&apos;un Utilisateur en cas de manquement avéré aux présentes CGU, sans préavis ni indemnité, et sans préjudice de tous droits ou actions auxquels l&apos;Éditeur pourrait prétendre.
         </p>
         <p>
-          L&apos;Utilisateur peut résilier l&apos;utilisation du Service à tout moment, sans motif ni préavis, en supprimant son compte depuis l&apos;interface du Service ou en en formulant la demande à <a href="mailto:support@javachrist.fr" className="text-blue-700 hover:underline">support@javachrist.fr</a>.
+          L&apos;Utilisateur peut résilier l&apos;utilisation du Service à tout moment, sans motif ni préavis, en supprimant son compte depuis l&apos;interface du Service ou en en formulant la demande à <a href="mailto:support@javachrist.fr" className="text-blue-700 dark:text-blue-300 hover:underline">support@javachrist.fr</a>.
         </p>
       </LegalSection>
 
@@ -187,11 +187,11 @@ export default function CguPage() {
           Conformément aux articles <strong>L.611-1</strong> et <strong>L.612-1</strong> du Code de la consommation, l&apos;Utilisateur consommateur a le droit, en cas de litige avec l&apos;Éditeur n&apos;ayant pas pu être résolu à l&apos;amiable dans un délai d&apos;<strong>un an</strong> à compter de la réclamation écrite, de recourir <strong>gratuitement</strong> au médiateur de la consommation désigné ci-dessous.
         </p>
 
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-5 shadow-ride-xs">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-blue-700">
+        <div className="rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50/60 dark:bg-blue-950/40 p-5 shadow-ride-xs">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-300">
             Médiateur de la consommation désigné
           </p>
-          <ul className="space-y-1.5 text-sm text-blue-900">
+          <ul className="space-y-1.5 text-sm text-blue-900 dark:text-blue-200">
             <li><strong>Dénomination</strong> : MÉDIATION CONSOMMATION DÉVELOPPEMENT</li>
             <li><strong>Forme juridique</strong> : SAS au capital de 10&nbsp;000&nbsp;€</li>
             <li><strong>Représentant légal</strong> : Madame Anne PILLIAS-PERRON, Présidente</li>
@@ -205,7 +205,7 @@ export default function CguPage() {
                 href="https://www.medconsodev.eu"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium underline hover:text-blue-700"
+                className="font-medium underline hover:text-blue-700 dark:hover:text-blue-300"
               >
                 www.medconsodev.eu
               </a>
@@ -216,13 +216,13 @@ export default function CguPage() {
                 href="https://www.medconsodev.eu/mediation-consommation-demande.php"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium underline hover:text-blue-700"
+                className="font-medium underline hover:text-blue-700 dark:hover:text-blue-300"
               >
                 Déposer une demande de médiation
               </a>
             </li>
           </ul>
-          <p className="mt-3 text-xs text-blue-800/80">
+          <p className="mt-3 text-xs text-blue-800/80 dark:text-blue-300/80">
             Entité de médiation de la consommation référencée par la CECMC (Commission d&apos;Évaluation et de Contrôle de la Médiation de la Consommation) depuis le 1<sup>er</sup> juin 2018.
           </p>
         </div>
@@ -235,13 +235,13 @@ export default function CguPage() {
             href="https://ec.europa.eu/consumers/odr"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-blue-700 hover:underline"
+            className="font-medium text-blue-700 dark:text-blue-300 hover:underline"
           >
             https://ec.europa.eu/consumers/odr
           </a>
         </p>
-        <p className="text-sm text-slate-600">
-          La saisine du médiateur est facultative et ne fait pas obstacle aux recours juridictionnels habituels. Le recours à la médiation n&apos;est ouvert qu&apos;après une tentative de résolution amiable préalable directement auprès de l&apos;Éditeur, à l&apos;adresse <a href="mailto:support@javachrist.fr" className="text-blue-700 hover:underline">support@javachrist.fr</a>.
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          La saisine du médiateur est facultative et ne fait pas obstacle aux recours juridictionnels habituels. Le recours à la médiation n&apos;est ouvert qu&apos;après une tentative de résolution amiable préalable directement auprès de l&apos;Éditeur, à l&apos;adresse <a href="mailto:support@javachrist.fr" className="text-blue-700 dark:text-blue-300 hover:underline">support@javachrist.fr</a>.
         </p>
       </LegalSection>
 
