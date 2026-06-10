@@ -27,7 +27,7 @@ export function CategoryCard({ slug, title }: CategoryCardProps) {
     <Link
       href={`/vehicules/${slug}`}
       aria-label={title}
-      className="group relative flex flex-col items-center gap-2 overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-ride-gradient-card p-5 shadow-ride-xs transition-all duration-500 ease-ride-spring hover:-translate-y-1 hover:border-blue-200 dark:hover:border-blue-900 hover:shadow-ride-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
+      className="group relative flex flex-row items-center gap-5 overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-ride-gradient-card px-6 py-5 shadow-ride-xs transition-all duration-500 ease-ride-spring hover:-translate-y-1 hover:border-blue-200 dark:hover:border-blue-900 hover:shadow-ride-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 md:flex-col md:items-center md:gap-2 md:px-5 md:py-5"
     >
       <span
         aria-hidden
@@ -43,10 +43,10 @@ export function CategoryCard({ slug, title }: CategoryCardProps) {
         alt={labelMap[slug]}
         width={280}
         height={280}
-        className="h-32 w-32 object-contain transition-transform duration-500 ease-ride-spring group-hover:scale-110 sm:h-40 sm:w-40"
+        className="h-24 w-24 shrink-0 object-contain transition-transform duration-500 ease-ride-spring group-hover:scale-110 md:h-32 md:w-32"
         priority
       />
-      <span className="text-sm font-medium text-slate-700 dark:text-slate-200 transition-colors group-hover:text-blue-700 dark:group-hover:text-blue-300 sm:text-base">
+      <span className="text-lg font-semibold text-slate-700 dark:text-slate-200 transition-colors group-hover:text-blue-700 dark:group-hover:text-blue-300 md:text-sm md:font-medium">
         {labelMap[slug]}
       </span>
     </Link>
