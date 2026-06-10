@@ -67,14 +67,22 @@ export async function updateSession(request: NextRequest) {
   }
 
   const pathname = request.nextUrl.pathname;
+  // Transmet le pathname aux Server Components (utilisé dans le layout protégé)
+  response.headers.set("x-pathname", pathname);
+
   // /reset-password est volontairement exclu de isAuthRoute : un utilisateur authentifié
   // via le lien de récupération doit pouvoir y accéder pour définir son nouveau mot de passe.
-  const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register") || pathname.startsWith("/forgot-password");
+  const isAuthRoute =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/rejoindre") ||
+    pathname.startsWith("/forgot-password");
   const isProtectedRoute =
     pathname.startsWith("/categories") ||
     pathname.startsWith("/vehicules") ||
     pathname.startsWith("/vehicule") ||
-    pathname.startsWith("/parametres");
+    pathname.startsWith("/parametres") ||
+    pathname.startsWith("/beta-feedback");
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();

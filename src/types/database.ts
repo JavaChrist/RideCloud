@@ -18,8 +18,31 @@ export interface Profile {
   mollie_customer_id: string | null;
   mollie_subscription_id: string | null;
   mollie_mandate_id: string | null;
+  beta_expires_at: string | null;
+  beta_feedback_submitted: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface InviteCode {
+  id: UUID;
+  code: string;
+  used_by: UUID | null;
+  used_at: string | null;
+  created_at: string;
+}
+
+export interface BetaFeedback {
+  id: UUID;
+  user_id: UUID;
+  submitted_at: string;
+  overall_rating: number;
+  ease_of_use: number;
+  most_useful_feature: string;
+  improvements: string;
+  would_recommend: boolean;
+  would_pay: "yes_current" | "yes_cheaper" | "no";
+  additional_comments: string | null;
 }
 
 export interface Vehicle {
@@ -216,6 +239,18 @@ export interface Database {
           generated_at?: string;
         };
         Update: Partial<MaintenanceTemplateCacheRow>;
+        Relationships: [];
+      };
+      invite_codes: {
+        Row: InviteCode;
+        Insert: Omit<InviteCode, "id" | "created_at"> & { id?: UUID; created_at?: string };
+        Update: Partial<InviteCode>;
+        Relationships: [];
+      };
+      beta_feedback: {
+        Row: BetaFeedback;
+        Insert: Omit<BetaFeedback, "id" | "submitted_at"> & { id?: UUID; submitted_at?: string };
+        Update: Partial<BetaFeedback>;
         Relationships: [];
       };
     };

@@ -1,8 +1,15 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ProtectedHeader } from "@/components/layout/protected-header";
+import { BetaBanner } from "@/components/beta/beta-banner";
+import type { UserPlanState } from "@/lib/billing/limits";
 
-export function ProtectedShell({ children }: { children: ReactNode }) {
+interface ProtectedShellProps {
+  children: ReactNode;
+  planState?: UserPlanState;
+}
+
+export function ProtectedShell({ children, planState }: ProtectedShellProps) {
   return (
     <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50">
       <div
@@ -14,6 +21,11 @@ export function ProtectedShell({ children }: { children: ReactNode }) {
       </div>
 
       <ProtectedHeader />
+
+      {planState?.isBetaActive && planState.betaDaysRemaining !== null && planState.betaDaysRemaining <= 7 && (
+        <BetaBanner daysRemaining={planState.betaDaysRemaining} feedbackSubmitted={planState.betaFeedbackSubmitted} />
+      )}
+
       <main className="relative mx-auto w-full max-w-6xl flex-1 px-4 pb-10 pt-[calc(env(safe-area-inset-top)+7rem)] md:px-6">
         {children}
       </main>
