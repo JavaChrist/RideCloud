@@ -43,6 +43,15 @@ export interface MaintenanceStatusInput {
   lastDoneKm?: number | null;
   lastDoneDate?: string | null;
   now?: Date;
+  /**
+   * Rythme moyen d'usage estimé (km/an). Combiné à lastOdometerValue/Date,
+   * permet de convertir l'échéance kilométrique en date projetée et de
+   * déclencher l'alerte au premier des deux seuils (km estimé OU temps).
+   * Optionnel : sans ces 3 champs, on retombe sur la logique temps + km brut.
+   */
+  avgKmPerYear?: number | null;
+  lastOdometerValue?: number | null;
+  lastOdometerDate?: string | null;
 }
 
 export interface VehicleMaintenanceSummary {

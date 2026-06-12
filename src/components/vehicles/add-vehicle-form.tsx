@@ -13,6 +13,13 @@ import { fuelOptions } from "@/lib/data/fuel-options";
 import { modelCatalog, vehicleCatalog } from "@/lib/data/vehicle-catalog";
 import { vehicleFormSchema } from "@/lib/validators/vehicle";
 import { PLANS } from "@/lib/billing/plans";
+import {
+  DEFAULT_USAGE_PROFILE,
+  USAGE_PROFILE_LABELS,
+  USAGE_PROFILE_VALUES,
+  USAGE_PROFILE_DESCRIPTIONS,
+  getAvgKmPerYear
+} from "@/lib/usage-profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -94,6 +101,7 @@ export function AddVehicleForm() {
       date_mise_en_circulation: "",
       date_achat: "",
       kilometrage: 0,
+      usage_profile: DEFAULT_USAGE_PROFILE,
       carburant: "",
       immatriculation: "",
       vin: "",
@@ -137,6 +145,8 @@ export function AddVehicleForm() {
         return;
       }
 
+      const todayIso = new Date().toISOString().slice(0, 10);
+      const avgKmPerYear = getAvgKmPerYear(values.usage_profile, values.category);
       const payload = {
         user_id: user.id,
         category: values.category,
@@ -150,6 +160,10 @@ export function AddVehicleForm() {
         immatriculation: values.immatriculation || null,
         vin: values.vin || null,
         surnom: values.surnom || null,
+        usage_profile: values.usage_profile,
+        avg_km_per_year: avgKmPerYear,
+        last_odometer_value: values.kilometrage,
+        last_odometer_date: todayIso,
         photo_url: null
       };
 
@@ -261,13 +275,21 @@ export function AddVehicleForm() {
         return;
       }
 
+      const importedCategory = String(parsed.vehicle.category ?? "voitures");
+      const importedKm = Number(parsed.vehicle.kilometrage ?? 0);
+      const importedProfile =
+        typeof parsed.vehicle.usage_profile === "string" &&
+        (USAGE_PROFILE_VALUES as readonly string[]).includes(parsed.vehicle.usage_profile)
+          ? (parsed.vehicle.usage_profile as (typeof USAGE_PROFILE_VALUES)[number])
+          : DEFAULT_USAGE_PROFILE;
+      const todayIsoImport = new Date().toISOString().slice(0, 10);
       const vehiclePayload = {
         user_id: user.id,
-        category: String(parsed.vehicle.category ?? "voitures"),
+        category: importedCategory,
         marque: String(parsed.vehicle.marque ?? ""),
         modele: String(parsed.vehicle.modele ?? ""),
         annee: Number(parsed.vehicle.annee ?? new Date().getFullYear()),
-        kilometrage: Number(parsed.vehicle.kilometrage ?? 0),
+        kilometrage: importedKm,
         date_mise_en_circulation: parsed.vehicle.date_mise_en_circulation
           ? String(parsed.vehicle.date_mise_en_circulation)
           : null,
@@ -276,6 +298,13 @@ export function AddVehicleForm() {
         immatriculation: parsed.vehicle.immatriculation ? String(parsed.vehicle.immatriculation) : null,
         vin: parsed.vehicle.vin ? String(parsed.vehicle.vin) : null,
         surnom: parsed.vehicle.surnom ? String(parsed.vehicle.surnom) : null,
+        usage_profile: importedProfile,
+        avg_km_per_year: getAvgKmPerYear(
+          importedProfile,
+          importedCategory as "voitures" | "motos" | "scooters" | "utilitaires"
+        ),
+        last_odometer_value: importedKm,
+        last_odometer_date: todayIsoImport,
         photo_url: null
       };
 
@@ -523,6 +552,33 @@ export function AddVehicleForm() {
                   ref={field.ref}
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="usage_profile" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Fréquence d&apos;utilisation</FormLabel>
+              <FormControl>
+                <select
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                >
+                  {USAGE_PROFILE_VALUES.map((profile) => (
+                    <option key={profile} value={profile}>
+                      {USAGE_PROFILE_LABELS[profile]}
+                    </option>
+                  ))}
+                </select>
+              </FormControl>
+              <FormDescription>
+                {field.value
+                  ? USAGE_PROFILE_DESCRIPTIONS[field.value]
+                  : "Sert à estimer le kilométrage courant pour des alertes d'entretien précises."}
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )} />

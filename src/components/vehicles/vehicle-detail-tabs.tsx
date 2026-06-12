@@ -25,12 +25,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fuelOptions } from "@/lib/data/fuel-options";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import {
+  USAGE_PROFILE_LABELS,
+  USAGE_PROFILE_VALUES,
+  USAGE_PROFILE_DESCRIPTIONS,
+  DEFAULT_USAGE_PROFILE,
+  getAvgKmPerYear,
+  isUsageProfile
+} from "@/lib/usage-profile";
 import type {
   DocumentItem,
   MaintenanceEntry,
   MaintenancePlanEntry,
   Modification,
   UpcomingMaintenance,
+  UsageProfile,
   VehicleCategory
 } from "@/types/database";
 
@@ -172,6 +181,7 @@ interface VehicleDetailTabsProps {
   vin: string | null;
   surnom: string | null;
   carburant: string | null;
+  usageProfile: UsageProfile;
   canUseAi?: boolean;
   userPlan?: string;
 }
@@ -195,6 +205,7 @@ export function VehicleDetailTabs({
   vin,
   surnom,
   carburant,
+  usageProfile,
   canUseAi = false,
   userPlan = "free"
 }: VehicleDetailTabsProps) {
@@ -212,7 +223,8 @@ export function VehicleDetailTabs({
     immatriculation: immatriculation ?? "",
     vin: vin ?? "",
     surnom: surnom ?? "",
-    carburant: carburant ?? ""
+    carburant: carburant ?? "",
+    usage_profile: usageProfile ?? DEFAULT_USAGE_PROFILE
   });
 
   const isUuidVehicle = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(vehicleId);
@@ -237,6 +249,9 @@ export function VehicleDetailTabs({
     try {
       setIsSavingInfo(true);
       const supabase = createClient();
+      const profile = isUsageProfile(infoForm.usage_profile)
+        ? infoForm.usage_profile
+        : DEFAULT_USAGE_PROFILE;
       const payload = {
         category: infoForm.category,
         marque: infoForm.marque.trim(),
@@ -248,7 +263,11 @@ export function VehicleDetailTabs({
         immatriculation: infoForm.immatriculation || null,
         vin: infoForm.vin || null,
         surnom: infoForm.surnom || null,
-        carburant: infoForm.carburant || null
+        carburant: infoForm.carburant || null,
+        usage_profile: profile,
+        // Le rythme est recalculé à chaque update : si le profil change ou
+        // la catégorie change, la moyenne suit automatiquement.
+        avg_km_per_year: getAvgKmPerYear(profile, infoForm.category)
       };
 
       const { error } = await supabase.from("vehicles").update(payload as never).eq("id", vehicleId);
@@ -368,6 +387,29 @@ export function VehicleDetailTabs({
                   onChange={(event) => setInfoForm((state) => ({ ...state, kilometrage: event.target.value }))}
                   disabled={!isUuidVehicle}
                 />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Fréquence d&apos;utilisation</p>
+                <select
+                  value={infoForm.usage_profile}
+                  onChange={(event) =>
+                    setInfoForm((state) => ({
+                      ...state,
+                      usage_profile: event.target.value as UsageProfile
+                    }))
+                  }
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  disabled={!isUuidVehicle}
+                >
+                  {USAGE_PROFILE_VALUES.map((profile) => (
+                    <option key={profile} value={profile}>
+                      {USAGE_PROFILE_LABELS[profile]}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {USAGE_PROFILE_DESCRIPTIONS[infoForm.usage_profile]}
+                </p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Date de mise en circulation</p>

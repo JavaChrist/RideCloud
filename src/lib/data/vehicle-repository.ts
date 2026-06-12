@@ -361,7 +361,10 @@ export async function getVehicleHistory(userId: string, vehicleId: string) {
         dueSoonKmThreshold: entry.due_soon_km_threshold,
         dueSoonDaysThreshold: entry.due_soon_days_threshold,
         lastDoneKm: entry.last_done_km,
-        lastDoneDate: entry.last_done_date
+        lastDoneDate: entry.last_done_date,
+        avgKmPerYear: vehicle?.avg_km_per_year ?? null,
+        lastOdometerValue: vehicle?.last_odometer_value ?? null,
+        lastOdometerDate: vehicle?.last_odometer_date ?? null
       });
 
       return {

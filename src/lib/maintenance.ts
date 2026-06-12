@@ -5,6 +5,7 @@ import type {
   MaintenanceStatusInput,
   VehicleMaintenanceSummary
 } from "@/types/maintenance";
+import { estimateCurrentOdometer, projectDateForOdometer } from "@/lib/odometer-estimate";
 
 export const DEFAULT_DUE_SOON_KM_THRESHOLD = 500;
 export const DEFAULT_DUE_SOON_DAYS_THRESHOLD = 30;
@@ -68,9 +69,32 @@ export function getMaintenanceStatus(input: MaintenanceStatusInput): Maintenance
   const isOverdue = (kmDiff != null && kmDiff < 0) || (daysDiff != null && daysDiff < 0);
   if (isOverdue) return "overdue";
 
+  // Si on a le rythme d'usage, on projette l'échéance km en date et on retient
+  // le SEUIL le plus proche entre la date et le km (filet temporel conservé).
+  let projectedKmDaysDiff: number | null = null;
+  if (
+    input.nextDueKm != null &&
+    input.avgKmPerYear != null &&
+    input.avgKmPerYear > 0 &&
+    input.lastOdometerValue != null &&
+    input.lastOdometerDate
+  ) {
+    const projectedDate = projectDateForOdometer({
+      targetKm: input.nextDueKm,
+      lastOdometerValue: input.lastOdometerValue,
+      lastOdometerDate: input.lastOdometerDate,
+      avgKmPerYear: input.avgKmPerYear
+    });
+    if (projectedDate) {
+      projectedKmDaysDiff = differenceInCalendarDays(projectedDate, now);
+      if (projectedKmDaysDiff < 0) return "overdue";
+    }
+  }
+
   const isDueSoon =
     (kmDiff != null && kmDiff <= dueSoonKmThreshold) ||
-    (daysDiff != null && daysDiff <= dueSoonDaysThreshold);
+    (daysDiff != null && daysDiff <= dueSoonDaysThreshold) ||
+    (projectedKmDaysDiff != null && projectedKmDaysDiff <= dueSoonDaysThreshold);
   if (isDueSoon) return "due_soon";
 
   return "upcoming";
@@ -79,6 +103,15 @@ export function getMaintenanceStatus(input: MaintenanceStatusInput): Maintenance
 export function getVehicleMaintenanceSummary(input: {
   planEntries: MaintenancePlanEntry[];
   currentKm: number;
+  /**
+   * Si fournis, l'échéance kilométrique est convertie en date projetée
+   * via le rythme `avgKmPerYear` (= "premier des 2 seuils"). Le km
+   * "courant" affiché reflète alors l'estimation continue, pas seulement
+   * la dernière saisie du compteur.
+   */
+  avgKmPerYear?: number | null;
+  lastOdometerValue?: number | null;
+  lastOdometerDate?: string | null;
   now?: Date;
 }): VehicleMaintenanceSummary {
   const now = input.now ?? new Date();
@@ -95,13 +128,45 @@ export function getVehicleMaintenanceSummary(input: {
     };
   }
 
+  // Km estimé en continu si on a un point de recalage + rythme
+  const hasEstimation =
+    input.avgKmPerYear != null &&
+    input.avgKmPerYear > 0 &&
+    input.lastOdometerValue != null &&
+    input.lastOdometerDate != null;
+
+  const estimatedCurrentKm = hasEstimation
+    ? estimateCurrentOdometer({
+        lastOdometerValue: input.lastOdometerValue as number,
+        lastOdometerDate: input.lastOdometerDate as string,
+        avgKmPerYear: input.avgKmPerYear as number,
+        now
+      })
+    : input.currentKm;
+
   const computed = input.planEntries.map((entry) => {
-    const scoreKm = entry.next_due_km != null ? entry.next_due_km - input.currentKm : Number.POSITIVE_INFINITY;
-    const scoreDate = entry.next_due_date
+    const scoreKm = entry.next_due_km != null ? entry.next_due_km - estimatedCurrentKm : Number.POSITIVE_INFINITY;
+    let scoreDate = entry.next_due_date
       ? differenceInCalendarDays(parseISO(entry.next_due_date), now)
       : Number.POSITIVE_INFINITY;
+
+    // Projection km → date si rythme connu : on retient le plus proche
+    // entre l'échéance temporelle et l'échéance km projetée.
+    if (hasEstimation && entry.next_due_km != null) {
+      const projected = projectDateForOdometer({
+        targetKm: entry.next_due_km,
+        lastOdometerValue: input.lastOdometerValue as number,
+        lastOdometerDate: input.lastOdometerDate as string,
+        avgKmPerYear: input.avgKmPerYear as number
+      });
+      if (projected) {
+        const projectedDays = differenceInCalendarDays(projected, now);
+        scoreDate = Math.min(scoreDate, projectedDays);
+      }
+    }
+
     const score = Math.min(scoreKm, scoreDate);
-    return { entry, score };
+    return { entry, score, scoreKm, scoreDate };
   });
 
   const overdueEntries = input.planEntries.filter((item) => item.status === "overdue");
@@ -127,8 +192,17 @@ export function getVehicleMaintenanceSummary(input: {
 
   let nextLabel = "Aucune échéance définie";
   if (nextItem) {
-    if (nextItem.entry.next_due_km != null) {
-      const kmDiff = nextItem.entry.next_due_km - input.currentKm;
+    // On choisit l'unité (km ou jours) selon ce qui est le plus proche :
+    // c'est le seuil qui va déclencher l'alerte qui s'affiche.
+    const useDate = nextItem.scoreDate <= nextItem.scoreKm;
+    if (useDate && nextItem.scoreDate !== Number.POSITIVE_INFINITY) {
+      const daysDiff = Math.round(nextItem.scoreDate);
+      nextLabel =
+        daysDiff >= 0
+          ? `Prochaine échéance : ${nextItem.entry.titre} dans ${daysDiff} jour(s)`
+          : `Prochaine échéance : ${nextItem.entry.titre} en retard de ${Math.abs(daysDiff)} jour(s)`;
+    } else if (nextItem.entry.next_due_km != null) {
+      const kmDiff = nextItem.entry.next_due_km - estimatedCurrentKm;
       nextLabel =
         kmDiff >= 0
           ? `Prochaine échéance : ${nextItem.entry.titre} dans ${kmDiff.toLocaleString("fr-FR")} km`

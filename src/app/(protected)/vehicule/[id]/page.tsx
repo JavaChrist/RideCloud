@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { Bike, CalendarClock, Car, Gauge, Truck } from "lucide-react";
+import { OdometerRefreshHint } from "@/components/vehicles/odometer-refresh-hint";
 import { UpdateKilometrageDialog } from "@/components/vehicles/update-kilometrage-dialog";
 import { VehicleActions } from "@/components/vehicles/vehicle-actions";
 import { VehicleCostSummaryCard } from "@/components/vehicles/vehicle-cost-summary";
@@ -58,7 +59,10 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
   const canUseAi = isPaidPlan(planState.plan) && planState.planStatus === "active";
   const summary = getVehicleMaintenanceSummary({
     planEntries,
-    currentKm: vehicle.kilometrage
+    currentKm: vehicle.kilometrage,
+    avgKmPerYear: vehicle.avg_km_per_year,
+    lastOdometerValue: vehicle.last_odometer_value,
+    lastOdometerDate: vehicle.last_odometer_date
   });
   const costSummary = getVehicleCostSummary({
     completed,
@@ -67,7 +71,10 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
   });
   const reminderSummary = getVehicleReminderSummary({
     planEntries,
-    currentKm: vehicle.kilometrage
+    currentKm: vehicle.kilometrage,
+    avgKmPerYear: vehicle.avg_km_per_year,
+    lastOdometerValue: vehicle.last_odometer_value,
+    lastOdometerDate: vehicle.last_odometer_date
   });
   const isExternalImage = Boolean(vehicle.photo_url?.startsWith("http"));
   const isUuidVehicle = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -167,6 +174,7 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                       isDemoVehicle={!isUuidVehicle}
                     />
                   </div>
+                  <OdometerRefreshHint lastOdometerDate={vehicle.last_odometer_date} />
                 </div>
               </div>
             </div>
@@ -197,6 +205,7 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
         vin={vehicle.vin}
         surnom={vehicle.surnom}
         carburant={vehicle.carburant}
+        usageProfile={vehicle.usage_profile}
         canUseAi={canUseAi}
         userPlan={planState.plan}
       />

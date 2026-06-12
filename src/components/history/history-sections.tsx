@@ -100,6 +100,25 @@ export function HistorySections({
         return;
       }
 
+      // Recalage du compteur : un entretien fournit une lecture réelle du
+      // kilométrage. On l'utilise comme nouveau point de référence si plus
+      // récent que le précédent (jamais en arrière → pas de "rétro-saisie"
+      // qui désynchroniserait le compteur courant).
+      const doneKmNumber = Number(doneForm.kilometrage);
+      if (Number.isFinite(doneKmNumber) && doneKmNumber >= currentKm) {
+        const vehicleUpdate: Record<string, unknown> = {
+          last_odometer_value: doneKmNumber,
+          last_odometer_date: doneForm.date_entretien,
+          updated_at: new Date().toISOString()
+        };
+        // Le compteur courant suit aussi : sinon l'utilisateur verrait son
+        // odomètre inchangé alors qu'il vient de saisir une valeur plus haute.
+        if (doneKmNumber > currentKm) {
+          vehicleUpdate.kilometrage = doneKmNumber;
+        }
+        await supabase.from("vehicles").update(vehicleUpdate as never).eq("id", vehicleId);
+      }
+
       if (!error && planEntryId) {
         const selectedPlan = planEntries.find((entry) => entry.id === planEntryId);
         if (selectedPlan) {

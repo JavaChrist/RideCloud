@@ -8,6 +8,9 @@ export const vehicleFormSchema = z.object({
   date_mise_en_circulation: z.string().optional(),
   date_achat: z.string().optional(),
   kilometrage: z.coerce.number().int().min(0),
+  usage_profile: z.enum(["daily", "often", "occasional", "rare"], {
+    message: "Sélectionnez une fréquence d'utilisation"
+  }),
   carburant: z.string().optional(),
   immatriculation: z.string().optional(),
   vin: z.string().optional(),

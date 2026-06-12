@@ -93,9 +93,18 @@ export function UpdateKilometrageDialog({
     setIsSaving(true);
     try {
       const supabase = createClient();
+      // Recalage du point de référence : à chaque saisie réelle du
+      // compteur, on remet à zéro l'estimation (last_odometer_value + date)
+      // pour que les projections km→date repartent d'une base juste.
+      const todayIso = new Date().toISOString().slice(0, 10);
       const { error } = await supabase
         .from("vehicles")
-        .update({ kilometrage: parsed, updated_at: new Date().toISOString() } as never)
+        .update({
+          kilometrage: parsed,
+          last_odometer_value: parsed,
+          last_odometer_date: todayIso,
+          updated_at: new Date().toISOString()
+        } as never)
         .eq("id", vehicleId);
 
       if (error) {

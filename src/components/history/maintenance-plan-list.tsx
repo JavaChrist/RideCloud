@@ -327,6 +327,21 @@ export function MaintenancePlanList({
         toast.success("Intervention enregistrée et plan mis à jour.");
       }
 
+      // Recalage du compteur : la saisie d'un entretien fournit une lecture
+      // réelle de l'odomètre. On l'utilise comme nouveau point de référence
+      // pour que l'estimation continue reparte juste.
+      if (Number.isFinite(doneKm) && doneKm >= currentKm) {
+        const vehicleUpdate: Record<string, unknown> = {
+          last_odometer_value: doneKm,
+          last_odometer_date: doneDate,
+          updated_at: new Date().toISOString()
+        };
+        if (doneKm > currentKm) {
+          vehicleUpdate.kilometrage = doneKm;
+        }
+        await supabase.from("vehicles").update(vehicleUpdate as never).eq("id", vehicleId);
+      }
+
       setActiveEntryId(null);
       setForm({
         date_entretien: new Date().toISOString().slice(0, 10),

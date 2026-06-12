@@ -48,6 +48,9 @@ export interface FounderQuestionnaireResponse {
   submitted_at: string;
 }
 
+/** Profil d'usage déclaré : drive l'estimation du km courant entre deux saisies. */
+export type UsageProfile = "daily" | "often" | "occasional" | "rare";
+
 export interface Vehicle {
   id: UUID;
   user_id: UUID;
@@ -63,6 +66,16 @@ export interface Vehicle {
   vin: string | null;
   surnom: string | null;
   photo_url: string | null;
+  /** Profil d'usage (Tous les jours / Souvent / De temps en temps / Rarement). */
+  usage_profile: UsageProfile;
+  /** Moyenne km/an dérivée du couple (usage_profile, category). */
+  avg_km_per_year: number;
+  /** Dernier compteur réel saisi — point de recalage de l'estimation. */
+  last_odometer_value: number;
+  /** Date du dernier recalage du compteur (ISO YYYY-MM-DD). */
+  last_odometer_date: string;
+  /** Dernière fois où l'app a invité l'utilisateur à mettre à jour son compteur. */
+  last_estimation_reminder_at: string | null;
   created_at: string;
   updated_at: string;
 }
