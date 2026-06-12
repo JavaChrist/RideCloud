@@ -40,7 +40,7 @@ export default function LandingPage() {
         <SocialProof />
         <Features />
         <Benefits />
-        <BetaCTA />
+        <FreemiumCTA />
         <FAQ />
       </main>
       <Footer />
@@ -668,10 +668,10 @@ function Benefits() {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
- * Beta CTA — high-impact gradient card with grid pattern
+ * Freemium CTA — high-impact gradient card with grid pattern
  * ──────────────────────────────────────────────────────────────────────────── */
 
-const BETA_PERKS = [
+const FREEMIUM_PERKS = [
   "Plan Free : 1 véhicule, sans carte bancaire, à vie",
   "Plan Premium : 5 véhicules, plan d'entretien intelligent",
   "Plan Family : 10 véhicules pour tout le foyer",
@@ -679,9 +679,9 @@ const BETA_PERKS = [
   "Données hébergées en Europe · RGPD natif",
 ];
 
-function BetaCTA() {
+function FreemiumCTA() {
   return (
-    <section id="beta" className="px-6 py-24 md:py-32">
+    <section id="commencer" className="px-6 py-24 md:py-32">
       <div className="mx-auto max-w-5xl">
         <div className="relative overflow-hidden rounded-[2rem] bg-ride-gradient-dark px-8 py-14 shadow-ride-xl md:px-14 md:py-20">
           {/* Soft glow accents */}
@@ -757,7 +757,7 @@ function BetaCTA() {
             </div>
 
             <ul className="space-y-3 rounded-2xl border border-white/15 bg-white/[0.06] p-6 shadow-ride-inner backdrop-blur-md">
-              {BETA_PERKS.map((perk) => (
+              {FREEMIUM_PERKS.map((perk) => (
                 <li key={perk} className="flex items-start gap-3">
                   <CheckCircle2
                     className="mt-0.5 h-5 w-5 shrink-0 text-blue-200"

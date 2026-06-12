@@ -3,8 +3,14 @@ import { Settings } from "lucide-react";
 import { Logo } from "@/components/common/logo";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ThemeToggle } from "@/components/common/theme-toggle";
+import { FounderBadge } from "@/components/founder/founder-badge";
 
-export function ProtectedHeader() {
+interface ProtectedHeaderProps {
+  /** Numéro de slot fondateur si l'utilisateur a débloqué son badge. `null` sinon. */
+  founderBadge?: number | null;
+}
+
+export function ProtectedHeader({ founderBadge }: ProtectedHeaderProps = {}) {
   return (
     <header className="fixed inset-x-0 top-0 z-30 border-b border-slate-200/70 bg-slate-50/70 pt-[env(safe-area-inset-top)] backdrop-blur-xl supports-[backdrop-filter]:bg-slate-50/50 dark:border-slate-800/70 dark:bg-slate-950/70 dark:supports-[backdrop-filter]:bg-slate-950/50">
       <span
@@ -12,7 +18,12 @@ export function ProtectedHeader() {
         className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-blue-700/25 to-transparent dark:via-blue-400/25"
       />
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 md:px-6">
-        <Logo compact />
+        <div className="flex items-center gap-2">
+          <Logo compact />
+          {founderBadge !== null && founderBadge !== undefined && (
+            <FounderBadge slot={founderBadge} />
+          )}
+        </div>
         <nav className="flex items-center gap-1">
           <ThemeToggle />
           <Link

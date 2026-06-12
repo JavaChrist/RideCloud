@@ -18,31 +18,34 @@ export interface Profile {
   mollie_customer_id: string | null;
   mollie_subscription_id: string | null;
   mollie_mandate_id: string | null;
-  beta_expires_at: string | null;
-  beta_feedback_submitted: boolean;
+  founder_premium_lifetime: boolean;
+  founder_badge: boolean;
   created_at: string;
   updated_at: string;
 }
 
-export interface InviteCode {
-  id: UUID;
-  code: string;
-  used_by: UUID | null;
-  used_at: string | null;
-  created_at: string;
+export type FounderStatusRow = "pending" | "completed" | "expired";
+
+export interface FounderMember {
+  user_id: UUID;
+  slot: number;
+  joined_at: string;
+  status: FounderStatusRow;
+  completed_at: string | null;
+  premium_lifetime: boolean;
+  badge: boolean;
 }
 
-export interface BetaFeedback {
+export interface FounderQuestionnaireResponse {
   id: UUID;
   user_id: UUID;
+  slot: number;
+  usage: string;
+  nps: number;
+  frustration: string;
+  top_feature: string;
+  pricing: string;
   submitted_at: string;
-  overall_rating: number;
-  ease_of_use: number;
-  most_useful_feature: string;
-  improvements: string;
-  would_recommend: boolean;
-  would_pay: "yes_current" | "yes_cheaper" | "no";
-  additional_comments: string | null;
 }
 
 export interface Vehicle {
@@ -241,21 +244,47 @@ export interface Database {
         Update: Partial<MaintenanceTemplateCacheRow>;
         Relationships: [];
       };
-      invite_codes: {
-        Row: InviteCode;
-        Insert: Omit<InviteCode, "id" | "created_at"> & { id?: UUID; created_at?: string };
-        Update: Partial<InviteCode>;
+      founder_members: {
+        Row: FounderMember;
+        Insert: Omit<FounderMember, "joined_at"> & { joined_at?: string };
+        Update: Partial<FounderMember>;
         Relationships: [];
       };
-      beta_feedback: {
-        Row: BetaFeedback;
-        Insert: Omit<BetaFeedback, "id" | "submitted_at"> & { id?: UUID; submitted_at?: string };
-        Update: Partial<BetaFeedback>;
+      founder_questionnaire_responses: {
+        Row: FounderQuestionnaireResponse;
+        Insert: Omit<FounderQuestionnaireResponse, "id" | "submitted_at"> & {
+          id?: UUID;
+          submitted_at?: string;
+        };
+        Update: Partial<FounderQuestionnaireResponse>;
         Relationships: [];
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      claim_founder_slot: {
+        Args: Record<string, never>;
+        Returns: unknown;
+      };
+      submit_founder_questionnaire: {
+        Args: {
+          p_usage: string;
+          p_nps: number;
+          p_frustration: string;
+          p_top_feature: string;
+          p_pricing: string;
+        };
+        Returns: unknown;
+      };
+      founder_program_config: {
+        Args: Record<string, never>;
+        Returns: unknown;
+      };
+      founder_slots_taken: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

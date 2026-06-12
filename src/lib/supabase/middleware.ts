@@ -75,14 +75,16 @@ export async function updateSession(request: NextRequest) {
   const isAuthRoute =
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
-    pathname.startsWith("/rejoindre") ||
     pathname.startsWith("/forgot-password");
+  // /fondateur a deux variantes : la page publique (groupe (auth)) et la page
+  // membre (groupe (protected)). Next.js gère le routage par layout, on liste
+  // simplement la racine /fondateur/* dans isProtectedRoute pour les vues membres.
   const isProtectedRoute =
     pathname.startsWith("/categories") ||
     pathname.startsWith("/vehicules") ||
     pathname.startsWith("/vehicule") ||
     pathname.startsWith("/parametres") ||
-    pathname.startsWith("/beta-feedback");
+    pathname.startsWith("/admin");
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();

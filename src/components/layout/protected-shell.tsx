@@ -1,15 +1,26 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ProtectedHeader } from "@/components/layout/protected-header";
-import { BetaBanner } from "@/components/beta/beta-banner";
+import { FounderBanner } from "@/components/founder/founder-banner";
 import type { UserPlanState } from "@/lib/billing/limits";
+import { daysLeft, effectiveStatus, type FounderRecord } from "@/lib/billing/founder-program";
 
 interface ProtectedShellProps {
   children: ReactNode;
   planState?: UserPlanState;
+  founderRecord?: FounderRecord | null;
 }
 
-export function ProtectedShell({ children, planState }: ProtectedShellProps) {
+export function ProtectedShell({ children, planState, founderRecord }: ProtectedShellProps) {
+  // Bannière fondateur affichée tant que le questionnaire n'est pas rempli.
+  // Couleur urgente si ≤ 3 jours restants.
+  const showFounderBanner =
+    founderRecord !== null &&
+    founderRecord !== undefined &&
+    effectiveStatus(founderRecord) === "pending";
+
+  const remaining = founderRecord ? daysLeft(founderRecord.joinedAt) : 0;
+
   return (
     <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50">
       <div
@@ -20,10 +31,10 @@ export function ProtectedShell({ children, planState }: ProtectedShellProps) {
         <div className="absolute inset-x-0 top-0 h-[1200px] bg-ride-grid dark:bg-ride-grid-light bg-ride-grid-sm [mask-image:radial-gradient(ellipse_60%_45%_at_50%_0%,black,transparent)]" />
       </div>
 
-      <ProtectedHeader />
+      <ProtectedHeader founderBadge={planState?.founderBadge ? founderRecord?.slot ?? null : null} />
 
-      {planState?.isBetaActive && planState.betaDaysRemaining !== null && planState.betaDaysRemaining <= 7 && (
-        <BetaBanner daysRemaining={planState.betaDaysRemaining} feedbackSubmitted={planState.betaFeedbackSubmitted} />
+      {showFounderBanner && founderRecord && (
+        <FounderBanner slot={founderRecord.slot} daysRemaining={remaining} />
       )}
 
       <main className="relative mx-auto w-full max-w-6xl flex-1 px-4 pb-10 pt-[calc(env(safe-area-inset-top)+7rem)] md:px-6">

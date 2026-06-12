@@ -17,12 +17,8 @@ export interface UserPlanState {
   mollieCustomerId: string | null;
   mollieSubscriptionId: string | null;
   mollieMandateId: string | null;
-  isBeta: boolean;
-  betaExpiresAt: string | null;
-  betaFeedbackSubmitted: boolean;
-  isBetaActive: boolean;
-  isBetaBlocked: boolean;
-  betaDaysRemaining: number | null;
+  isFounder: boolean;
+  founderBadge: boolean;
 }
 
 const DEFAULT_PROFILE: Pick<
@@ -35,8 +31,8 @@ const DEFAULT_PROFILE: Pick<
   | "mollie_customer_id"
   | "mollie_subscription_id"
   | "mollie_mandate_id"
-  | "beta_expires_at"
-  | "beta_feedback_submitted"
+  | "founder_premium_lifetime"
+  | "founder_badge"
 > = {
   plan: "free",
   plan_status: "active",
@@ -46,8 +42,8 @@ const DEFAULT_PROFILE: Pick<
   mollie_customer_id: null,
   mollie_subscription_id: null,
   mollie_mandate_id: null,
-  beta_expires_at: null,
-  beta_feedback_submitted: false
+  founder_premium_lifetime: false,
+  founder_badge: false
 };
 
 /**
@@ -55,6 +51,9 @@ const DEFAULT_PROFILE: Pick<
  * véhicules déjà enregistrés. Si le profil n'existe pas encore (cas d'un
  * utilisateur Supabase fraîchement créé sans row `profiles`), on retombe
  * gracieusement sur le plan Free.
+ *
+ * Les membres fondateurs avec `founder_premium_lifetime = true` ont leur
+ * `effectivePlan` forcé à "premium" (override indépendant de Mollie).
  */
 export async function getUserPlanState(userId: string): Promise<UserPlanState> {
   const supabase = await createClient();
@@ -63,7 +62,7 @@ export async function getUserPlanState(userId: string): Promise<UserPlanState> {
     supabase
       .from("profiles")
       .select(
-        "plan, plan_status, plan_interval, plan_renews_at, plan_canceled_at, mollie_customer_id, mollie_subscription_id, mollie_mandate_id, beta_expires_at, beta_feedback_submitted"
+        "plan, plan_status, plan_interval, plan_renews_at, plan_canceled_at, mollie_customer_id, mollie_subscription_id, mollie_mandate_id, founder_premium_lifetime, founder_badge"
       )
       .eq("id", userId)
       .maybeSingle(),
@@ -74,20 +73,11 @@ export async function getUserPlanState(userId: string): Promise<UserPlanState> {
   const vehicleCount = vehiclesRes.count ?? 0;
 
   const plan: Plan = profile.plan ?? "free";
-  const betaExpiresAt = profile.beta_expires_at ?? null;
-  const betaFeedbackSubmitted = profile.beta_feedback_submitted ?? false;
-  const isBeta = betaExpiresAt !== null;
-  const now = new Date();
-  const expiryDate = isBeta ? new Date(betaExpiresAt!) : null;
-  const isBetaActive = isBeta && expiryDate! > now;
-  const betaExpired = isBeta && expiryDate! <= now;
-  const isBetaBlocked = betaExpired && !betaFeedbackSubmitted;
-  const betaDaysRemaining = isBetaActive
-    ? Math.ceil((expiryDate!.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-    : null;
+  const isFounder = profile.founder_premium_lifetime ?? false;
+  const founderBadge = profile.founder_badge ?? false;
 
-  // Pendant la période bêta active, l'utilisateur bénéficie du plan Premium
-  const effectivePlan: Plan = isBetaActive ? "premium" : plan;
+  // Override Fondateur : Premium à vie indépendant du plan Mollie.
+  const effectivePlan: Plan = isFounder ? "premium" : plan;
   const planDef = PLANS[effectivePlan] ?? PLANS.free;
   const vehicleLimit = planDef.vehicleLimit;
 
@@ -105,12 +95,8 @@ export async function getUserPlanState(userId: string): Promise<UserPlanState> {
     mollieCustomerId: profile.mollie_customer_id,
     mollieSubscriptionId: profile.mollie_subscription_id,
     mollieMandateId: profile.mollie_mandate_id,
-    isBeta,
-    betaExpiresAt,
-    betaFeedbackSubmitted,
-    isBetaActive,
-    isBetaBlocked,
-    betaDaysRemaining
+    isFounder,
+    founderBadge
   };
 }
 

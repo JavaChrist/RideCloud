@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { ProtectedShell } from "@/components/layout/protected-shell";
 import { createClient } from "@/lib/supabase/server";
 import { getUserPlanState } from "@/lib/billing/limits";
+import { getFounderRecord, effectiveStatus } from "@/lib/billing/founder-program";
 
 export default async function ProtectedLayout({ children }: { children: ReactNode }) {
   const supabase = await createClient();
@@ -15,15 +16,35 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
     redirect("/login");
   }
 
-  const planState = await getUserPlanState(user.id);
+  const [planState, founderRecord] = await Promise.all([
+    getUserPlanState(user.id),
+    getFounderRecord(supabase)
+  ]);
 
-  if (planState.isBetaBlocked) {
-    const headersList = await headers();
-    const pathname = headersList.get("x-pathname") ?? "";
-    if (!pathname.startsWith("/beta-feedback")) {
-      redirect("/beta-feedback");
+  // Si fondateur "expired" sans questionnaire rempli → redirection forcée
+  // vers le questionnaire (qui affichera l'écran "trop tard" en lecture seule).
+  // Si fondateur "pending" avec deadline dépassée côté client → idem.
+  if (founderRecord) {
+    const status = effectiveStatus(founderRecord);
+    const isExpiredWithoutQuestionnaire =
+      status === "expired" && founderRecord.questionnaireCompletedAt === null;
+
+    if (isExpiredWithoutQuestionnaire) {
+      const headersList = await headers();
+      const pathname = headersList.get("x-pathname") ?? "";
+      if (
+        !pathname.startsWith("/fondateur") &&
+        !pathname.startsWith("/parametres") &&
+        !pathname.startsWith("/api")
+      ) {
+        redirect("/fondateur/questionnaire");
+      }
     }
   }
 
-  return <ProtectedShell planState={planState}>{children}</ProtectedShell>;
+  return (
+    <ProtectedShell planState={planState} founderRecord={founderRecord}>
+      {children}
+    </ProtectedShell>
+  );
 }
