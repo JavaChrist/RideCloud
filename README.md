@@ -112,6 +112,14 @@ MISTRAL_MODEL=mistral-small-latest
 # Admin (liste blanche pour /admin/founders, séparés par virgule)
 ADMIN_EMAILS=votre@email.fr
 
+# Web Push (notifications hors de l'app)
+# Générer une fois avec : npx web-push generate-vapid-keys --json
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=BO...
+VAPID_PRIVATE_KEY=...
+VAPID_CONTACT_EMAIL=mailto:support@votre-domaine.fr
+# Secret du cron Vercel (généré avec : node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+CRON_SECRET=...
+
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
@@ -133,6 +141,42 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 1. Créer un compte Mollie + générer une clé API.
 2. Webhook → pointer sur `https://votre-domaine/api/billing/webhook`.
 3. Créer 2 abonnements (mensuel + annuel) avec les références utilisées dans `src/lib/billing/plans.ts`.
+
+## Notifications push (Web Push API)
+
+RideCloud envoie les rappels d'entretien et de mise à jour du compteur directement sur le téléphone, hors de l'app, via le standard Web Push.
+
+### Configuration une seule fois
+
+1. Générer les VAPID keys :
+   ```bash
+   npx web-push generate-vapid-keys --json
+   ```
+2. Ajouter à `.env.local` et sur Vercel (Settings → Environment Variables) :
+   - `NEXT_PUBLIC_VAPID_PUBLIC_KEY` (clé publique, exposée au navigateur)
+   - `VAPID_PRIVATE_KEY` (clé privée, serveur uniquement)
+   - `VAPID_CONTACT_EMAIL` (format `mailto:contact@domaine.fr`)
+   - `CRON_SECRET` (token aléatoire 32+ caractères)
+3. Le cron quotidien (`vercel.json` → `0 8 * * *` UTC) appelle `/api/cron/notifications` et envoie automatiquement les push aux utilisateurs concernés.
+
+### Activation côté utilisateur
+
+- L'utilisateur ouvre `/parametres` → section « Notifications sur le téléphone » → bouton **Activer**.
+- Sur iPhone : Safari → **Partager → Ajouter à l'écran d'accueil** d'abord, puis ouvrir l'app installée et activer.
+- Sur Android : Chrome / Edge / Firefox supportent les notifications même sans installer la PWA (mais l'installation reste recommandée).
+
+### Anti-spam intégré
+
+- Rappel compteur : 1 push max tous les 25 jours par véhicule.
+- Alerte entretien : 1 push max tous les 7 jours par tâche.
+- Souscriptions expirées (404/410) purgées automatiquement.
+
+### Test manuel
+
+Pour déclencher l'envoi sans attendre 8h UTC :
+```bash
+curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://votre-domaine/api/cron/notifications
+```
 
 ---
 

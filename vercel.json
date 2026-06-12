@@ -3,5 +3,11 @@
   "regions": ["cdg1"],
   "framework": "nextjs",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "crons": [
+    {
+      "path": "/api/cron/notifications",
+      "schedule": "0 8 * * *"
+    }
+  ]
 }

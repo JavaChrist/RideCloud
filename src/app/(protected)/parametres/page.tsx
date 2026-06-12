@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { ThemeSegmented } from "@/components/common/theme-toggle";
 import { DeleteAccountSection } from "@/components/account/delete-account-section";
 import { SubscriptionSection } from "@/components/billing/subscription-section";
+import { PushNotificationsSection } from "@/components/notifications/push-notifications-section";
 import { getUserPlanState } from "@/lib/billing/limits";
 import { createClient } from "@/lib/supabase/server";
 import { isAdminEmail } from "@/lib/admin";
@@ -41,6 +42,7 @@ export default async function ParametresPage() {
     ? new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" }).format(new Date(user.created_at))
     : "—";
   const isAdmin = isAdminEmail(user.email);
+  const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null;
 
   return (
     <section className="space-y-8">
@@ -201,6 +203,8 @@ export default async function ParametresPage() {
           <ThemeSegmented className="self-start sm:self-center" />
         </div>
       </article>
+
+      <PushNotificationsSection vapidPublicKey={vapidPublicKey} />
 
       {isAdmin && (
         <article className="relative overflow-hidden rounded-3xl border border-indigo-200/80 dark:border-indigo-800/80 bg-gradient-to-br from-blue-50 via-indigo-50 to-violet-50 dark:from-blue-950/30 dark:via-indigo-950/30 dark:to-violet-950/30 p-6 shadow-ride-sm md:p-8">

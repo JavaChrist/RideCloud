@@ -48,6 +48,31 @@ export interface FounderQuestionnaireResponse {
   submitted_at: string;
 }
 
+export type NotificationKind = "odometer_refresh" | "maintenance_due";
+
+export interface PushSubscriptionRow {
+  id: UUID;
+  user_id: UUID;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  user_agent: string | null;
+  created_at: string;
+  last_seen_at: string;
+  last_error_at: string | null;
+  last_error_reason: string | null;
+}
+
+export interface NotificationLogRow {
+  id: UUID;
+  user_id: UUID;
+  vehicle_id: UUID;
+  kind: NotificationKind;
+  subject_id: UUID | null;
+  sent_at: string;
+  payload: Record<string, unknown> | null;
+}
+
 /** Profil d'usage déclaré : drive l'estimation du km courant entre deux saisies. */
 export type UsageProfile = "daily" | "often" | "occasional" | "rare";
 
@@ -270,6 +295,25 @@ export interface Database {
           submitted_at?: string;
         };
         Update: Partial<FounderQuestionnaireResponse>;
+        Relationships: [];
+      };
+      push_subscriptions: {
+        Row: PushSubscriptionRow;
+        Insert: Omit<PushSubscriptionRow, "id" | "created_at" | "last_seen_at"> & {
+          id?: UUID;
+          created_at?: string;
+          last_seen_at?: string;
+        };
+        Update: Partial<PushSubscriptionRow>;
+        Relationships: [];
+      };
+      notification_log: {
+        Row: NotificationLogRow;
+        Insert: Omit<NotificationLogRow, "id" | "sent_at"> & {
+          id?: UUID;
+          sent_at?: string;
+        };
+        Update: Partial<NotificationLogRow>;
         Relationships: [];
       };
     };
