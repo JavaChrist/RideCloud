@@ -215,7 +215,7 @@ export async function submitQuestionnaire(
     p_frustration: answers.frustration,
     p_top_feature: answers.topFeature,
     p_pricing: answers.pricing
-  });
+  } as never);
 
   if (error) {
     console.error("[founder-program] submit_founder_questionnaire error", error);

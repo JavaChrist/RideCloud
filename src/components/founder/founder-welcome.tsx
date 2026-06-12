@@ -35,7 +35,7 @@ import {
  */
 export function FounderWelcome() {
   const router = useRouter();
-  const { confirm } = useConfirm();
+  const confirm = useConfirm();
   const {
     loading,
     record,
