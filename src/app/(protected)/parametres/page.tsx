@@ -8,6 +8,7 @@ import {
   Palette,
   Shield,
   ShieldCheck,
+  Sparkles,
   UserRound
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ import { DeleteAccountSection } from "@/components/account/delete-account-sectio
 import { SubscriptionSection } from "@/components/billing/subscription-section";
 import { getUserPlanState } from "@/lib/billing/limits";
 import { createClient } from "@/lib/supabase/server";
+import { isAdminEmail } from "@/lib/admin";
 
 export const metadata = {
   title: "Paramètres · RideCloud",
@@ -38,6 +40,7 @@ export default async function ParametresPage() {
   const createdAt = user.created_at
     ? new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" }).format(new Date(user.created_at))
     : "—";
+  const isAdmin = isAdminEmail(user.email);
 
   return (
     <section className="space-y-8">
@@ -198,6 +201,47 @@ export default async function ParametresPage() {
           <ThemeSegmented className="self-start sm:self-center" />
         </div>
       </article>
+
+      {isAdmin && (
+        <article className="relative overflow-hidden rounded-3xl border border-indigo-200/80 dark:border-indigo-800/80 bg-gradient-to-br from-blue-50 via-indigo-50 to-violet-50 dark:from-blue-950/30 dark:via-indigo-950/30 dark:to-violet-950/30 p-6 shadow-ride-sm md:p-8">
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-500/60 to-transparent"
+          />
+          <div className="flex items-start gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-indigo-200 dark:border-indigo-800 bg-white/70 dark:bg-slate-900/70 text-indigo-700 dark:text-indigo-300 shadow-ride-xs">
+              <Sparkles className="h-5 w-5" aria-hidden />
+            </div>
+            <div className="flex-1">
+              <Badge
+                variant="outline"
+                className="mb-2 gap-1.5 rounded-full border-indigo-300 dark:border-indigo-700 bg-white/70 dark:bg-slate-900/70 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-300"
+              >
+                Administration
+              </Badge>
+              <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                Tableau de bord interne
+              </h2>
+              <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                Visible uniquement aux emails déclarés dans{" "}
+                <code className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-xs">ADMIN_EMAILS</code>.
+              </p>
+            </div>
+          </div>
+          <Separator className="my-5 bg-indigo-200/60 dark:bg-indigo-800/60" />
+          <ul className="grid gap-2 text-sm text-slate-700 dark:text-slate-200 sm:grid-cols-2">
+            <li>
+              <Link
+                href="/admin/founders"
+                className="inline-flex items-center gap-1.5 font-medium text-indigo-700 dark:text-indigo-300 transition hover:text-indigo-800 dark:hover:text-indigo-200"
+              >
+                Programme Membres Fondateurs
+                <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+              </Link>
+            </li>
+          </ul>
+        </article>
+      )}
 
       <DeleteAccountSection email={email} />
     </section>
