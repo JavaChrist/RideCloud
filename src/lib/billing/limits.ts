@@ -3,6 +3,19 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PLANS } from "@/lib/billing/plans";
 
+/**
+ * Vérifie si un abonnement annulé a atteint sa date de fin.
+ * Dans ce cas, l'utilisateur doit être rétrogradé vers Free.
+ */
+export function isSubscriptionExpired(
+  plan: string,
+  canceledAt: string | null,
+  renewsAt: string | null
+): boolean {
+  if (plan === "free" || !canceledAt || !renewsAt) return false;
+  return new Date(renewsAt) < new Date();
+}
+
 export interface UserPlanState {
   userId: string;
   plan: Plan;
@@ -76,24 +89,50 @@ export async function getUserPlanState(userId: string): Promise<UserPlanState> {
   const isFounder = profile.founder_premium_lifetime ?? false;
   const founderBadge = profile.founder_badge ?? false;
 
+  // Détection d'expiration : abonnement annulé dont la période payée est écoulée.
+  const expired = isSubscriptionExpired(
+    plan,
+    profile.plan_canceled_at,
+    profile.plan_renews_at
+  );
+
+  if (expired) {
+    // Rétrogradation asynchrone en base sans bloquer le rendu.
+    const admin = createAdminClient();
+    void admin
+      .from("profiles")
+      .update({
+        plan: "free",
+        plan_status: "active",
+        plan_interval: null,
+        plan_renews_at: null,
+        plan_canceled_at: null,
+        mollie_subscription_id: null,
+        updated_at: new Date().toISOString()
+      } as never)
+      .eq("id", userId);
+  }
+
+  const resolvedPlan: Plan = expired ? "free" : plan;
+
   // Override Fondateur : Premium à vie indépendant du plan Mollie.
-  const effectivePlan: Plan = isFounder ? "premium" : plan;
+  const effectivePlan: Plan = isFounder ? "premium" : resolvedPlan;
   const planDef = PLANS[effectivePlan] ?? PLANS.free;
   const vehicleLimit = planDef.vehicleLimit;
 
   return {
     userId,
-    plan,
-    planStatus: profile.plan_status ?? "active",
-    planInterval: profile.plan_interval,
-    renewsAt: profile.plan_renews_at,
-    canceledAt: profile.plan_canceled_at,
+    plan: resolvedPlan,
+    planStatus: expired ? "active" : (profile.plan_status ?? "active"),
+    planInterval: expired ? null : profile.plan_interval,
+    renewsAt: expired ? null : profile.plan_renews_at,
+    canceledAt: expired ? null : profile.plan_canceled_at,
     vehicleLimit,
     vehicleCount,
     hasReachedVehicleLimit: vehicleCount >= vehicleLimit,
     remainingVehicles: Math.max(0, vehicleLimit - vehicleCount),
     mollieCustomerId: profile.mollie_customer_id,
-    mollieSubscriptionId: profile.mollie_subscription_id,
+    mollieSubscriptionId: expired ? null : profile.mollie_subscription_id,
     mollieMandateId: profile.mollie_mandate_id,
     isFounder,
     founderBadge

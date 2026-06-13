@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { ThemeSegmented } from "@/components/common/theme-toggle";
 import { DeleteAccountSection } from "@/components/account/delete-account-section";
 import { SubscriptionSection } from "@/components/billing/subscription-section";
+import { BillingSuccessHandler } from "@/components/billing/billing-success-handler";
 import { PushNotificationsSection } from "@/components/notifications/push-notifications-section";
 import { getUserPlanState } from "@/lib/billing/limits";
 import { createClient } from "@/lib/supabase/server";
@@ -46,6 +47,7 @@ export default async function ParametresPage() {
 
   return (
     <section className="space-y-8">
+      <BillingSuccessHandler />
       <header className="relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-ride-gradient-card p-5 shadow-ride-sm md:p-7">
         <span
           aria-hidden

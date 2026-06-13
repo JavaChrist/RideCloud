@@ -136,7 +136,7 @@ export default function MentionsLegalesPage() {
           Les présentes mentions légales sont régies par le droit français. En cas de litige, et après tentative de résolution amiable, les tribunaux français seront seuls compétents.
         </p>
         <p>
-          Conformément aux articles L.611-1 et suivants du Code de la consommation, l&apos;utilisateur consommateur peut recourir gratuitement à un médiateur de la consommation en vue de la résolution amiable d&apos;un éventuel litige. Les coordonnées du médiateur désigné par l&apos;éditeur ainsi que les modalités de saisine sont précisées dans les <a href="/cgu#mediateur" className="text-blue-700 dark:text-blue-300 hover:underline">Conditions Générales d&apos;Utilisation, section 13</a>.
+          Conformément aux articles L.611-1 et suivants du Code de la consommation, l&apos;utilisateur consommateur peut recourir gratuitement à un médiateur de la consommation en vue de la résolution amiable d&apos;un éventuel litige. Les coordonnées du médiateur désigné par l&apos;éditeur ainsi que les modalités de saisine sont précisées dans les <a href="/cgu#mediateur" className="text-blue-700 dark:text-blue-300 hover:underline">Conditions Générales d&apos;Utilisation, section 16</a>.
         </p>
       </LegalSection>
     </LegalPage>

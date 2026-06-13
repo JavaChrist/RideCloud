@@ -117,6 +117,10 @@ export default function ConfidentialitePage() {
                 <td className="px-4 py-3 align-top">Consentement explicite (art. 6.1.a)</td>
               </tr>
               <tr>
+                <td className="px-4 py-3 align-top">Traitement des paiements et gestion des abonnements (via Mollie B.V.)</td>
+                <td className="px-4 py-3 align-top">Exécution du contrat (art. 6.1.b)</td>
+              </tr>
+              <tr>
                 <td className="px-4 py-3 align-top">Conformité aux obligations légales (lutte contre la fraude, conservation comptable)</td>
                 <td className="px-4 py-3 align-top">Obligation légale (art. 6.1.c)</td>
               </tr>
@@ -170,6 +174,16 @@ export default function ConfidentialitePage() {
                 <td className="px-4 py-3 align-top font-medium">IONOS SE</td>
                 <td className="px-4 py-3 align-top">Registrar du nom de domaine</td>
                 <td className="px-4 py-3 align-top">Allemagne (UE)</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 align-top font-medium">Mollie B.V.</td>
+                <td className="px-4 py-3 align-top">Traitement des paiements par carte et prélèvement (abonnements Premium et Family) — aucune donnée carte ne transite par RideCloud</td>
+                <td className="px-4 py-3 align-top">Pays-Bas (UE)</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 align-top font-medium">Mistral AI SAS</td>
+                <td className="px-4 py-3 align-top">Génération des plans d&apos;entretien personnalisés (IA) — données transmises : marque, modèle, kilométrage, historique d&apos;entretien, sans identifiant direct</td>
+                <td className="px-4 py-3 align-top">France (UE)</td>
               </tr>
             </tbody>
           </table>

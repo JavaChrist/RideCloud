@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { getMollieClient, hasMollieEnv } from "@/lib/billing/mollie";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +63,40 @@ export async function POST(request: Request) {
   const admin = createAdminClient();
   const userId = user.id;
   const errors: string[] = [];
+
+  // 0. Résiliation Mollie : annuler la subscription active avant toute suppression.
+  //    On ne bloque pas la suppression si Mollie échoue (log + warning suffisent).
+  if (hasMollieEnv()) {
+    try {
+      const { data: profileData } = await admin
+        .from("profiles")
+        .select("mollie_customer_id, mollie_subscription_id, plan")
+        .eq("id", userId)
+        .maybeSingle();
+
+      const profile = profileData as {
+        mollie_customer_id: string | null;
+        mollie_subscription_id: string | null;
+        plan: string | null;
+      } | null;
+
+      if (
+        profile?.plan &&
+        profile.plan !== "free" &&
+        profile.mollie_customer_id &&
+        profile.mollie_subscription_id
+      ) {
+        const mollie = getMollieClient();
+        await mollie.customerSubscriptions.cancel(profile.mollie_subscription_id, {
+          customerId: profile.mollie_customer_id
+        });
+      }
+    } catch (mollieError) {
+      const msg = mollieError instanceof Error ? mollieError.message : "Erreur Mollie";
+      console.warn(`[account/delete] Résiliation Mollie échouée (non bloquante) : ${msg}`);
+      errors.push(`Mollie (non bloquant) : ${msg}`);
+    }
+  }
 
   // 1. Storage : supprimer récursivement tous les fichiers sous {userId}/
   try {
