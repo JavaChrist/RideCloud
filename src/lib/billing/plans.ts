@@ -117,3 +117,14 @@ export const PAID_PLAN_IDS = ["premium", "family"] as const satisfies readonly P
 export function isPaidPlan(plan: Plan): plan is "premium" | "family" {
   return PAID_PLAN_IDS.includes(plan as "premium" | "family");
 }
+
+/**
+ * Version du texte de consentement (renonciation expresse au droit de
+ * rétractation + acceptation des CGV) recueilli au checkout.
+ *
+ * À incrémenter à chaque modification substantielle du libellé affiché dans la
+ * modale `CheckoutConsentDialog`. La valeur est envoyée à Mollie en metadata
+ * pour servir de preuve d'audit (cf. art. L.221-28, 13° du Code de la
+ * consommation et CGV section 11).
+ */
+export const CHECKOUT_CONSENT_VERSION = "v1-2026-06-13";

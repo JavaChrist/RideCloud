@@ -6,6 +6,10 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { Plan, PlanInterval } from "@/types/database";
+import {
+  CheckoutConsentDialog,
+  type CheckoutConsentPayload
+} from "@/components/billing/checkout-consent-dialog";
 
 interface UpgradeButtonProps {
   plan: "premium" | "family";
@@ -32,24 +36,27 @@ export function UpgradeButton({
 }: UpgradeButtonProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [consentOpen, setConsentOpen] = useState(false);
 
   const isCurrentPlan =
     isLoggedIn && currentPlan === plan && currentInterval === interval;
 
-  const handleClick = async () => {
+  const handleClick = () => {
     if (!isLoggedIn) {
       router.push(`/register?next=/tarifs&plan=${plan}&interval=${interval}`);
       return;
     }
-
     if (isCurrentPlan) return;
+    setConsentOpen(true);
+  };
 
+  const handleConfirm = async (consent: CheckoutConsentPayload) => {
     setIsLoading(true);
     try {
       const response = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, interval })
+        body: JSON.stringify({ plan, interval, consent })
       });
       const data = (await response.json().catch(() => ({}))) as {
         checkoutUrl?: string;
@@ -76,24 +83,36 @@ export function UpgradeButton({
   }
 
   return (
-    <Button
-      type="button"
-      onClick={handleClick}
-      disabled={isLoading}
-      variant={variant}
-      className={className}
-    >
-      {isLoading ? (
-        <>
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-          Redirection…
-        </>
-      ) : (
-        <>
-          {label}
-          {hasActiveSubscription && currentPlan !== "free" ? null : null}
-        </>
-      )}
-    </Button>
+    <>
+      <Button
+        type="button"
+        onClick={handleClick}
+        disabled={isLoading}
+        variant={variant}
+        className={className}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            Redirection…
+          </>
+        ) : (
+          <>
+            {label}
+            {hasActiveSubscription && currentPlan !== "free" ? null : null}
+          </>
+        )}
+      </Button>
+      {isLoggedIn ? (
+        <CheckoutConsentDialog
+          open={consentOpen}
+          onOpenChange={setConsentOpen}
+          plan={plan}
+          interval={interval}
+          isSubmitting={isLoading}
+          onConfirm={handleConfirm}
+        />
+      ) : null}
+    </>
   );
 }

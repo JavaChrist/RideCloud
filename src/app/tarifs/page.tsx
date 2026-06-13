@@ -144,11 +144,15 @@ export default async function TarifsPage() {
               },
               {
                 q: "Que se passe-t-il si j'annule ?",
-                a: "Votre plan reste actif jusqu'à la date de prochain renouvellement. Ensuite, vous repassez automatiquement en plan Free. Vos données restent intactes — vous pouvez les exporter ou réactiver l'abonnement plus tard."
+                a: "Votre plan reste actif jusqu'à la date de prochain renouvellement. Ensuite, vous repassez automatiquement en plan Free. Vos données restent intactes — vous pouvez les exporter ou réactiver l'abonnement plus tard. À noter : le temps restant n'est pas remboursé au prorata, conformément aux CGV (vous avez expressément demandé l'activation immédiate du service au paiement)."
               },
               {
                 q: "Y a-t-il une réduction pour le paiement annuel ?",
-                a: "Oui, environ 18 % d'économies sur Premium (39 €/an au lieu de 47,88 €) et Family (79 €/an au lieu de 95,88 €)."
+                a: "Oui, environ 18 % d'économies. Premium revient à 3,25 €/mois (39 €/an au lieu de 47,88 €) et Family à 6,58 €/mois (79 €/an au lieu de 95,88 €)."
+              },
+              {
+                q: "L'abonnement annuel est-il remboursable si je résilie en cours d'année ?",
+                a: "Non. En souscrivant, vous demandez l'activation immédiate du service et renoncez expressément à votre droit de rétractation (art. L.221-28 13° du Code de la consommation). En cas de résiliation, votre accès reste actif jusqu'à la date anniversaire annuelle, mais le temps restant n'est pas remboursé. Pensez à choisir le mensuel si vous n'êtes pas sûr."
               },
               {
                 q: "TVA appliquée ?",

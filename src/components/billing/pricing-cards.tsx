@@ -25,7 +25,7 @@ export function PricingCards({
   currentPlan,
   currentInterval,
   hasActiveSubscription,
-  defaultInterval = "monthly"
+  defaultInterval = "yearly"
 }: PricingCardsProps) {
   const [interval, setInterval] = useState<PlanInterval>(defaultInterval);
 
@@ -107,29 +107,55 @@ export function PricingCards({
                 <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">{plan.tagline}</p>
               </header>
 
-              <div className="mt-6 flex items-baseline gap-1">
-                {price === 0 ? (
+              {price === 0 ? (
+                <div className="mt-6 flex items-baseline gap-1">
                   <span className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                     Gratuit
                   </span>
-                ) : (
-                  <>
+                </div>
+              ) : interval === "yearly" ? (
+                <div className="mt-6 space-y-1.5">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                      {(plan.price.yearly / 12).toFixed(2).replace(".", ",")}
+                    </span>
+                    <span className="text-xl text-slate-400 dark:text-slate-500">€</span>
+                    <span className="ml-1 text-sm text-slate-500 dark:text-slate-400">
+                      / mois
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs">
+                    <span className="font-medium text-slate-600 dark:text-slate-300">
+                      facturé {plan.price.yearly} €/an
+                    </span>
+                    {yearlyDiscount > 0 ? (
+                      <span className="inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 font-semibold text-emerald-700 dark:text-emerald-300">
+                        économisez {yearlyDiscount}&nbsp;%
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-6 space-y-1.5">
+                  <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                       {price.toString().replace(".", ",")}
                     </span>
                     <span className="text-xl text-slate-400 dark:text-slate-500">€</span>
                     <span className="ml-1 text-sm text-slate-500 dark:text-slate-400">
-                      / {interval === "monthly" ? "mois" : "an"}
+                      / mois
                     </span>
-                  </>
-                )}
-              </div>
-              {interval === "yearly" && yearlyDiscount > 0 ? (
-                <p className="mt-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
-                  Soit {(plan.price.yearly / 12).toFixed(2).replace(".", ",")} €/mois ·
-                  économisez {yearlyDiscount}&nbsp;%
-                </p>
-              ) : null}
+                  </div>
+                  {plan.price.yearly > 0 ? (
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      ou {plan.price.yearly} €/an ·{" "}
+                      <span className="font-medium text-emerald-700 dark:text-emerald-300">
+                        économisez {getYearlyDiscount(plan)}&nbsp;%
+                      </span>
+                    </p>
+                  ) : null}
+                </div>
+              )}
 
               <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                 {plan.description}

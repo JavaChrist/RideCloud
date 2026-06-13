@@ -3,7 +3,7 @@ import { z } from "zod";
 import { SequenceType } from "@mollie/api-client";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { PLANS } from "@/lib/billing/plans";
+import { CHECKOUT_CONSENT_VERSION, PLANS } from "@/lib/billing/plans";
 import {
   describeSubscription,
   getMollieClient,
@@ -14,10 +14,25 @@ import { ensureProfile } from "@/lib/billing/ensure-profile";
 
 export const dynamic = "force-dynamic";
 
+const ConsentSchema = z.object({
+  consentAccepted: z.literal(true),
+  consentVersion: z.string().min(1),
+  consentAcceptedAt: z.string().datetime()
+});
+
 const BodySchema = z.object({
   plan: z.enum(["premium", "family"]),
-  interval: z.enum(["monthly", "yearly"])
+  interval: z.enum(["monthly", "yearly"]),
+  consent: ConsentSchema
 });
+
+function getClientIp(request: Request): string | null {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    return forwarded.split(",")[0]?.trim() ?? null;
+  }
+  return request.headers.get("x-real-ip");
+}
 
 /**
  * POST /api/billing/checkout
@@ -51,15 +66,43 @@ export async function POST(request: Request) {
   try {
     parsed = BodySchema.parse(await request.json());
   } catch {
-    return NextResponse.json({ error: "Paramètres invalides" }, { status: 400 });
+    return NextResponse.json(
+      {
+        error:
+          "Paramètres invalides. Vérifiez notamment que le consentement (CGV et renonciation au droit de rétractation) a été coché."
+      },
+      { status: 400 }
+    );
   }
 
-  const { plan, interval } = parsed;
+  const { plan, interval, consent } = parsed;
   const planDef = PLANS[plan];
   const price = interval === "monthly" ? planDef.price.monthly : planDef.price.yearly;
   if (price <= 0) {
     return NextResponse.json({ error: "Plan gratuit, aucun paiement requis" }, { status: 400 });
   }
+
+  if (consent.consentVersion !== CHECKOUT_CONSENT_VERSION) {
+    return NextResponse.json(
+      {
+        error:
+          "Le texte de consentement a été mis à jour. Rechargez la page et acceptez à nouveau."
+      },
+      { status: 409 }
+    );
+  }
+
+  const consentIp = getClientIp(request);
+  const consentUserAgent = request.headers.get("user-agent");
+
+  console.info("[billing/checkout] consent recorded", {
+    userId: user.id,
+    plan,
+    interval,
+    consentVersion: consent.consentVersion,
+    consentAcceptedAt: consent.consentAcceptedAt,
+    consentIp: consentIp ?? "unknown"
+  });
 
   const origin = new URL(request.url).origin;
   const mollie = getMollieClient();
@@ -134,7 +177,13 @@ export async function POST(request: Request) {
       userId: user.id,
       plan,
       interval,
-      kind: "first_payment"
+      kind: "first_payment",
+      // Preuve d'audit du consentement (art. L.221-28, 13° du Code de la
+      // consommation). Conservé côté Mollie + tracé côté Supabase (profiles).
+      consentVersion: consent.consentVersion,
+      consentAcceptedAt: consent.consentAcceptedAt,
+      consentIp: consentIp ?? "unknown",
+      consentUserAgent: consentUserAgent?.slice(0, 200) ?? "unknown"
     }
   });
 
