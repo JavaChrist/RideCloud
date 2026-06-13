@@ -36,7 +36,7 @@ export async function GET(request: Request) {
   const now = new Date().toISOString();
 
   // Récupère tous les profils payants annulés dont la période est écoulée.
-  const { data: expired, error: fetchError } = await admin
+  const { data: expiredRaw, error: fetchError } = await admin
     .from("profiles")
     .select("id, plan, plan_renews_at")
     .neq("plan", "free")
@@ -51,7 +51,9 @@ export async function GET(request: Request) {
     );
   }
 
-  if (!expired || expired.length === 0) {
+  const expired = (expiredRaw ?? []) as Array<{ id: string; plan: string; plan_renews_at: string }>;
+
+  if (expired.length === 0) {
     return NextResponse.json({ ok: true, downgraded: 0 });
   }
 
