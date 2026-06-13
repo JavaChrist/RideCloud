@@ -149,7 +149,7 @@ function PitchView({ slotsTaken, slotsRemaining, claiming, onClaim }: PitchViewP
           <CardDescription className="text-base text-slate-700 dark:text-slate-300">
             Les 100 premiers utilisateurs qui prennent le temps de nous donner leur avis
             obtiennent <strong className="font-semibold text-indigo-700 dark:text-indigo-300">Premium à vie</strong> gratuitement,
-            un <strong className="font-semibold">badge Fondateur</strong> dans l&apos;app,
+            un <strong className="font-semibold">badge Fondateur</strong>{" "}dans l&apos;app,
             et participent directement à la suite du produit.
           </CardDescription>
         </CardHeader>
