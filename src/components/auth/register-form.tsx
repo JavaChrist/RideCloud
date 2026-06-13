@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Mail, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { registerSchema } from "@/lib/validators/auth";
@@ -18,9 +17,10 @@ import type { z } from "zod";
 type RegisterValues = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+
   const form = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: { email: "", password: "", confirmPassword: "", acceptTerms: false as unknown as true }
@@ -35,12 +35,48 @@ export function RegisterForm() {
         options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/categories` }
       });
       if (error) return toast.error(error.message);
-      toast.success("Compte créé. Vérifiez votre e-mail.");
-      router.push("/login");
+      setRegisteredEmail(values.email);
     } catch {
       toast.error("Impossible de créer le compte.");
     }
   };
+
+  // Écran de confirmation post-inscription
+  if (registeredEmail) {
+    return (
+      <div className="space-y-6 text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40">
+          <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+            Compte créé avec succès !
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            Un e-mail de confirmation a été envoyé à
+          </p>
+          <p className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 text-sm font-medium text-slate-900 dark:text-slate-50">
+            <Mail className="h-4 w-4 text-slate-500" />
+            {registeredEmail}
+          </p>
+        </div>
+        <div className="rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 p-4 text-left text-sm text-blue-900 dark:text-blue-100">
+          <p className="font-semibold mb-1">Avant de vous connecter :</p>
+          <ol className="ml-4 list-decimal space-y-1 text-blue-800 dark:text-blue-200">
+            <li>Ouvrez votre boîte mail.</li>
+            <li>Cliquez sur le lien de confirmation dans l&apos;e-mail RideCloud.</li>
+            <li>Revenez ici pour vous connecter.</li>
+          </ol>
+          <p className="mt-2 text-xs text-blue-700 dark:text-blue-300">
+            Pensez à vérifier vos spams si vous ne le trouvez pas.
+          </p>
+        </div>
+        <Button asChild className="w-full">
+          <Link href="/login">Aller à la page de connexion</Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>

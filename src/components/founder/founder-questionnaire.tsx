@@ -283,7 +283,7 @@ export function FounderQuestionnaire() {
                 <FormItem>
                   <FormLabel>5. Seriez-vous prêt·e à payer pour RideCloud ?</FormLabel>
                   <FormDescription>
-                    Le Premium est à 3,99 € / mois (ou 39,99 € / an). Hors votre Premium à vie de Fondateur !
+                    Le Premium est à 3,99 € / mois (ou 39 € / an). Hors votre Premium à vie de Fondateur !
                   </FormDescription>
                   <FormControl>
                     <div className="grid gap-2 sm:grid-cols-3">

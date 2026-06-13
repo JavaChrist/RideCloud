@@ -21,6 +21,10 @@ export function ProtectedShell({ children, planState, founderRecord }: Protected
 
   const remaining = founderRecord ? daysLeft(founderRecord.joinedAt) : 0;
 
+  // Lien "Devenir Fondateur" visible pour les utilisateurs qui n'ont pas encore
+  // de slot (ni badge), pour leur permettre de découvrir le programme.
+  const showFounderCta = !founderRecord && !planState?.founderBadge;
+
   return (
     <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50">
       <div
@@ -31,7 +35,10 @@ export function ProtectedShell({ children, planState, founderRecord }: Protected
         <div className="absolute inset-x-0 top-0 h-[1200px] bg-ride-grid dark:bg-ride-grid-light bg-ride-grid-sm [mask-image:radial-gradient(ellipse_60%_45%_at_50%_0%,black,transparent)]" />
       </div>
 
-      <ProtectedHeader founderBadge={planState?.founderBadge ? founderRecord?.slot ?? null : null} />
+      <ProtectedHeader
+        founderBadge={planState?.founderBadge ? founderRecord?.slot ?? null : null}
+        showFounderCta={showFounderCta}
+      />
 
       {showFounderBanner && founderRecord && (
         <FounderBanner slot={founderRecord.slot} daysRemaining={remaining} />
