@@ -224,6 +224,9 @@ Permettre à n'importe quel propriétaire de véhicule, sans expertise mécaniqu
 - Page `/tarifs` avec switch mensuel/annuel.
 - Webhook `/api/billing/webhook` pour activations automatiques.
 - Bouton **"Resynchroniser mon abonnement"** (filet de sécurité : si webhook raté, recherche customer Mollie par email, replie subscription existante, met à jour le profil).
+- **Auto-sync post-paiement** : `/parametres?billing=success` déclenche un sync Mollie + toast de confirmation.
+- **Rétrogradation automatique** vers Free à l'expiration d'un abonnement annulé (détection à la lecture + cron nightly 02h00 UTC).
+- **Résiliation Mollie** automatique lors de la suppression de compte (RGPD art. 17).
 - Annulation d'abonnement en 1 clic (plan reste actif jusqu'à la fin de période).
 - Badge **"Plan en attente / Actif / Annulé"** dans `/parametres`.
 
@@ -488,9 +491,11 @@ Aucune infra serveur custom : tout passe par **Supabase + Routes API Next.js**.
 - `POST /api/billing/sync` — resynchronisation manuelle (filet de sécurité webhook)
 - `POST /api/maintenance/generate-plan` — génération IA (Premium/Family only)
 - `POST /api/vehicles/[id]/mark-maintenance-current` — marquer toutes les révisions à jour
-- `DELETE /api/account/delete` — suppression compte RGPD (cascade complète)
+- `POST /api/account/delete` — suppression compte RGPD (cascade complète + résiliation Mollie)
 - `GET /api/vehicule/[id]/export` — export JSON
 - `GET /api/vehicule/[id]/export-zip` — export ZIP complet
+- `GET /api/cron/notifications` — cron push quotidien (08h00 UTC)
+- `GET /api/cron/downgrade-expired` — cron rétrogradation abos expirés (02h00 UTC)
 - `GET /auth/callback` — callback PKCE Supabase + `ensureProfile()`
 
 ### IA — Maintenance Generator
@@ -573,7 +578,7 @@ Aucune infra serveur custom : tout passe par **Supabase + Routes API Next.js**.
 | --- | --- | --- | --- | --- |
 | **Free** | 0 € | 0 € | Découverte | **1 véhicule**, fonctionnalités essentielles, export complet, suppression compte effective |
 | **Premium** | **3,99 €/mois** | **39 €/an** (-18 %) | Particulier engagé | **5 véhicules**, **plan d'entretien IA**, exports illimités, support prioritaire |
-| **Family** | **6,99 €/mois** | **69 €/an** (-18 %) | Familles | **15 véhicules**, IA incluse, partage à venir |
+| **Family** | **7,99 €/mois** | **79 €/an** (-18 %) | Familles | **10 véhicules**, IA incluse, partage à venir |
 
 > Note : un plan **RideCloud Pro** (flotte ≥ 15 véhicules, rôles, export comptable, API) est prévu en V2.
 
@@ -740,12 +745,12 @@ Aucune infra serveur custom : tout passe par **Supabase + Routes API Next.js**.
 
 | Sous-traitant | Fonction | Localisation |
 | --- | --- | --- |
-| Supabase | Base de données, auth, storage | UE (eu-west-x) |
-| Vercel | Hébergement frontend | UE |
-| Mollie | Paiements récurrents | UE (Pays-Bas) |
-| Mistral AI | Génération de plans d'entretien (métadonnées techniques uniquement) | UE (France) |
-| Resend | Emails transactionnels | UE |
-| IONOS | DNS du domaine | UE (Allemagne) |
+| Supabase Inc. | Base de données, auth, storage | UE (Frankfurt) |
+| Vercel Inc. | Hébergement frontend + CDN | UE (Frankfurt) |
+| Mollie B.V. | Paiements récurrents SEPA + carte | UE (Pays-Bas) |
+| Mistral AI SAS | Génération de plans d'entretien IA (métadonnées techniques uniquement) | UE (France) |
+| Resend, Inc. | Emails transactionnels | UE (Irlande) |
+| IONOS SE | DNS du domaine | UE (Allemagne) |
 
 ### Droits utilisateurs effectifs
 
@@ -775,7 +780,7 @@ Produit       : RideCloud
 URL           : https://ridecloud.app
 Stack         : Next.js 16 · TypeScript · TailwindCSS · shadcn/ui · Supabase · PWA
 IA            : Mistral AI (mistral-small-latest) avec cache partagé
-Paiements     : Mollie (SEPA + carte) — Free / Premium 3,99 € / Family 6,99 €
+Paiements     : Mollie (SEPA + carte) — Free / Premium 3,99 € / Family 7,99 €
 Emails        : Resend SMTP custom
 Statut        : En production · bêta publique ouverte
 Couleur clé   : #1d4ed8 (bleu) · #7c3aed → #4f46e5 (gradient IA)

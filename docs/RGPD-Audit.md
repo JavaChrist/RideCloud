@@ -1,7 +1,7 @@
 # Audit RGPD — RideCloud
 
-> **Date de l'audit** : Mai 2026  
-> **Périmètre** : Application web RideCloud (Next.js 14, Supabase, Vercel)  
+> **Date de l'audit** : Juin 2026 (mis à jour)  
+> **Périmètre** : Application web RideCloud (Next.js 16, Supabase, Vercel)  
 > **Responsable de traitement** : JavaChrist (Grohens Christian, EI), SIRET 338 593 312 000 30  
 > **Auditeur** : Audit interne automatisé via revue de code et architecture
 
@@ -40,7 +40,7 @@ Toutes les routes API et les pages protégées appellent `supabase.auth.getUser(
 |---|---|---|---|
 | `GET /api/vehicule/[id]/export` | ✅ | ✅ `.eq("user_id", user.id)` | OK |
 | `GET /api/vehicule/[id]/export-zip` | ✅ | ✅ `.eq("user_id", user.id)` | OK |
-| `POST /api/account/delete` | ✅ | ✅ (suppression scoped) | OK |
+| `POST /api/account/delete` | ✅ | ✅ (suppression scoped + résiliation Mollie) | OK |
 | `GET /auth/callback` | N/A (handshake PKCE) | N/A | OK |
 | `getCategoryCounts(userId)` | Via SSR `getUser()` | ✅ | OK |
 | `getVehiclesByCategory(userId, category)` | Via SSR | ✅ | OK |
@@ -137,18 +137,21 @@ intervention manuelle (export, suppression) sont **immédiats**.
 
 | Sous-traitant | Rôle | Localisation | DPA |
 |---|---|---|---|
-| **Vercel Inc.** | Hébergement applicatif | États-Unis (clauses contractuelles types UE) | DPA Vercel signé via Terms |
-| **Supabase Inc.** | Base de données, auth, stockage | Europe (`eu-west-3` Paris) si projet créé en région UE | DPA Supabase |
-| **Resend (Resend Inc.)** | Envoi des e-mails transactionnels | Multi-région (TCFR) | DPA Resend |
+| **Vercel Inc.** | Hébergement applicatif + CDN | Siège USA — déploiement principal Frankfurt (fra1, UE) — CCT + DPF | DPA Vercel signé via Terms |
+| **Supabase Inc.** | Base de données, auth, stockage | Frankfurt (eu-central-1, UE) | DPA Supabase |
+| **Mollie B.V.** | Traitement des paiements récurrents SEPA + carte (abonnements Premium/Family) | Pays-Bas (UE) | DPA Mollie |
+| **Mistral AI SAS** | Génération des plans d'entretien IA — seules métadonnées techniques (marque, modèle, année, carburant) transmises, aucune donnée personnelle | France (UE) | DPA Mistral |
+| **Resend, Inc.** | Envoi des e-mails transactionnels | Irlande (eu-west-1, UE) | DPA Resend |
 | **IONOS SE** | Nom de domaine et zone DNS | Allemagne (UE) | Contrat IONOS |
 
-> Tous les sous-traitants sont **conformes RGPD** et fournissent un DPA standard.
+> Tous les sous-traitants sont **conformes RGPD** et fournissent un DPA standard (art. 28).  
+> Les sous-traitants ayant leur siège hors UE (Vercel, Supabase, Resend) sont couverts par des CCT (Clauses Contractuelles Types) et/ou le Data Privacy Framework.
 
 ---
 
 ## 8. Non-conformités résiduelles & recommandations
 
-### Bloquantes : **aucune** à ce stade.
+### Bloquantes : **aucune** à ce stade (audit juin 2026).
 
 ### Recommandées (priorité ↘)
 

@@ -46,8 +46,11 @@ RideCloud est une **PWA SaaS française** pour suivre l'entretien et la vie comp
 - Design system documenté (`/design-system` en dev).
 
 ### Billing — Mollie
-- 3 plans : **Free** (1 véhicule), **Premium** (5 véhicules, 3,99 €/mois ou 39,99 €/an, IA incluse), **Family** (10 véhicules).
+- 3 plans : **Free** (1 véhicule, gratuit), **Premium** (5 véhicules, 3,99 €/mois ou 39 €/an, IA incluse), **Family** (10 véhicules, 7,99 €/mois ou 79 €/an).
 - Webhook Mollie pour synchronisation auto + bouton "Resynchroniser mon abonnement" pour les rares ratés webhook.
+- **Rétrogradation automatique vers Free** à l'expiration d'un abonnement annulé (détection à la lecture + cron nightly 02h00 UTC).
+- **Auto-sync post-paiement** : `/parametres?billing=success` déclenche un sync Mollie + toast de confirmation.
+- **Résiliation Mollie lors de la suppression de compte** (RGPD art. 17).
 - Création de profil idempotente côté serveur (`ensureProfile`) : aucun utilisateur orphelin possible.
 - Annulation en 1 clic, sans engagement.
 
@@ -68,13 +71,13 @@ RideCloud est une **PWA SaaS française** pour suivre l'entretien et la vie comp
 
 ## Stack technique
 
-- **Frontend** : Next.js 15 (App Router, Server Components), TypeScript, TailwindCSS, shadcn/ui (Radix), Lucide
+- **Frontend** : Next.js 16 (App Router, Server Components), TypeScript, TailwindCSS, shadcn/ui (Radix), Lucide
 - **Backend** : Supabase (Postgres 17, Auth, Storage, RLS, RPC `SECURITY DEFINER`)
 - **Paiement** : Mollie (subscriptions SEPA + carte)
 - **IA** : Mistral AI (`mistral-small` / `mistral-large` selon config)
 - **Emails** : Resend (SMTP custom Supabase Auth)
 - **Hosting** : Vercel (CDN + Edge)
-- **PWA** : next-pwa
+- **PWA** : manifest + service worker custom (Web Push)
 - **Forms** : React Hook Form + Zod
 
 ---
@@ -101,9 +104,9 @@ NEXT_PUBLIC_SUPABASE_URL=https://votre-projet.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=votre_cle_publique
 SUPABASE_SERVICE_ROLE_KEY=votre_cle_service_role
 
-# Mollie (production / sandbox)
-MOLLIE_API_KEY=live_xxx_ou_test_xxx
-MOLLIE_WEBHOOK_URL=https://votre-domaine/api/billing/webhook
+# Mollie — test_xxx pour dev local, live_xxx pour production
+# Mollie Dashboard → Developers → API keys
+MOLLIE_API_KEY=test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # Mistral AI (plan d'entretien généré par IA)
 MISTRAL_API_KEY=votre_cle
@@ -157,7 +160,9 @@ RideCloud envoie les rappels d'entretien et de mise à jour du compteur directem
    - `VAPID_PRIVATE_KEY` (clé privée, serveur uniquement)
    - `VAPID_CONTACT_EMAIL` (format `mailto:contact@domaine.fr`)
    - `CRON_SECRET` (token aléatoire 32+ caractères)
-3. Le cron quotidien (`vercel.json` → `0 8 * * *` UTC) appelle `/api/cron/notifications` et envoie automatiquement les push aux utilisateurs concernés.
+3. Deux crons Vercel sont configurés dans `vercel.json` :
+   - `0 8 * * *` UTC → `/api/cron/notifications` : envoie les push aux utilisateurs concernés
+   - `0 2 * * *` UTC → `/api/cron/downgrade-expired` : rétrograde vers Free les abonnements annulés expirés
 
 ### Activation côté utilisateur
 
@@ -193,10 +198,16 @@ src/
       billing/               # checkout, webhook, sync, cancel (Mollie)
       maintenance/           # generate-plan (IA Mistral)
       vehicles/[id]/         # mark-maintenance-current, ...
+      cron/
+        notifications/       # rappels push quotidiens (08h00 UTC)
+        downgrade-expired/   # rétrogradation Free des abos expirés (02h00 UTC)
+      account/delete/        # suppression compte RGPD (cascade + résiliation Mollie)
     auth/callback/           # PKCE callback Supabase
+  error.tsx                  # page d'erreur 500 brandée
+  not-found.tsx              # page 404 brandée
   components/
     auth/                    # formulaires login/register
-    billing/                 # boutons checkout, sync, subscription-section
+    billing/                 # boutons checkout, sync, subscription-section, billing-success-handler
     categories/              # cartes catégories
     common/                  # logo, theme-toggle, layout helpers
     documents/               # gestion fichiers
@@ -272,11 +283,22 @@ select public.claim_founder_slot();
 
 ## Roadmap
 
-- Notifications push pour les rappels urgents.
-- Enrichissement des templates constructeur (plus de marques/modèles hardcodés).
-- Vue statistiques multi-véhicules (tendances annuelles, comparaisons).
-- Filtres et recherche avancés sur la chronologie.
-- Application mobile native (Capacitor / React Native).
+### Livré en production ✅
+- Notifications push Web Push (rappels entretien, mise à jour compteur)
+- Paiements Mollie récurrents + rétrogradation automatique + résiliation RGPD
+
+### V1 (1-3 mois)
+- Enrichissement des templates constructeur (plus de marques/modèles)
+- Vue statistiques multi-véhicules (tendances annuelles, comparaisons)
+- Filtres et recherche avancés sur la chronologie
+- Partage multi-comptes (plan Family)
+- Onboarding guidé premier véhicule
+
+### V2+
+- Application mobile native (Capacitor / React Native)
+- OCR factures
+- Intégration contrôle technique / assurance
+- API publique partenaires
 
 ---
 
