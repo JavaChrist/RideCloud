@@ -164,21 +164,31 @@ async function ensureMaintenancePlanEntries(userId: string, vehicle: Vehicle) {
   }
 
   const nowIso = new Date().toISOString();
+  const todayIso = nowIso.slice(0, 10);
+
+  // Pour un véhicule d'occasion (km > 0) dont on n'a pas encore d'historique,
+  // on initialise last_done_km/date au kilométrage actuel pour éviter que tout
+  // le plan n'apparaisse "en retard" dès la création.
+  const initialLastDoneKm = (vehicle.kilometrage ?? 0) > 0 ? vehicle.kilometrage : null;
+  const initialLastDoneDate = (vehicle.kilometrage ?? 0) > 0 ? todayIso : null;
+
   const payload = missingTemplates.map((template) => {
     const due = calculateNextMaintenanceDue({
       intervalKm: template.intervalKm,
       intervalMonths: template.intervalMonths,
       firstDueKm: template.firstDueKm,
       firstDueDate: template.firstDueDate,
-      lastDoneKm: null,
-      lastDoneDate: null
+      lastDoneKm: initialLastDoneKm,
+      lastDoneDate: initialLastDoneDate
     });
     const status = getMaintenanceStatus({
       nextDueKm: due.nextDueKm,
       nextDueDate: due.nextDueDate,
       currentKm: vehicle.kilometrage,
       dueSoonKmThreshold: template.dueSoonKmThreshold ?? DEFAULT_DUE_SOON_KM_THRESHOLD,
-      dueSoonDaysThreshold: template.dueSoonDaysThreshold ?? DEFAULT_DUE_SOON_DAYS_THRESHOLD
+      dueSoonDaysThreshold: template.dueSoonDaysThreshold ?? DEFAULT_DUE_SOON_DAYS_THRESHOLD,
+      lastDoneKm: initialLastDoneKm,
+      lastDoneDate: initialLastDoneDate
     });
 
     return {
@@ -191,8 +201,8 @@ async function ensureMaintenancePlanEntries(userId: string, vehicle: Vehicle) {
       interval_months: template.intervalMonths,
       first_due_km: template.firstDueKm,
       first_due_date: template.firstDueDate,
-      last_done_km: null,
-      last_done_date: null,
+      last_done_km: initialLastDoneKm,
+      last_done_date: initialLastDoneDate,
       next_due_km: due.nextDueKm,
       next_due_date: due.nextDueDate,
       due_soon_km_threshold: template.dueSoonKmThreshold ?? DEFAULT_DUE_SOON_KM_THRESHOLD,

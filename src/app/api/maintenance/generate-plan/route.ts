@@ -194,6 +194,13 @@ export async function POST(request: Request) {
 
   const templateSource = source === "approved" ? "approved" : source === "community" ? "community" : "ai";
   const nowIso = new Date().toISOString();
+  const todayIso = nowIso.slice(0, 10);
+
+  // Pour un véhicule d'occasion (km > 0) sans historique enregistré,
+  // on initialise last_done_km/date au kilométrage actuel afin que le plan
+  // ne parte pas de 0 et n'affiche pas tout comme "en retard".
+  const initialLastDoneKm = (vehicle.kilometrage ?? 0) > 0 ? vehicle.kilometrage : null;
+  const initialLastDoneDate = (vehicle.kilometrage ?? 0) > 0 ? todayIso : null;
 
   let inserted = 0;
   let updated = 0;
@@ -202,13 +209,19 @@ export async function POST(request: Request) {
   for (const template of templates) {
     const key = `${template.categorie}::${template.titre}`.toLowerCase();
     const existing = existingMap.get(key);
+
+    // Pour un insert (nouveau véhicule), on part du km actuel comme référence.
+    // Pour un update (plan existant avec historique), on ne touche pas last_done_*.
+    const entryLastDoneKm = existing?.hasHistory ? undefined : initialLastDoneKm;
+    const entryLastDoneDate = existing?.hasHistory ? undefined : initialLastDoneDate;
+
     const due = calculateNextMaintenanceDue({
       intervalKm: template.intervalKm,
       intervalMonths: template.intervalMonths,
       firstDueKm: template.firstDueKm,
       firstDueDate: template.firstDueDate,
-      lastDoneKm: null,
-      lastDoneDate: null
+      lastDoneKm: entryLastDoneKm ?? null,
+      lastDoneDate: entryLastDoneDate ?? null
     });
     const status = getMaintenanceStatus({
       nextDueKm: due.nextDueKm,
@@ -254,8 +267,8 @@ export async function POST(request: Request) {
           interval_months: template.intervalMonths,
           first_due_km: template.firstDueKm,
           first_due_date: template.firstDueDate,
-          last_done_km: null,
-          last_done_date: null,
+          last_done_km: initialLastDoneKm,
+          last_done_date: initialLastDoneDate,
           next_due_km: due.nextDueKm,
           next_due_date: due.nextDueDate,
           due_soon_km_threshold: template.dueSoonKmThreshold ?? DEFAULT_DUE_SOON_KM_THRESHOLD,
