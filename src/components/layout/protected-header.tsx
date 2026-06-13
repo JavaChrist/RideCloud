@@ -31,10 +31,12 @@ export function ProtectedHeader({ founderBadge, showFounderCta }: ProtectedHeade
           {showFounderCta && (
             <Link
               href="/fondateur"
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-indigo-300/60 dark:border-indigo-700/60 bg-gradient-to-r from-blue-500/10 via-indigo-500/15 to-violet-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300 transition hover:shadow-sm"
+              aria-label="Devenir Membre Fondateur RideCloud"
+              className="inline-flex items-center gap-1.5 rounded-full border border-indigo-300/60 dark:border-indigo-700/60 bg-gradient-to-r from-blue-500/10 via-indigo-500/15 to-violet-500/10 px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300 transition hover:shadow-sm"
             >
-              <Sparkles className="h-3 w-3" aria-hidden />
-              Devenir Fondateur
+              <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
+              <span className="hidden sm:inline">Devenir Fondateur</span>
+              <span className="sm:hidden">Fondateur</span>
             </Link>
           )}
           <Link
