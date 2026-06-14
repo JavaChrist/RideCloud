@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Logo } from "@/components/common/logo";
 import { RegisterForm } from "@/components/auth/register-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +20,9 @@ export default function RegisterPage() {
         <CardDescription>Créez votre espace RideCloud.</CardDescription>
       </CardHeader>
       <CardContent>
-        <RegisterForm />
+        <Suspense>
+          <RegisterForm />
+        </Suspense>
       </CardContent>
     </Card>
   );
