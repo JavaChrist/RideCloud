@@ -11,6 +11,7 @@ import {
   toMollieAmount
 } from "@/lib/billing/mollie";
 import { ensureProfile } from "@/lib/billing/ensure-profile";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -25,14 +26,6 @@ const BodySchema = z.object({
   interval: z.enum(["monthly", "yearly"]),
   consent: ConsentSchema
 });
-
-function getClientIp(request: Request): string | null {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0]?.trim() ?? null;
-  }
-  return request.headers.get("x-real-ip");
-}
 
 /**
  * POST /api/billing/checkout
@@ -60,6 +53,28 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  }
+
+  // ----- Rate limiting : 5 tentatives / utilisateur / 10 min -----
+  const rl = rateLimit(`checkout:${user.id}`, 5, 10 * 60 * 1000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Trop de tentatives. Réessayez dans quelques minutes." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil(rl.resetInMs / 1000)) }
+      }
+    );
+  }
+
+  // Rate limit IP pour prévenir les comptes multiples (5 checkouts / IP / heure)
+  const ip = getClientIp(request);
+  const rlIp = rateLimit(`checkout-ip:${ip}`, 5, 60 * 60 * 1000);
+  if (!rlIp.ok) {
+    return NextResponse.json(
+      { error: "Trop de tentatives depuis cette adresse. Réessayez plus tard." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rlIp.resetInMs / 1000)) } }
+    );
   }
 
   let parsed: z.infer<typeof BodySchema>;

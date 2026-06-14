@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Eye, EyeOff, Mail, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Mail, CheckCircle2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { registerSchema } from "@/lib/validators/auth";
@@ -17,6 +18,11 @@ import type { z } from "zod";
 type RegisterValues = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
+  const searchParams = useSearchParams();
+  const plan = searchParams.get("plan");
+  const interval = searchParams.get("interval");
+  const next = searchParams.get("next");
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
@@ -29,10 +35,19 @@ export function RegisterForm() {
   const onSubmit = async (values: RegisterValues) => {
     try {
       const supabase = createClient();
+      // Si l'utilisateur vient de la page tarifs avec un plan sélectionné,
+      // on l'y redirige après confirmation email pour qu'il puisse payer.
+      const postConfirmNext =
+        next && plan && interval
+          ? `${next}?plan=${plan}&interval=${interval}`
+          : next ?? "/categories";
+
       const { error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/categories` }
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(postConfirmNext)}`
+        }
       });
       if (error) return toast.error(error.message);
       setRegisteredEmail(values.email);
@@ -65,12 +80,21 @@ export function RegisterForm() {
           <ol className="ml-4 list-decimal space-y-1 text-blue-800 dark:text-blue-200">
             <li>Ouvrez votre boîte mail.</li>
             <li>Cliquez sur le lien de confirmation dans l&apos;e-mail RideCloud.</li>
-            <li>Revenez ici pour vous connecter.</li>
+            <li>Vous serez redirigé{plan ? " vers la page de paiement" : " vers votre espace"}.</li>
           </ol>
           <p className="mt-2 text-xs text-blue-700 dark:text-blue-300">
             Pensez à vérifier vos spams si vous ne le trouvez pas.
           </p>
         </div>
+
+        {plan && interval && (
+          <div className="rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-950/40 p-3 text-sm text-indigo-900 dark:text-indigo-100 flex items-center gap-2">
+            <Sparkles className="h-4 w-4 shrink-0 text-indigo-500" aria-hidden />
+            <span>
+              Plan <strong>{plan.charAt(0).toUpperCase() + plan.slice(1)}</strong> sélectionné — accessible après confirmation.
+            </span>
+          </div>
+        )}
         <Button asChild className="w-full">
           <Link href="/login">Aller à la page de connexion</Link>
         </Button>

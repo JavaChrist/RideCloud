@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, MailCheck } from "lucide-react";
@@ -20,9 +20,13 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  // Pré-active l'état si redirigé depuis le middleware (?unverified=1)
+  const [needsConfirmation, setNeedsConfirmation] = useState(
+    searchParams.get("unverified") === "1"
+  );
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" }

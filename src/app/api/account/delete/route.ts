@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { getMollieClient, hasMollieEnv } from "@/lib/billing/mollie";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,16 @@ export async function POST(request: Request) {
           "Suppression indisponible : SUPABASE_SERVICE_ROLE_KEY n'est pas configurée côté serveur."
       },
       { status: 503 }
+    );
+  }
+
+  // ----- Rate limiting IP : 3 tentatives / 10 min (anti-brute-force) -----
+  const ip = getClientIp(request);
+  const rl = rateLimit(`account-delete:${ip}`, 3, 10 * 60 * 1000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Trop de tentatives. Réessayez dans quelques minutes." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.resetInMs / 1000)) } }
     );
   }
 

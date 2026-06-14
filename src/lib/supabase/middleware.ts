@@ -76,9 +76,7 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
     pathname.startsWith("/forgot-password");
-  // /fondateur a deux variantes : la page publique (groupe (auth)) et la page
-  // membre (groupe (protected)). Next.js gère le routage par layout, on liste
-  // simplement la racine /fondateur/* dans isProtectedRoute pour les vues membres.
+
   const isProtectedRoute =
     pathname.startsWith("/categories") ||
     pathname.startsWith("/vehicules") ||
@@ -86,15 +84,26 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/parametres") ||
     pathname.startsWith("/admin");
 
+  // Route non protégée : passe
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
+  // Déjà connecté sur page auth → redirige vers l'app
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/categories";
+    return NextResponse.redirect(url);
+  }
+
+  // Utilisateur connecté mais email non confirmé → bloque l'accès aux routes protégées
+  // et redirige vers /login?unverified=1 pour afficher le CTA "Renvoyer l'email".
+  if (user && isProtectedRoute && !user.email_confirmed_at) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("unverified", "1");
     return NextResponse.redirect(url);
   }
 

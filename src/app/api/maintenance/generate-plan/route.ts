@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getUserPlanState } from "@/lib/billing/limits";
 import { isPaidPlan } from "@/lib/billing/plans";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { resolveMaintenanceTemplatesForVehicle } from "@/lib/data/maintenance-template-resolver";
 import {
   findCachedMaintenanceTemplates,
@@ -49,6 +50,18 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  }
+
+  // ----- Rate limiting : 10 générations / utilisateur / heure -----
+  const rl = rateLimit(`generate-plan:${user.id}`, 10, 60 * 60 * 1000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Trop de demandes. Réessayez dans quelques minutes." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil(rl.resetInMs / 1000)) }
+      }
+    );
   }
 
   // ----- Body -----
