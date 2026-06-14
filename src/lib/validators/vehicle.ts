@@ -7,7 +7,7 @@ export const vehicleFormSchema = z.object({
   annee: z.coerce.number().int().min(1950).max(new Date().getFullYear() + 1),
   date_mise_en_circulation: z.string().optional(),
   date_achat: z.string().optional(),
-  kilometrage: z.coerce.number().int().min(0),
+  kilometrage: z.coerce.number().int().min(0).optional().default(0),
   usage_profile: z.enum(["daily", "often", "occasional", "rare"], {
     message: "Sélectionnez une fréquence d'utilisation"
   }),

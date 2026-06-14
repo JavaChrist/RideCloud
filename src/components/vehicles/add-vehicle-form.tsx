@@ -100,7 +100,7 @@ export function AddVehicleForm() {
       annee: new Date().getFullYear(),
       date_mise_en_circulation: "",
       date_achat: "",
-      kilometrage: 0,
+      kilometrage: undefined,
       usage_profile: DEFAULT_USAGE_PROFILE,
       carburant: "",
       immatriculation: "",
