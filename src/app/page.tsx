@@ -1,10 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
   ArrowUpRight,
   BellRing,
-  Car,
   CheckCircle2,
   ChevronDown,
   Download,
@@ -70,8 +70,8 @@ function Header() {
     <header className="sticky top-0 z-50 border-b border-slate-200/60 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/70 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-50/50 dark:supports-[backdrop-filter]:bg-slate-950/50">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="group flex items-center gap-2.5">
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-ride-gradient-primary text-white shadow-ride-glow-sm transition-transform duration-300 group-hover:scale-105">
-            <Car className="h-4 w-4" strokeWidth={2.25} />
+          <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-ride-glow-sm transition-transform duration-300 group-hover:scale-105">
+            <Image src="/icons/logo64.png" alt="RideCloud" width={36} height={36} className="rounded-xl" />
             <span aria-hidden className="absolute inset-0 rounded-xl bg-white/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           </div>
           <span className="text-[15px] font-semibold tracking-tight">RideCloud</span>
@@ -912,8 +912,8 @@ function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-ride-gradient-primary text-white shadow-ride-glow-sm">
-                <Car className="h-4 w-4" strokeWidth={2.25} />
+              <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-ride-glow-sm">
+                <Image src="/icons/logo64.png" alt="RideCloud" width={36} height={36} className="rounded-xl" />
               </div>
               <span className="text-[15px] font-semibold tracking-tight">
                 RideCloud
