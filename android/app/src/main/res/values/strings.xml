@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">RideCloud</string>
+    <string name="title_activity_main">RideCloud</string>
+    <string name="package_name">fr.javachrist.ridecloud</string>
+    <string name="custom_url_scheme">fr.javachrist.ridecloud</string>
+</resources>
