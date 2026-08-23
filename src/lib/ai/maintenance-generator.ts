@@ -8,19 +8,20 @@ const PROMPT_VERSION = "v1";
 
 const TASK_PRIORITY = z.enum(["normal", "important", "urgent"]);
 
-/** Seuil d'alerte : nombre, omis, ou null (tâche sans cycle km/temps). */
-const OptionalDueSoonThreshold = z.number().int().positive().nullish();
+/** Entier de planification : valeur, omis, ou null (tâche sans cycle correspondant). */
+const OptionalPositiveInt = z.number().int().positive().nullish();
+const OptionalDueDate = z.string().nullish();
 
 const TaskSchema = z.object({
   titre: z.string().min(2).max(80),
   categorie: z.string().min(2).max(40),
   description: z.string().min(5).max(280),
-  intervalKm: z.number().int().positive().nullable(),
-  intervalMonths: z.number().int().positive().nullable(),
-  firstDueKm: z.number().int().positive().nullable(),
-  firstDueDate: z.string().nullable(),
-  dueSoonKmThreshold: OptionalDueSoonThreshold,
-  dueSoonDaysThreshold: OptionalDueSoonThreshold,
+  intervalKm: OptionalPositiveInt,
+  intervalMonths: OptionalPositiveInt,
+  firstDueKm: OptionalPositiveInt,
+  firstDueDate: OptionalDueDate,
+  dueSoonKmThreshold: OptionalPositiveInt,
+  dueSoonDaysThreshold: OptionalPositiveInt,
   priority: TASK_PRIORITY
 });
 
@@ -62,10 +63,10 @@ Règles strictes :
 - Réponds UNIQUEMENT en JSON valide, sans texte avant ni après
 - 3 à 12 tâches d'entretien périodique
 - Pour chaque tâche : titre court, catégorie technique, description précise (max 280 caractères)
-- intervalKm = entier positif ou null (null si pas de cycle kilométrique)
-- intervalMonths = entier positif ou null (null si pas de cycle temporel)
-- firstDueKm = première échéance en km (entier ou null)
-- firstDueDate = ISO 8601 ou null (souvent null, on calcule à partir de la mise en circulation)
+- intervalKm = entier positif, ou null/omis si pas de cycle kilométrique
+- intervalMonths = entier positif, ou null/omis si pas de cycle temporel
+- firstDueKm = première échéance en km (entier, ou null/omis si non applicable)
+- firstDueDate = ISO 8601, ou null/omis (souvent omis, on calcule à partir de la mise en circulation)
 - dueSoonKmThreshold = seuil d'alerte km avant échéance (entier positif, ou null/omis si pas de cycle kilométrique)
 - dueSoonDaysThreshold = seuil d'alerte jours (15-60, ou null/omis si pas de cycle temporel)
 - priority = "normal" | "important" | "urgent" (urgent = sécurité/réglementaire)
@@ -168,9 +169,13 @@ function nullToUndefined<T>(value: T | null | undefined): T | undefined {
   return value ?? undefined;
 }
 
+function nullishToNull<T>(value: T | null | undefined): T | null {
+  return value ?? null;
+}
+
 /**
- * Valide une réponse JSON Mistral puis normalise les seuils null → undefined
- * pour coller à `MaintenanceTemplateEntry` (champs optionnels).
+ * Valide une réponse JSON Mistral puis normalise les champs de planification
+ * vers `MaintenanceTemplateEntry` (cycles en `T | null`, seuils optionnels).
  */
 export function parseAndNormalizeAiPlan(raw: unknown): {
   profileName: string;
@@ -193,10 +198,10 @@ export function parseAndNormalizeAiPlan(raw: unknown): {
       titre: task.titre,
       categorie: task.categorie,
       description: task.description,
-      intervalKm: task.intervalKm,
-      intervalMonths: task.intervalMonths,
-      firstDueKm: task.firstDueKm,
-      firstDueDate: task.firstDueDate,
+      intervalKm: nullishToNull(task.intervalKm),
+      intervalMonths: nullishToNull(task.intervalMonths),
+      firstDueKm: nullishToNull(task.firstDueKm),
+      firstDueDate: nullishToNull(task.firstDueDate),
       dueSoonKmThreshold: nullToUndefined(task.dueSoonKmThreshold),
       dueSoonDaysThreshold: nullToUndefined(task.dueSoonDaysThreshold),
       priority: task.priority

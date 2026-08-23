@@ -24,6 +24,17 @@ function validPlan(taskOverrides: Record<string, unknown> = {}) {
   };
 }
 
+function planOmitting(keys: string[]) {
+  const task = validTask() as Record<string, unknown>;
+  for (const key of keys) {
+    delete task[key];
+  }
+  return {
+    profileName: "Peugeot 208",
+    tasks: [task, validTask({ titre: "Freins" }), validTask({ titre: "Pneus" })]
+  };
+}
+
 describe("parseAndNormalizeAiPlan", () => {
   it("conserve un dueSoonKmThreshold numérique valide", () => {
     const result = parseAndNormalizeAiPlan(validPlan({ dueSoonKmThreshold: 700 }));
@@ -33,16 +44,10 @@ describe("parseAndNormalizeAiPlan", () => {
   it("normalise dueSoonKmThreshold null en undefined", () => {
     const result = parseAndNormalizeAiPlan(validPlan({ dueSoonKmThreshold: null }));
     expect(result.templates[0]?.dueSoonKmThreshold).toBeUndefined();
-    expect("dueSoonKmThreshold" in (result.templates[0] ?? {})).toBe(true);
   });
 
   it("accepte un dueSoonKmThreshold absent", () => {
-    const task = validTask();
-    delete task.dueSoonKmThreshold;
-    const result = parseAndNormalizeAiPlan({
-      profileName: "Peugeot 208",
-      tasks: [task, validTask({ titre: "Freins" }), validTask({ titre: "Pneus" })]
-    });
+    const result = parseAndNormalizeAiPlan(planOmitting(["dueSoonKmThreshold"]));
     expect(result.templates[0]?.dueSoonKmThreshold).toBeUndefined();
   });
 
@@ -51,15 +56,58 @@ describe("parseAndNormalizeAiPlan", () => {
     expect(result.templates[0]?.dueSoonDaysThreshold).toBeUndefined();
   });
 
-  it("rejette un champ réellement invalide", () => {
-    expect(() => parseAndNormalizeAiPlan(validPlan({ titre: "X" }))).toThrow(
-      /Réponse Mistral invalide/
-    );
+  it("accepte un dueSoonDaysThreshold absent", () => {
+    const result = parseAndNormalizeAiPlan(planOmitting(["dueSoonDaysThreshold"]));
+    expect(result.templates[0]?.dueSoonDaysThreshold).toBeUndefined();
+  });
+
+  it("accepte firstDueKm absent et le normalise en null", () => {
+    const result = parseAndNormalizeAiPlan(planOmitting(["firstDueKm"]));
+    expect(result.templates[0]?.firstDueKm).toBeNull();
+  });
+
+  it("accepte firstDueKm null", () => {
+    const result = parseAndNormalizeAiPlan(validPlan({ firstDueKm: null }));
+    expect(result.templates[0]?.firstDueKm).toBeNull();
+  });
+
+  it("accepte intervalKm absent et le normalise en null", () => {
+    const result = parseAndNormalizeAiPlan(planOmitting(["intervalKm"]));
+    expect(result.templates[0]?.intervalKm).toBeNull();
+  });
+
+  it("accepte intervalMonths absent et le normalise en null", () => {
+    const result = parseAndNormalizeAiPlan(planOmitting(["intervalMonths"]));
+    expect(result.templates[0]?.intervalMonths).toBeNull();
+  });
+
+  it("accepte firstDueDate absent et le normalise en null", () => {
+    const result = parseAndNormalizeAiPlan(planOmitting(["firstDueDate"]));
+    expect(result.templates[0]?.firstDueDate).toBeNull();
+  });
+
+  it("rejette un nombre ou une string invalide", () => {
     expect(() => parseAndNormalizeAiPlan(validPlan({ dueSoonKmThreshold: "700" }))).toThrow(
       /Réponse Mistral invalide/
     );
     expect(() => parseAndNormalizeAiPlan(validPlan({ dueSoonKmThreshold: -10 }))).toThrow(
       /Réponse Mistral invalide/
     );
+    expect(() => parseAndNormalizeAiPlan(validPlan({ firstDueKm: "10000" }))).toThrow(
+      /Réponse Mistral invalide/
+    );
+    expect(() => parseAndNormalizeAiPlan(validPlan({ intervalKm: -5 }))).toThrow(
+      /Réponse Mistral invalide/
+    );
+  });
+
+  it("rejette un champ obligatoire absent", () => {
+    expect(() => parseAndNormalizeAiPlan(planOmitting(["titre"]))).toThrow(/Réponse Mistral invalide/);
+    expect(() => parseAndNormalizeAiPlan(planOmitting(["categorie"]))).toThrow(/Réponse Mistral invalide/);
+    expect(() => parseAndNormalizeAiPlan(planOmitting(["description"]))).toThrow(
+      /Réponse Mistral invalide/
+    );
+    expect(() => parseAndNormalizeAiPlan(planOmitting(["priority"]))).toThrow(/Réponse Mistral invalide/);
+    expect(() => parseAndNormalizeAiPlan(validPlan({ titre: "X" }))).toThrow(/Réponse Mistral invalide/);
   });
 });
