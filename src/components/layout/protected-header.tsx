@@ -4,6 +4,8 @@ import { Logo } from "@/components/common/logo";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { FounderBadge } from "@/components/founder/founder-badge";
+import { NotificationsProvider } from "@/components/notifications/notifications-provider";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 interface ProtectedHeaderProps {
   /** Numéro de slot fondateur si l'utilisateur a débloqué son badge. `null` sinon. */
@@ -28,6 +30,9 @@ export function ProtectedHeader({ founderBadge, showFounderCta }: ProtectedHeade
         </div>
         <nav className="flex items-center gap-1">
           <ThemeToggle />
+          <NotificationsProvider>
+            <NotificationBell />
+          </NotificationsProvider>
           {showFounderCta && (
             <Link
               href="/fondateur"
