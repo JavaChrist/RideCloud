@@ -8,6 +8,9 @@ const PROMPT_VERSION = "v1";
 
 const TASK_PRIORITY = z.enum(["normal", "important", "urgent"]);
 
+/** Seuil d'alerte : nombre, omis, ou null (tâche sans cycle km/temps). */
+const OptionalDueSoonThreshold = z.number().int().positive().nullish();
+
 const TaskSchema = z.object({
   titre: z.string().min(2).max(80),
   categorie: z.string().min(2).max(40),
@@ -16,8 +19,8 @@ const TaskSchema = z.object({
   intervalMonths: z.number().int().positive().nullable(),
   firstDueKm: z.number().int().positive().nullable(),
   firstDueDate: z.string().nullable(),
-  dueSoonKmThreshold: z.number().int().positive().optional(),
-  dueSoonDaysThreshold: z.number().int().positive().optional(),
+  dueSoonKmThreshold: OptionalDueSoonThreshold,
+  dueSoonDaysThreshold: OptionalDueSoonThreshold,
   priority: TASK_PRIORITY
 });
 
@@ -63,8 +66,8 @@ Règles strictes :
 - intervalMonths = entier positif ou null (null si pas de cycle temporel)
 - firstDueKm = première échéance en km (entier ou null)
 - firstDueDate = ISO 8601 ou null (souvent null, on calcule à partir de la mise en circulation)
-- dueSoonKmThreshold = seuil d'alerte km avant échéance (par défaut 10 % de l'intervalle)
-- dueSoonDaysThreshold = seuil d'alerte jours (15-60 selon la criticité)
+- dueSoonKmThreshold = seuil d'alerte km avant échéance (entier positif, ou null/omis si pas de cycle kilométrique)
+- dueSoonDaysThreshold = seuil d'alerte jours (15-60, ou null/omis si pas de cycle temporel)
 - priority = "normal" | "important" | "urgent" (urgent = sécurité/réglementaire)
 - Inclure les contrôles réglementaires si applicable (CT voiture/utilitaire en France)
 - Pas de tâche pour les organes consommables non périodiques (ampoules, balais)
@@ -150,7 +153,31 @@ export async function generateMaintenancePlanWithAi(
     throw new Error("Réponse Mistral invalide (JSON malformé).");
   }
 
-  const result = PlanResponseSchema.safeParse(parsed);
+  const normalized = parseAndNormalizeAiPlan(parsed);
+
+  return {
+    profileName: normalized.profileName,
+    templates: normalized.templates,
+    llmModel: DEFAULT_MODEL,
+    promptVersion: PROMPT_VERSION,
+    notes: normalized.notes
+  };
+}
+
+function nullToUndefined<T>(value: T | null | undefined): T | undefined {
+  return value ?? undefined;
+}
+
+/**
+ * Valide une réponse JSON Mistral puis normalise les seuils null → undefined
+ * pour coller à `MaintenanceTemplateEntry` (champs optionnels).
+ */
+export function parseAndNormalizeAiPlan(raw: unknown): {
+  profileName: string;
+  notes?: string;
+  templates: MaintenanceTemplateEntry[];
+} {
+  const result = PlanResponseSchema.safeParse(raw);
   if (!result.success) {
     const issues = result.error.issues
       .slice(0, 3)
@@ -159,25 +186,21 @@ export async function generateMaintenancePlanWithAi(
     throw new Error(`Réponse Mistral invalide : ${issues}`);
   }
 
-  const templates: MaintenanceTemplateEntry[] = result.data.tasks.map((task) => ({
-    titre: task.titre,
-    categorie: task.categorie,
-    description: task.description,
-    intervalKm: task.intervalKm,
-    intervalMonths: task.intervalMonths,
-    firstDueKm: task.firstDueKm,
-    firstDueDate: task.firstDueDate,
-    dueSoonKmThreshold: task.dueSoonKmThreshold,
-    dueSoonDaysThreshold: task.dueSoonDaysThreshold,
-    priority: task.priority
-  }));
-
   return {
     profileName: result.data.profileName,
-    templates,
-    llmModel: DEFAULT_MODEL,
-    promptVersion: PROMPT_VERSION,
-    notes: result.data.notes
+    notes: result.data.notes,
+    templates: result.data.tasks.map((task) => ({
+      titre: task.titre,
+      categorie: task.categorie,
+      description: task.description,
+      intervalKm: task.intervalKm,
+      intervalMonths: task.intervalMonths,
+      firstDueKm: task.firstDueKm,
+      firstDueDate: task.firstDueDate,
+      dueSoonKmThreshold: nullToUndefined(task.dueSoonKmThreshold),
+      dueSoonDaysThreshold: nullToUndefined(task.dueSoonDaysThreshold),
+      priority: task.priority
+    }))
   };
 }
 
