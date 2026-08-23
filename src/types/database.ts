@@ -73,6 +73,24 @@ export interface NotificationLogRow {
   payload: Record<string, unknown> | null;
 }
 
+/** Types métier connus. La colonne DB `notifications.type` reste un text libre. */
+export type AppNotificationType = NotificationKind;
+
+export interface NotificationRow {
+  id: UUID;
+  user_id: UUID;
+  vehicle_id: UUID | null;
+  type: string;
+  title: string;
+  body: string;
+  href: string | null;
+  dedupe_key: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  read_at: string | null;
+  last_pushed_at: string | null;
+}
+
 /** Profil d'usage déclaré : drive l'estimation du km courant entre deux saisies. */
 export type UsageProfile = "daily" | "often" | "occasional" | "rare";
 
@@ -316,9 +334,34 @@ export interface Database {
         Update: Partial<NotificationLogRow>;
         Relationships: [];
       };
+      notifications: {
+        Row: NotificationRow;
+        Insert: Omit<
+          NotificationRow,
+          "id" | "created_at" | "metadata" | "read_at" | "last_pushed_at" | "vehicle_id" | "href"
+        > & {
+          id?: UUID;
+          created_at?: string;
+          metadata?: Record<string, unknown>;
+          read_at?: string | null;
+          last_pushed_at?: string | null;
+          vehicle_id?: UUID | null;
+          href?: string | null;
+        };
+        Update: Partial<NotificationRow>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
+      mark_notification_read: {
+        Args: { notification_id: string };
+        Returns: unknown;
+      };
+      mark_all_notifications_read: {
+        Args: Record<string, never>;
+        Returns: unknown;
+      };
       claim_founder_slot: {
         Args: Record<string, never>;
         Returns: unknown;
