@@ -6,6 +6,7 @@ import { UpdateKilometrageDialog } from "@/components/vehicles/update-kilometrag
 import { VehicleActions } from "@/components/vehicles/vehicle-actions";
 import { VehicleCostSummaryCard } from "@/components/vehicles/vehicle-cost-summary";
 import { VehicleDetailTabs } from "@/components/vehicles/vehicle-detail-tabs";
+import { VehiclePhotoEditor } from "@/components/vehicles/vehicle-photo-editor";
 import { VehicleRemindersCard } from "@/components/vehicles/vehicle-reminders-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -91,7 +92,19 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
         <CardContent className="p-0">
           <div className="grid gap-0 md:grid-cols-[280px_1fr]">
             <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-slate-50 dark:from-slate-950 to-white dark:to-slate-900 sm:h-56 md:h-full">
-              {vehicle.photo_url ? (
+              {isUuidVehicle ? (
+                <VehiclePhotoEditor
+                  vehicleId={vehicle.id}
+                  photoUrl={vehicle.photo_url}
+                  alt={`${vehicle.marque} ${vehicle.modele}`}
+                  placeholder={
+                    <div className="flex flex-col items-center gap-2">
+                      <VehicleIcon category={vehicle.category} />
+                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Ajouter une photo</span>
+                    </div>
+                  }
+                />
+              ) : vehicle.photo_url ? (
                 <Image
                   src={vehicle.photo_url}
                   alt={`${vehicle.marque} ${vehicle.modele}`}

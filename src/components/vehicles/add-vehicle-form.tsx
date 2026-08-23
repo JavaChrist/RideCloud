@@ -24,6 +24,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { VehiclePhotoField } from "@/components/vehicles/vehicle-photo-field";
+import { uploadVehiclePhoto, validateVehiclePhotoFile } from "@/lib/vehicles/vehicle-photo";
 
 async function ensureVehicleQuota(supabase: SupabaseClient, userId: string): Promise<boolean> {
   const [profileRes, countRes] = await Promise.all([
@@ -135,14 +137,12 @@ export function AddVehicleForm() {
         return;
       }
 
-      if (photoFile && !photoFile.type.startsWith("image/")) {
-        toast.error("Le fichier doit être une image valide.");
-        return;
-      }
-
-      if (photoFile && photoFile.size > 8 * 1024 * 1024) {
-        toast.error("La photo est trop lourde (max 8 Mo).");
-        return;
+      if (photoFile) {
+        const photoError = validateVehiclePhotoFile(photoFile);
+        if (photoError) {
+          toast.error(photoError);
+          return;
+        }
       }
 
       const todayIso = new Date().toISOString().slice(0, 10);
@@ -191,25 +191,17 @@ export function AddVehicleForm() {
       }
 
       if (photoFile) {
-        const extension = photoFile.name.split(".").pop()?.toLowerCase() ?? "jpg";
-        const safeExtension = extension.replace(/[^a-z0-9]/g, "") || "jpg";
-        const fileName = `${insertedVehicle.id}.${safeExtension}`;
-        const photoPath = `${user.id}/${fileName}`;
-        const { error: uploadError } = await supabase.storage.from("ridecloud-files").upload(photoPath, photoFile, {
-          upsert: true
+        const photoResult = await uploadVehiclePhoto({
+          supabase,
+          userId: user.id,
+          vehicleId: insertedVehicle.id,
+          file: photoFile
         });
-
-        if (uploadError) {
-          toast.warning(`Véhicule créé, mais photo non téléversée: ${uploadError.message}`);
-        } else {
-          const { error: updateError } = await supabase
-            .from("vehicles")
-            .update({ photo_url: photoPath } as never)
-            .eq("id", insertedVehicle.id)
-            .eq("user_id", user.id);
-
-          if (updateError) {
-            toast.warning("Photo envoyée, mais lien non enregistré sur le véhicule.");
+        if (!photoResult.ok) {
+          if (photoResult.stage === "update") {
+            toast.warning(photoResult.error);
+          } else {
+            toast.warning(`Véhicule créé, mais photo non téléversée: ${photoResult.error}`);
           }
         }
       }
@@ -473,17 +465,13 @@ export function AddVehicleForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-3 rounded-xl border-2 border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 p-4 shadow-sm">
-          <div className="space-y-1">
-            <p className="text-base font-semibold text-blue-900 dark:text-blue-200">Reprise d’un véhicule existant</p>
-            <p className="text-sm text-blue-800 dark:text-blue-200">Importez un dossier RideCloud (.json) reçu lors d’une vente.</p>
-          </div>
-          <Input type="file" accept="application/json,.json" onChange={(e) => setImportFile(e.target.files?.[0] ?? null)} />
-          <Button type="button" onClick={importVehiclePackage} disabled={importLoading || !importFile} className="w-full sm:w-auto">
-            <FileUp className="mr-2 h-4 w-4" />
-            {importLoading ? "Import en cours..." : "Importer le dossier"}
-          </Button>
-        </div>
+        <FormItem>
+          <FormLabel>Photo du véhicule</FormLabel>
+          <FormControl>
+            <VehiclePhotoField file={photoFile} onFileChange={setPhotoFile} />
+          </FormControl>
+          <FormDescription>Facultatif. La photo est stockée dans RideCloud après enregistrement.</FormDescription>
+        </FormItem>
 
         <div className="grid gap-4 md:grid-cols-2">
           <FormField control={form.control} name="category" render={({ field }) => (
@@ -608,24 +596,34 @@ export function AddVehicleForm() {
             <FormItem><FormLabel>Surnom (optionnel)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
           )} />
         </div>
-        <FormItem>
-          <FormLabel>Photo du véhicule</FormLabel>
-          <FormControl>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={(event) => {
-                const file = event.target.files?.[0] ?? null;
-                setPhotoFile(file);
-              }}
-            />
-          </FormControl>
-          <FormDescription>Photo stockée dans Supabase Storage.</FormDescription>
-        </FormItem>
         <FormItem><FormLabel>Notes (optionnel)</FormLabel><FormControl><Textarea placeholder="Commentaires..." /></FormControl></FormItem>
         <Button type="submit" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? "Enregistrement..." : "Enregistrer le véhicule"}
         </Button>
+
+        <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/50">
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Reprendre un véhicule existant</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Vous achetez un véhicule d’occasion déjà utilisé dans RideCloud ? Importez les données transmises par son ancien propriétaire.
+            </p>
+          </div>
+          <Input
+            type="file"
+            accept="application/json,.json"
+            onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={importVehiclePackage}
+            disabled={importLoading || !importFile}
+            className="w-full sm:w-auto"
+          >
+            <FileUp className="mr-2 h-4 w-4" />
+            {importLoading ? "Import en cours..." : "Importer le dossier"}
+          </Button>
+        </div>
       </form>
     </Form>
   );
