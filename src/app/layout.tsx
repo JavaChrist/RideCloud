@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { CookieBanner } from "@/components/common/cookie-banner";
 import { ThemedToaster } from "@/components/common/themed-toaster";
+import { PwaUpdateProvider } from "@/components/pwa/pwa-update-provider";
 import { ConfirmProvider } from "@/components/providers/confirm-provider";
 import { ThemeProvider, themeInitScript } from "@/components/providers/theme-provider";
 import "./globals.css";
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             {children}
             <CookieBanner />
             <ThemedToaster />
+            <PwaUpdateProvider />
           </ConfirmProvider>
         </ThemeProvider>
       </body>

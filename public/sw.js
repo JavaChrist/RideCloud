@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * Service Worker RideCloud — Web Push.
+ * Service Worker RideCloud — Web Push + activation contrôlée.
  *
  * Servi statiquement depuis /sw.js, enregistré côté client avec
  * navigator.serviceWorker.register("/sw.js"). On garde un scope racine pour
@@ -9,12 +9,17 @@
  *
  * Volontairement minimaliste : pas de stratégie de cache offline (le projet
  * n'utilise plus next-pwa pour l'instant), uniquement les hooks de
- * notification.
+ * notification et le handshake SKIP_WAITING.
+ *
+ * Ne pas appeler skipWaiting() à l'install : cela empêcherait l'état
+ * `waiting` nécessaire à la modale « Mettre à jour ».
  */
 
-self.addEventListener("install", (event) => {
-  // Active immédiatement le nouveau SW sans attendre la fermeture des onglets.
-  self.skipWaiting();
+self.addEventListener("message", (event) => {
+  const data = event.data;
+  if (data === "SKIP_WAITING" || (data && data.type === "SKIP_WAITING")) {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("activate", (event) => {

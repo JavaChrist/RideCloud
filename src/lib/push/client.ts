@@ -1,10 +1,11 @@
 /**
  * Helpers Web Push côté navigateur.
  *
- * Toute la logique d'enregistrement du Service Worker, de demande de
- * permission, de souscription Web Push et d'appel API d'inscription est
- * centralisée ici. Les composants UI n'ont qu'à appeler `enablePush()` /
+ * L'enregistrement du Service Worker est partagé avec le client PWA
+ * (`registerRideCloudServiceWorker`). Ici : permission, souscription Web Push
+ * et appels API. Les composants UI n'ont qu'à appeler `enablePush()` /
  * `disablePush()` / `getPushStatus()`.
+ * Enregistrement SW ≠ opt-in notifications.
  *
  * Compatibilité :
  *   - Android Chrome / Edge / Firefox : OK
@@ -13,7 +14,7 @@
  *     pas Push.
  */
 
-const SW_PATH = "/sw.js";
+import { getRideCloudServiceWorkerRegistration, registerRideCloudServiceWorker } from "@/lib/pwa/service-worker";
 
 export type PushSupport =
   | "unsupported"
@@ -62,11 +63,6 @@ function urlBase64ToArrayBuffer(base64String: string): ArrayBuffer {
 }
 
 /** Récupère (ou crée) l'enregistrement du Service Worker /sw.js. */
-async function ensureServiceWorker(): Promise<ServiceWorkerRegistration> {
-  const existing = await navigator.serviceWorker.getRegistration(SW_PATH);
-  if (existing) return existing;
-  return navigator.serviceWorker.register(SW_PATH, { scope: "/" });
-}
 
 /**
  * État courant : support du navigateur + permission notification + s'il
@@ -85,7 +81,7 @@ export async function getPushStatus(): Promise<PushStatus> {
   const permission = Notification.permission;
   let subscribed = false;
   try {
-    const registration = await navigator.serviceWorker.getRegistration(SW_PATH);
+    const registration = await getRideCloudServiceWorkerRegistration();
     if (registration) {
       const sub = await registration.pushManager.getSubscription();
       subscribed = sub !== null;
@@ -131,7 +127,10 @@ export async function enablePush(vapidPublicKey: string): Promise<{ ok: true } |
     }
   }
 
-  const registration = await ensureServiceWorker();
+  const registration = await registerRideCloudServiceWorker();
+  if (!registration) {
+    return { ok: false, reason: "Impossible d'enregistrer le Service Worker." };
+  }
   // Attend que le SW soit "ready" avant de souscrire (parfois `register`
   // résout avant que l'activation soit terminée).
   await navigator.serviceWorker.ready;
@@ -174,7 +173,7 @@ export async function disablePush(): Promise<{ ok: true } | { ok: false; reason:
   if (support === "unsupported") return { ok: true };
 
   try {
-    const registration = await navigator.serviceWorker.getRegistration(SW_PATH);
+    const registration = await getRideCloudServiceWorkerRegistration();
     if (!registration) return { ok: true };
 
     const subscription = await registration.pushManager.getSubscription();
