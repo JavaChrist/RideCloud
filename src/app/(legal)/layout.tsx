@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Logo } from "@/components/common/logo";
+import { LegalHeader } from "@/components/layout/legal-header";
 
 export default function LegalLayout({ children }: { children: ReactNode }) {
   return (
@@ -14,22 +13,7 @@ export default function LegalLayout({ children }: { children: ReactNode }) {
         <div className="absolute inset-x-0 top-0 h-[800px] bg-ride-grid dark:bg-ride-grid-light bg-ride-grid-sm [mask-image:radial-gradient(ellipse_60%_40%_at_50%_0%,black,transparent)]" />
       </div>
 
-      <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-slate-50/70 pt-safe-top backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-200/70 to-transparent"
-        />
-        <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 md:px-6">
-          <Logo />
-          <Link
-            href="/"
-            className="group inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 transition hover:bg-white/60 dark:hover:bg-slate-900/60 hover:text-slate-900 dark:hover:text-slate-50"
-          >
-            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-            <span className="hidden sm:inline">Retour à l&apos;accueil</span>
-          </Link>
-        </div>
-      </header>
+      <LegalHeader />
 
       <main className="relative mx-auto w-full max-w-3xl px-4 py-12 md:px-6 md:py-16">
         {children}

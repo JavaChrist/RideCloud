@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, Cloud, Lock, Shield, ShieldCheck } from "lucide-react";
+import { Cloud, Lock, Shield, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getUserPlanState } from "@/lib/billing/limits";
 import { PricingCards } from "@/components/billing/pricing-cards";
-import { Logo } from "@/components/common/logo";
+import { TarifsHeader } from "@/components/layout/tarifs-header";
 
 export const metadata = {
   title: "Tarifs · RideCloud",
@@ -34,39 +34,7 @@ export default async function TarifsPage() {
         className="pointer-events-none absolute inset-x-0 top-[420px] -z-10 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent"
       />
 
-      <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-slate-50/70 pt-safe-top backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 md:px-6">
-          <Link href="/" className="transition hover:opacity-80">
-            <Logo compact />
-          </Link>
-          <nav className="flex items-center gap-2">
-            {user ? (
-              <Link
-                href="/categories"
-                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-slate-900 dark:bg-slate-100 px-4 text-sm font-medium text-white dark:text-slate-900 transition hover:bg-slate-800 dark:hover:bg-white"
-              >
-                Tableau de bord
-                <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="inline-flex h-9 items-center justify-center rounded-md px-4 text-sm font-medium text-slate-700 dark:text-slate-200 transition hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  Connexion
-                </Link>
-                <Link
-                  href="/register"
-                  className="inline-flex h-9 items-center justify-center rounded-md bg-slate-900 dark:bg-slate-100 px-4 text-sm font-medium text-white dark:text-slate-900 transition hover:bg-slate-800 dark:hover:bg-white"
-                >
-                  Créer un compte
-                </Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
+      <TarifsHeader isLoggedIn={Boolean(user)} />
 
       <main className="relative">
         <section className="mx-auto w-full max-w-6xl px-4 pb-10 pt-14 text-center md:px-6 md:pt-20">

@@ -3,15 +3,16 @@ import Link from "next/link";
 
 interface LogoProps {
   compact?: boolean;
+  href?: string;
 }
 
-export function Logo({ compact = false }: LogoProps) {
+export function Logo({ compact = false, href = "/categories" }: LogoProps) {
   const size = compact ? 36 : 64;
 
   return (
     <Link
-      href="/categories"
-      className="group inline-flex items-center gap-2.5"
+      href={href}
+      className="group inline-flex min-w-0 items-center gap-2.5"
       aria-label="RideCloud — Accueil"
     >
       <div className="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-ride-glow-sm transition-transform duration-300 group-hover:scale-105">
@@ -31,8 +32,8 @@ export function Logo({ compact = false }: LogoProps) {
       <span
         className={
           compact
-            ? "text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-50"
-            : "text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50"
+            ? "truncate text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-50"
+            : "truncate text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50"
         }
       >
         RideCloud

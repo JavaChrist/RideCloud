@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ThemeToggle } from "@/components/common/theme-toggle";
+import { LandingHeader } from "@/components/layout/landing-header";
 
 export const metadata = {
   title: "RideCloud — Le carnet d'entretien intelligent de tous vos véhicules",
@@ -34,7 +34,7 @@ export default function LandingPage() {
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 antialiased">
       <BackgroundDecor />
-      <Header />
+      <LandingHeader />
       <main className="relative">
         <Hero />
         <SocialProof />
@@ -58,77 +58,6 @@ function BackgroundDecor() {
       <div className="absolute inset-x-0 top-0 h-[900px] bg-ride-mesh opacity-90" />
       <div className="absolute inset-x-0 top-0 h-[1200px] bg-ride-grid dark:bg-ride-grid-light bg-ride-grid-sm [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]" />
     </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
- * Header
- * ──────────────────────────────────────────────────────────────────────────── */
-
-function Header() {
-  return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/60 bg-slate-50/70 pt-safe-top backdrop-blur-xl supports-[backdrop-filter]:bg-slate-50/50 dark:border-slate-800 dark:bg-slate-950/70 dark:supports-[backdrop-filter]:bg-slate-950/50">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="group flex items-center gap-2.5">
-          <Image
-            src="/icons/RideCloud.png"
-            alt="RideCloud"
-            width={36}
-            height={36}
-            className="rounded-xl shadow-ride-glow-sm transition-transform duration-300 group-hover:scale-105"
-          />
-          <span className="text-[15px] font-semibold tracking-tight">RideCloud</span>
-        </Link>
-
-        <nav className="hidden items-center gap-8 md:flex">
-          <HeaderLink href="#features">Fonctionnalités</HeaderLink>
-          <HeaderLink href="#benefits">Bénéfices</HeaderLink>
-          <HeaderLink href="/tarifs" asLink>
-            Tarifs
-          </HeaderLink>
-          <HeaderLink href="#faq">FAQ</HeaderLink>
-          <HeaderLink href="/login" asLink>
-            Connexion
-          </HeaderLink>
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <Button
-            asChild
-            size="sm"
-            className="group/cta relative overflow-hidden bg-ride-gradient-primary text-white shadow-ride-glow-sm transition-all duration-300 hover:shadow-ride-glow hover:brightness-110"
-          >
-            <Link href="/register">
-              Commencer gratuitement
-              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/cta:translate-x-0.5" strokeWidth={2.25} />
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function HeaderLink({
-  href,
-  children,
-  asLink = false,
-}: {
-  href: string;
-  children: React.ReactNode;
-  asLink?: boolean;
-}) {
-  const className =
-    "relative text-sm font-medium text-slate-600 dark:text-slate-300 transition-colors hover:text-slate-900 dark:hover:text-slate-50 after:absolute after:inset-x-0 after:-bottom-1 after:h-px after:origin-left after:scale-x-0 after:bg-blue-700 after:transition-transform after:duration-300 hover:after:scale-x-100";
-  return asLink ? (
-    <Link href={href} className={className}>
-      {children}
-    </Link>
-  ) : (
-    <a href={href} className={className}>
-      {children}
-    </a>
   );
 }
 
@@ -175,19 +104,19 @@ function Hero() {
           </p>
 
           <div
-            className="mt-10 flex animate-fade-in-up flex-col items-center justify-center gap-3 sm:flex-row"
+            className="mt-10 flex w-full min-w-0 animate-fade-in-up flex-col items-center justify-center gap-3 sm:flex-row"
             style={{ animationDelay: "240ms" }}
           >
             <Button
               asChild
               size="lg"
-              className="group/cta relative h-12 w-full overflow-hidden bg-ride-gradient-primary px-6 text-base text-white shadow-ride-glow transition-all duration-300 hover:shadow-ride-float hover:brightness-110 sm:w-auto"
+              className="group/cta relative h-12 w-full max-w-sm overflow-hidden whitespace-normal bg-ride-gradient-primary px-5 text-sm text-white shadow-ride-glow transition-all duration-300 hover:shadow-ride-float hover:brightness-110 sm:h-12 sm:w-auto sm:max-w-none sm:whitespace-nowrap sm:px-8 sm:text-base"
             >
               <Link href="/register">
-                <span className="relative z-10 inline-flex items-center gap-2">
+                <span className="relative z-10 inline-flex min-w-0 items-center justify-center gap-2">
                   Commencer gratuitement
                   <ArrowRight
-                    className="h-4 w-4 transition-transform duration-300 group-hover/cta:translate-x-0.5"
+                    className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover/cta:translate-x-0.5"
                     strokeWidth={2.5}
                   />
                 </span>
@@ -201,7 +130,7 @@ function Hero() {
               asChild
               variant="ghost"
               size="lg"
-              className="group/cta h-12 w-full px-6 text-base text-slate-700 dark:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-900/60 hover:text-slate-900 dark:hover:text-slate-50 sm:w-auto"
+              className="group/cta h-12 w-full max-w-sm whitespace-normal px-5 text-sm text-slate-700 hover:bg-white/60 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-900/60 dark:hover:text-slate-50 sm:w-auto sm:max-w-none sm:whitespace-nowrap sm:px-8 sm:text-base"
             >
               <a href="#features">
                 Découvrir l&apos;application
@@ -723,11 +652,11 @@ function FreemiumCTA() {
                 sans frais cachés.
               </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-8 flex w-full min-w-0 flex-col gap-3 sm:flex-row">
                 <Button
                   asChild
                   size="lg"
-                  className="group/cta relative h-12 overflow-hidden bg-white px-6 text-base text-blue-700 shadow-ride-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ride-float"
+                  className="group/cta relative h-12 w-full max-w-sm overflow-hidden whitespace-normal bg-white px-5 text-sm text-blue-700 shadow-ride-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ride-float sm:w-auto sm:max-w-none sm:whitespace-nowrap sm:px-8 sm:text-base"
                 >
                   <Link href="/register">
                     <span className="relative z-10 inline-flex items-center gap-2">

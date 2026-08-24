@@ -19,6 +19,32 @@ function ThemeIcon({ theme, className }: { theme: Theme; className?: string }) {
   return <Monitor className={className} strokeWidth={2} aria-hidden />;
 }
 
+export function ThemeMenuRow({ className }: { className?: string }) {
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  const isDark = mounted && resolvedTheme === "dark";
+  const label = isDark ? "Mode clair" : "Mode sombre";
+
+  return (
+    <button
+      type="button"
+      data-menu-close
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={label}
+      className={cn(
+        "flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50",
+        className
+      )}
+    >
+      <ThemeIcon theme={isDark ? "dark" : "light"} className="h-4 w-4" />
+      <span>{mounted ? label : "Mode sombre"}</span>
+    </button>
+  );
+}
+
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
