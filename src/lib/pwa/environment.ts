@@ -27,7 +27,7 @@ export function shouldRunPwaUpdateClient(input: {
   return input.nodeEnv === "production";
 }
 
-/** WebView Android/iOS : le SW n'est pas fiable. On compare uniquement la version distante. */
+/** WebView Android/iOS : le SW n'est pas fiable. Comparaison persisted + version distante. */
 export function shouldUseRemoteVersionFallback(isNative: boolean): boolean {
   return isNative;
 }

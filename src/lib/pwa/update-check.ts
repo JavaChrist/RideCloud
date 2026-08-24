@@ -1,3 +1,9 @@
+import {
+  getDefaultVersionStorage,
+  resolveNativePromptVersion,
+  seedAcknowledgedAppVersion,
+  type VersionStorage
+} from "@/lib/pwa/acknowledged-version";
 import { appVersionRequestUrl, getLoadedAppVersion, hasDeployedAppUpdate } from "@/lib/pwa/app-version";
 import { shouldUseRemoteVersionFallback } from "@/lib/pwa/environment";
 import { getRideCloudServiceWorkerRegistration, postSkipWaiting } from "@/lib/pwa/service-worker";
@@ -10,7 +16,19 @@ export function shouldPromptForPwaUpdate(input: {
   deployedVersion: string | null;
   hasWaitingWorker: boolean;
   dismissedVersion?: string | null;
+  acknowledgedVersion?: string | null;
 }): boolean {
+  if (input.isNative) {
+    const promptVersion = resolveNativePromptVersion({
+      acknowledgedVersion: input.acknowledgedVersion ?? input.loadedVersion,
+      loadedVersion: input.loadedVersion,
+      deployedVersion: input.deployedVersion
+    });
+    if (!promptVersion) return false;
+    if (input.dismissedVersion && input.dismissedVersion === promptVersion) return false;
+    return true;
+  }
+
   if (input.dismissedVersion) {
     const dismissedThisDeploy =
       input.deployedVersion !== null
@@ -18,7 +36,7 @@ export function shouldPromptForPwaUpdate(input: {
         : input.dismissedVersion === "waiting";
     if (dismissedThisDeploy) return false;
   }
-  if (!input.isNative && input.hasWaitingWorker) return true;
+  if (input.hasWaitingWorker) return true;
   return hasDeployedAppUpdate(input.loadedVersion, input.deployedVersion);
 }
 
@@ -65,6 +83,8 @@ export interface AppUpdateCheckResult {
   shouldPrompt: boolean;
   deployedVersion: string | null;
   hasWaitingWorker: boolean;
+  acknowledgedVersion: string | null;
+  promptVersion: string | null;
 }
 
 let inFlightCheck: Promise<AppUpdateCheckResult> | null = null;
@@ -73,6 +93,8 @@ export async function checkForAppUpdate(input: {
   isNative: boolean;
   dismissedVersion?: string | null;
   loadedVersion?: string;
+  acknowledgedVersion?: string | null;
+  versionStorage?: VersionStorage | null;
   fetchDeployedVersion?: () => Promise<string | null>;
   refreshRegistration?: () => Promise<ServiceWorkerRegistration | null>;
 }): Promise<AppUpdateCheckResult> {
@@ -100,16 +122,31 @@ export async function checkForAppUpdate(input: {
 
     const hasWaitingWorker = Boolean(registration?.waiting);
     const loadedVersion = input.loadedVersion ?? getLoadedAppVersion();
+    const acknowledgedVersion = input.isNative
+      ? (input.acknowledgedVersion ||
+        seedAcknowledgedAppVersion(input.versionStorage ?? getDefaultVersionStorage(), loadedVersion))
+      : null;
+    const promptVersion =
+      input.isNative && acknowledgedVersion
+        ? resolveNativePromptVersion({
+            acknowledgedVersion,
+            loadedVersion,
+            deployedVersion
+          })
+        : deployedVersion;
 
     return {
       deployedVersion,
       hasWaitingWorker,
+      acknowledgedVersion,
+      promptVersion,
       shouldPrompt: shouldPromptForPwaUpdate({
         isNative: input.isNative,
         loadedVersion,
         deployedVersion,
         hasWaitingWorker,
-        dismissedVersion: input.dismissedVersion
+        dismissedVersion: input.dismissedVersion,
+        acknowledgedVersion
       })
     };
   })().finally(() => {

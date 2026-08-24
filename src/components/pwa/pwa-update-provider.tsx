@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PwaUpdateDialog } from "@/components/pwa/pwa-update-dialog";
+import { getDefaultVersionStorage, writeAcknowledgedAppVersion } from "@/lib/pwa/acknowledged-version";
 import { isCapacitorNative, shouldRegisterServiceWorkerOnBoot, shouldRunPwaUpdateClient } from "@/lib/pwa/environment";
 import { registerRideCloudServiceWorker } from "@/lib/pwa/service-worker";
-import { buildCacheBustedReloadUrl } from "@/lib/pwa/app-version";
+import { buildCacheBustedReloadUrl, getLoadedAppVersion } from "@/lib/pwa/app-version";
 import { applyWaitingOrReload, checkForAppUpdate, createReloadGuard, PWA_UPDATE_INTERVAL_MS } from "@/lib/pwa/update-check";
 
 export function PwaUpdateProvider() {
@@ -12,12 +13,15 @@ export function PwaUpdateProvider() {
   const [applying, setApplying] = useState(false);
   const dismissedVersionRef = useRef<string | null>(null);
   const deployedVersionRef = useRef<string | null>(null);
+  const promptVersionRef = useRef<string | null>(null);
   const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
   const allowReloadRef = useRef(false);
   const reloadOnceRef = useRef(
     createReloadGuard(() => {
       if (isCapacitorNative()) {
-        window.location.replace(buildCacheBustedReloadUrl(window.location.href, deployedVersionRef.current));
+        window.location.replace(
+          buildCacheBustedReloadUrl(window.location.href, promptVersionRef.current ?? deployedVersionRef.current)
+        );
         return;
       }
       window.location.reload();
@@ -35,6 +39,7 @@ export function PwaUpdateProvider() {
       dismissedVersion: dismissedVersionRef.current
     });
     deployedVersionRef.current = result.deployedVersion;
+    promptVersionRef.current = result.promptVersion;
     if (result.shouldPrompt) {
       setOpen(true);
     }
@@ -107,7 +112,7 @@ export function PwaUpdateProvider() {
   }, [runCheck]);
 
   const handleLater = () => {
-    dismissedVersionRef.current = deployedVersionRef.current ?? "waiting";
+    dismissedVersionRef.current = promptVersionRef.current ?? deployedVersionRef.current ?? "waiting";
     setOpen(false);
   };
 
@@ -117,6 +122,10 @@ export function PwaUpdateProvider() {
     allowReloadRef.current = true;
 
     if (isCapacitorNative()) {
+      writeAcknowledgedAppVersion(
+        getDefaultVersionStorage(),
+        promptVersionRef.current ?? deployedVersionRef.current ?? getLoadedAppVersion()
+      );
       reloadOnceRef.current();
       return;
     }
