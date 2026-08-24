@@ -910,9 +910,6 @@ function Footer() {
             Conçu en France · Hébergé en Europe · RGPD natif
           </p>
         </div>
-        <p className="mt-3 text-[10px] leading-none text-slate-400/60 dark:text-slate-600">
-          Test mise à jour Android
-        </p>
       </div>
     </footer>
   );
