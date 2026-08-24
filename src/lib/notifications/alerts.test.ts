@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { collectNotificationAlerts } from "./alerts";
+import { collectNotificationAlerts, isKilometrageDrivenMaintenance } from "./alerts";
 import { buildMaintenanceDedupeKey, buildOdometerDedupeKey } from "./dedupe";
 import type { MaintenancePlanEntry, Vehicle } from "@/types/database";
 
@@ -145,5 +145,38 @@ describe("collectNotificationAlerts", () => {
         nextDueDate: null
       })
     );
+  });
+
+  it("à la saisie km : ignore le rappel compteur et les échéances uniquement calendaires", () => {
+    const alerts = collectNotificationAlerts({
+      vehicles: [vehicle({ last_odometer_date: "2026-06-01", kilometrage: 8000 })],
+      planEntries: [
+        planEntry({
+          id: "date-only",
+          next_due_km: null,
+          next_due_date: "2026-08-01",
+          status: "overdue"
+        }),
+        planEntry({
+          id: "km-overdue",
+          next_due_km: 7000,
+          next_due_date: null,
+          status: "overdue"
+        })
+      ],
+      now: NOW,
+      trigger: "kilometrage_update"
+    });
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0].type).toBe("maintenance_due");
+    expect(alerts[0].subjectId).toBe("km-overdue");
+    expect(alerts.every((alert) => alert.type !== "odometer_refresh")).toBe(true);
+  });
+
+  it("isKilometrageDrivenMaintenance : km dépassé ou bientôt dû", () => {
+    expect(isKilometrageDrivenMaintenance({ nextDueKm: 7000, currentKm: 8000 })).toBe(true);
+    expect(isKilometrageDrivenMaintenance({ nextDueKm: 8200, currentKm: 8000, dueSoonKmThreshold: 500 })).toBe(true);
+    expect(isKilometrageDrivenMaintenance({ nextDueKm: 20000, currentKm: 8000, dueSoonKmThreshold: 500 })).toBe(false);
+    expect(isKilometrageDrivenMaintenance({ nextDueKm: null, currentKm: 8000 })).toBe(false);
   });
 });

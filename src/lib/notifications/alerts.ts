@@ -1,12 +1,14 @@
 import { differenceInCalendarDays, parseISO } from "date-fns";
-import { getMaintenanceStatus } from "@/lib/maintenance";
-import { daysSinceOdometerRefresh } from "@/lib/odometer-estimate";
+import { DEFAULT_DUE_SOON_DAYS_THRESHOLD, DEFAULT_DUE_SOON_KM_THRESHOLD, getMaintenanceStatus } from "@/lib/maintenance";
+import { daysSinceOdometerRefresh, projectDateForOdometer } from "@/lib/odometer-estimate";
 import {
   ODOMETER_REMIND_AFTER_DAYS,
   buildMaintenanceDedupeKey,
   buildOdometerDedupeKey
 } from "@/lib/notifications/dedupe";
 import type { MaintenancePlanEntry, Vehicle } from "@/types/database";
+
+export type NotificationAlertTrigger = "cron" | "kilometrage_update";
 
 export type NotificationAlertStatus = "due_soon" | "overdue" | "stale";
 
@@ -24,12 +26,54 @@ export interface NotificationAlert {
   metadata: Record<string, unknown>;
 }
 
+/** Éligibilité due au km (ou projection km→date), pas à une échéance calendaire seule. */
+export function isKilometrageDrivenMaintenance(input: {
+  nextDueKm: number | null;
+  currentKm: number;
+  dueSoonKmThreshold?: number | null;
+  dueSoonDaysThreshold?: number | null;
+  avgKmPerYear?: number | null;
+  lastOdometerValue?: number | null;
+  lastOdometerDate?: string | null;
+  now?: Date;
+}): boolean {
+  if (input.nextDueKm == null) return false;
+  const now = input.now ?? new Date();
+  const kmDiff = input.nextDueKm - input.currentKm;
+  const dueSoonKmThreshold = input.dueSoonKmThreshold ?? DEFAULT_DUE_SOON_KM_THRESHOLD;
+  if (kmDiff < 0) return true;
+  if (kmDiff <= dueSoonKmThreshold) return true;
+
+  if (
+    input.avgKmPerYear != null &&
+    input.avgKmPerYear > 0 &&
+    input.lastOdometerValue != null &&
+    input.lastOdometerDate
+  ) {
+    const projectedDate = projectDateForOdometer({
+      targetKm: input.nextDueKm,
+      lastOdometerValue: input.lastOdometerValue,
+      lastOdometerDate: input.lastOdometerDate,
+      avgKmPerYear: input.avgKmPerYear
+    });
+    if (projectedDate) {
+      const projectedDays = differenceInCalendarDays(projectedDate, now);
+      const dueSoonDaysThreshold = input.dueSoonDaysThreshold ?? DEFAULT_DUE_SOON_DAYS_THRESHOLD;
+      if (projectedDays < 0 || projectedDays <= dueSoonDaysThreshold) return true;
+    }
+  }
+
+  return false;
+}
+
 export function collectNotificationAlerts(input: {
   vehicles: Array<Vehicle & { user_id: string }>;
   planEntries: MaintenancePlanEntry[];
   now?: Date;
+  trigger?: NotificationAlertTrigger;
 }): NotificationAlert[] {
   const now = input.now ?? new Date();
+  const trigger = input.trigger ?? "cron";
   const planByVehicle = new Map<string, MaintenancePlanEntry[]>();
   for (const entry of input.planEntries) {
     const list = planByVehicle.get(entry.vehicle_id) ?? [];
@@ -46,7 +90,11 @@ export function collectNotificationAlerts(input: {
       lastOdometerDate: vehicle.last_odometer_date,
       now
     });
-    if (daysSinceRefresh != null && daysSinceRefresh > ODOMETER_REMIND_AFTER_DAYS) {
+    if (
+      trigger !== "kilometrage_update" &&
+      daysSinceRefresh != null &&
+      daysSinceRefresh > ODOMETER_REMIND_AFTER_DAYS
+    ) {
       alerts.push({
         userId: vehicle.user_id,
         vehicleId: vehicle.id,
@@ -83,6 +131,21 @@ export function collectNotificationAlerts(input: {
         now
       });
       if (status !== "overdue" && status !== "due_soon") continue;
+      if (
+        trigger === "kilometrage_update" &&
+        !isKilometrageDrivenMaintenance({
+          nextDueKm: entry.next_due_km,
+          currentKm: vehicle.kilometrage,
+          dueSoonKmThreshold: entry.due_soon_km_threshold,
+          dueSoonDaysThreshold: entry.due_soon_days_threshold,
+          avgKmPerYear: vehicle.avg_km_per_year,
+          lastOdometerValue: vehicle.last_odometer_value,
+          lastOdometerDate: vehicle.last_odometer_date,
+          now
+        })
+      ) {
+        continue;
+      }
 
       let detail = "à prévoir bientôt";
       if (status === "overdue") {

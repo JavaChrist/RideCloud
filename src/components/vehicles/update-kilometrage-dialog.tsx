@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Gauge, Loader2, Pencil, Plus, X } from "lucide-react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useConfirm } from "@/components/providers/confirm-provider";
@@ -92,23 +91,15 @@ export function UpdateKilometrageDialog({
 
     setIsSaving(true);
     try {
-      const supabase = createClient();
-      // Recalage du point de référence : à chaque saisie réelle du
-      // compteur, on remet à zéro l'estimation (last_odometer_value + date)
-      // pour que les projections km→date repartent d'une base juste.
-      const todayIso = new Date().toISOString().slice(0, 10);
-      const { error } = await supabase
-        .from("vehicles")
-        .update({
-          kilometrage: parsed,
-          last_odometer_value: parsed,
-          last_odometer_date: todayIso,
-          updated_at: new Date().toISOString()
-        } as never)
-        .eq("id", vehicleId);
+      const response = await fetch(`/api/vehicles/${vehicleId}/odometer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kilometrage: parsed })
+      });
+      const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
 
-      if (error) {
-        toast.error(`Mise à jour impossible : ${error.message}`);
+      if (!response.ok || !payload?.ok) {
+        toast.error(payload?.error ?? "Mise à jour impossible.");
         return;
       }
 

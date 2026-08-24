@@ -38,24 +38,18 @@ export interface CronResult {
   failures: Array<{ vehicleId: string; type: string; reason: string }>;
 }
 
+export type NotificationDispatchDeps = Omit<CronDependencies, "loadVehicles" | "loadPlanEntries">;
+
 /**
- * 1) événements métier (tous les véhicules)
- * 2) upsert notifications
- * 3) Push seulement si abonnement + cooldown last_pushed_at
- *    (filet notification_log si last_pushed_at encore null)
- * 4) last_pushed_at + notification_log uniquement après Push réussi
+ * Persist + Push pour une liste d'alertes déjà collectées.
+ * Réutilisé par le cron N2 et par la mise à jour kilométrage.
  */
-export async function processNotificationCron(deps: CronDependencies): Promise<CronResult> {
+export async function dispatchNotificationAlerts(
+  alerts: NotificationAlert[],
+  deps: NotificationDispatchDeps
+): Promise<Pick<CronResult, "persisted" | "dismissed" | "sent" | "failures">> {
   const now = deps.now ?? new Date();
-  const vehicles = await deps.loadVehicles();
-  if (vehicles.length === 0) {
-    return { processed: 0, candidates: 0, persisted: 0, dismissed: 0, sent: 0, failures: [] };
-  }
-
-  const planEntries = await deps.loadPlanEntries(vehicles.map((vehicle) => vehicle.id));
   const pushUserIds = await deps.loadPushUserIds();
-  const alerts = collectNotificationAlerts({ vehicles, planEntries, now });
-
   let persisted = 0;
   let dismissed = 0;
   let sent = 0;
@@ -123,12 +117,30 @@ export async function processNotificationCron(deps: CronDependencies): Promise<C
     }
   }
 
+  return { persisted, dismissed, sent, failures };
+}
+
+/**
+ * 1) événements métier (tous les véhicules)
+ * 2) upsert notifications
+ * 3) Push seulement si abonnement + cooldown last_pushed_at
+ *    (filet notification_log si last_pushed_at encore null)
+ * 4) last_pushed_at + notification_log uniquement après Push réussi
+ */
+export async function processNotificationCron(deps: CronDependencies): Promise<CronResult> {
+  const now = deps.now ?? new Date();
+  const vehicles = await deps.loadVehicles();
+  if (vehicles.length === 0) {
+    return { processed: 0, candidates: 0, persisted: 0, dismissed: 0, sent: 0, failures: [] };
+  }
+
+  const planEntries = await deps.loadPlanEntries(vehicles.map((vehicle) => vehicle.id));
+  const alerts = collectNotificationAlerts({ vehicles, planEntries, now, trigger: "cron" });
+  const dispatched = await dispatchNotificationAlerts(alerts, deps);
+
   return {
     processed: vehicles.length,
     candidates: alerts.length,
-    persisted,
-    dismissed,
-    sent,
-    failures
+    ...dispatched
   };
 }
