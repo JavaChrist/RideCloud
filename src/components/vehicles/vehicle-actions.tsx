@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Archive, Download, FileJson, Trash2 } from "lucide-react";
@@ -7,6 +8,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/components/providers/confirm-provider";
 import { createClient } from "@/lib/supabase/client";
+import { handleVehicleExportClick } from "@/lib/export/distribute-file";
+import { isCapacitorNative } from "@/lib/pwa/environment";
 
 interface VehicleActionsProps {
   vehicleId: string;
@@ -26,6 +29,38 @@ function normalizeStoragePath(input: string | null) {
 export function VehicleActions({ vehicleId, vehicleName }: VehicleActionsProps) {
   const router = useRouter();
   const confirm = useConfirm();
+  const [exporting, setExporting] = useState<"json" | "zip" | null>(null);
+
+  const onExportClick = async (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    kind: "json" | "zip",
+    href: string,
+    fallbackFileName: string
+  ) => {
+    if (exporting) {
+      event.preventDefault();
+      return;
+    }
+
+    const native = isCapacitorNative();
+    if (native) {
+      event.preventDefault();
+      setExporting(kind);
+    }
+
+    try {
+      await handleVehicleExportClick({
+        event,
+        href,
+        fallbackFileName,
+        isNative: native
+      });
+    } catch {
+      toast.error("Impossible d'exporter le fichier.");
+    } finally {
+      if (native) setExporting(null);
+    }
+  };
 
   const deleteVehicle = async () => {
     const confirmed = await confirm({
@@ -74,13 +109,35 @@ export function VehicleActions({ vehicleId, vehicleName }: VehicleActionsProps) 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
       <Button asChild variant="outline">
-        <a href={`/api/vehicule/${vehicleId}/export`}>
+        <a
+          href={`/api/vehicule/${vehicleId}/export`}
+          aria-busy={exporting === "json"}
+          onClick={(event) =>
+            void onExportClick(
+              event,
+              "json",
+              `/api/vehicule/${vehicleId}/export`,
+              `ridecloud-vehicule-${vehicleId}.json`
+            )
+          }
+        >
           <FileJson className="mr-2 h-4 w-4" />
           Exporter JSON
         </a>
       </Button>
       <Button asChild>
-        <a href={`/api/vehicule/${vehicleId}/export-zip`}>
+        <a
+          href={`/api/vehicule/${vehicleId}/export-zip`}
+          aria-busy={exporting === "zip"}
+          onClick={(event) =>
+            void onExportClick(
+              event,
+              "zip",
+              `/api/vehicule/${vehicleId}/export-zip`,
+              `ridecloud-dossier-${vehicleId}.zip`
+            )
+          }
+        >
           <Archive className="mr-2 h-4 w-4" />
           Export ZIP complet
         </a>
