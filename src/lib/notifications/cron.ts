@@ -15,7 +15,7 @@ export interface CronDependencies {
   loadVehicles: () => Promise<Array<Vehicle & { user_id: string }>>;
   loadPlanEntries: (vehicleIds: string[]) => Promise<MaintenancePlanEntry[]>;
   loadPushUserIds: () => Promise<Set<string>>;
-  persistAlert: (alert: NotificationAlert) => Promise<PersistedCronNotification>;
+  persistAlert: (alert: NotificationAlert) => Promise<PersistedCronNotification | null>;
   /** Filet anti-spam si last_pushed_at est encore null (historique pré-N2). */
   latestLogSentAt?: (alert: NotificationAlert) => Promise<string | null>;
   sendPush: (userId: string, payload: PushPayload) => Promise<SendOutcome[]>;
@@ -33,6 +33,7 @@ export interface CronResult {
   processed: number;
   candidates: number;
   persisted: number;
+  dismissed: number;
   sent: number;
   failures: Array<{ vehicleId: string; type: string; reason: string }>;
 }
@@ -48,7 +49,7 @@ export async function processNotificationCron(deps: CronDependencies): Promise<C
   const now = deps.now ?? new Date();
   const vehicles = await deps.loadVehicles();
   if (vehicles.length === 0) {
-    return { processed: 0, candidates: 0, persisted: 0, sent: 0, failures: [] };
+    return { processed: 0, candidates: 0, persisted: 0, dismissed: 0, sent: 0, failures: [] };
   }
 
   const planEntries = await deps.loadPlanEntries(vehicles.map((vehicle) => vehicle.id));
@@ -56,13 +57,18 @@ export async function processNotificationCron(deps: CronDependencies): Promise<C
   const alerts = collectNotificationAlerts({ vehicles, planEntries, now });
 
   let persisted = 0;
+  let dismissed = 0;
   let sent = 0;
   const failures: CronResult["failures"] = [];
 
   for (const alert of alerts) {
-    let row: PersistedCronNotification;
+    let row: PersistedCronNotification | null;
     try {
       row = await deps.persistAlert(alert);
+      if (!row) {
+        dismissed += 1;
+        continue;
+      }
       persisted += 1;
     } catch (error) {
       failures.push({
@@ -121,6 +127,7 @@ export async function processNotificationCron(deps: CronDependencies): Promise<C
     processed: vehicles.length,
     candidates: alerts.length,
     persisted,
+    dismissed,
     sent,
     failures
   };

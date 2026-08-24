@@ -67,6 +67,7 @@ function createHarness(input: {
   planEntries?: MaintenancePlanEntry[];
   pushUserIds?: string[];
   sendOutcome?: SendOutcome[];
+  dismissedKeys?: string[];
 }) {
   const inbox = new Map<string, PersistedCronNotification & { title: string; metadata: Record<string, unknown> }>();
   const logs: Array<Record<string, unknown>> = [];
@@ -74,6 +75,7 @@ function createHarness(input: {
 
   const persistAlert = async (alert: NotificationAlert) => {
     const key = `${alert.userId}::${alert.dedupeKey}`;
+    if (input.dismissedKeys?.includes(key)) return null;
     const existing = inbox.get(key);
     if (!existing) {
       const created = {
@@ -348,6 +350,25 @@ describe("processNotificationCron", () => {
     expect(harness.inbox.size).toBe(1);
     expect(row.readAt).toBe("2026-08-22T10:00:00.000Z");
     expect(row.metadata.status).toBe("due_soon");
+  });
+
+  it("ne recrée pas une occurrence dismissée et n'envoie pas de Push", async () => {
+    const dismissedKey = `user-a::${buildOdometerDedupeKey({
+      vehicleId: "veh-1",
+      lastOdometerDate: "2026-07-20"
+    })}`;
+    const { deps, inbox, logs, pushes } = createHarness({
+      vehicles: [vehicle()],
+      pushUserIds: ["user-a"],
+      dismissedKeys: [dismissedKey]
+    });
+    const result = await processNotificationCron(deps);
+    expect(result.persisted).toBe(0);
+    expect(result.dismissed).toBe(1);
+    expect(result.sent).toBe(0);
+    expect(inbox.size).toBe(0);
+    expect(pushes).toHaveLength(0);
+    expect(logs).toHaveLength(0);
   });
 
   it("n'entre pas en collision entre deux utilisateurs", async () => {

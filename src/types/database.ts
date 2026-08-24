@@ -91,6 +91,12 @@ export interface NotificationRow {
   last_pushed_at: string | null;
 }
 
+export interface NotificationDismissalRow {
+  user_id: UUID;
+  dedupe_key: string;
+  dismissed_at: string;
+}
+
 /** Profil d'usage déclaré : drive l'estimation du km courant entre deux saisies. */
 export type UsageProfile = "daily" | "often" | "occasional" | "rare";
 
@@ -332,6 +338,12 @@ export interface Database {
           sent_at?: string;
         };
         Update: Partial<NotificationLogRow>;
+        Relationships: [];
+      };
+      notification_dismissals: {
+        Row: NotificationDismissalRow;
+        Insert: Omit<NotificationDismissalRow, "dismissed_at"> & { dismissed_at?: string };
+        Update: Partial<NotificationDismissalRow>;
         Relationships: [];
       };
       notifications: {

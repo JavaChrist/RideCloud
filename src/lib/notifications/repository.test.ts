@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import {
+  deleteNotification,
   getNotifications,
   getUnreadNotificationCount,
   markAllNotificationsRead,
@@ -29,19 +30,34 @@ function notificationRow(overrides: Record<string, unknown> = {}) {
 function mockSupabase(handlers: {
   selectResult?: { data: unknown; error: { message: string } | null; count?: number | null };
   rpcError?: { message: string } | null;
+  deleteResult?: { data: unknown; error: { message: string } | null };
 }) {
   const limit = vi.fn().mockResolvedValue(handlers.selectResult ?? { data: [], error: null });
   const order = vi.fn().mockReturnValue({ limit });
   const is = vi.fn().mockResolvedValue(handlers.selectResult ?? { data: null, error: null, count: 0 });
   const select = vi.fn().mockReturnValue({ order, is });
   const rpc = vi.fn().mockResolvedValue({ error: handlers.rpcError ?? null });
+  const deleteSelect = vi.fn().mockResolvedValue(handlers.deleteResult ?? { data: [{ id: "n1" }], error: null });
+  const eq = vi.fn().mockReturnValue({ select: deleteSelect });
+  const del = vi.fn().mockReturnValue({ eq });
 
   const supabase = {
-    from: vi.fn().mockReturnValue({ select }),
+    from: vi.fn().mockReturnValue({ select, delete: del }),
     rpc
   } as unknown as SupabaseClient<Database>;
 
-  return { supabase, from: supabase.from as ReturnType<typeof vi.fn>, select, order, limit, is, rpc };
+  return {
+    supabase,
+    from: supabase.from as ReturnType<typeof vi.fn>,
+    select,
+    order,
+    limit,
+    is,
+    rpc,
+    del,
+    eq,
+    deleteSelect
+  };
 }
 
 describe("repository notifications", () => {
@@ -94,5 +110,19 @@ describe("repository notifications", () => {
     await markAllNotificationsRead(supabase);
     expect(rpc).toHaveBeenCalledWith("mark_all_notifications_read");
     expect(rpc.mock.calls[0][1]).toBeUndefined();
+  });
+
+  it("deleteNotification cible uniquement l'id, sans user_id fourni par le client", async () => {
+    const { supabase, from, del, eq } = mockSupabase({});
+    await deleteNotification(supabase, "n1");
+    expect(from).toHaveBeenCalledWith("notifications");
+    expect(del).toHaveBeenCalled();
+    expect(eq).toHaveBeenCalledWith("id", "n1");
+    expect(eq).not.toHaveBeenCalledWith("user_id", expect.anything());
+  });
+
+  it("deleteNotification échoue si aucune ligne n'est retournée (RLS / introuvable)", async () => {
+    const { supabase } = mockSupabase({ deleteResult: { data: [], error: null } });
+    await expect(deleteNotification(supabase, "foreign")).rejects.toThrow("NOTIFICATION_NOT_DELETED");
   });
 });

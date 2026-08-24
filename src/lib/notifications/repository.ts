@@ -65,3 +65,26 @@ export async function markAllNotificationsRead(supabase: NotificationsClient): P
     throw new Error(error.message);
   }
 }
+
+/**
+ * Supprime une notification de l'inbox.
+ * RLS : auth.uid() = user_id.
+ * Le trigger SQL écrit le tombstone (user_id, dedupe_key). Aucun impact Push.
+ */
+export async function deleteNotification(
+  supabase: NotificationsClient,
+  notificationId: string
+): Promise<void> {
+  const { data, error } = await supabase
+    .from("notifications")
+    .delete()
+    .eq("id", notificationId)
+    .select("id");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  if (!data || data.length === 0) {
+    throw new Error("NOTIFICATION_NOT_DELETED");
+  }
+}

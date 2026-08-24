@@ -8,6 +8,11 @@ import type { Database, NotificationKind, NotificationRow } from "@/types/databa
 import { shouldReopenReadNotification } from "@/lib/notifications/dedupe";
 import type { NotificationAlert } from "@/lib/notifications/alerts";
 
+function isDismissedRejection(error: { code?: string; message?: string } | null): boolean {
+  if (!error) return false;
+  return error.code === "P0001" || (error.message?.includes("NOTIFICATION_DISMISSED") ?? false);
+}
+
 type AdminClient = SupabaseClient<Database>;
 
 export interface PersistNotificationRow {
@@ -71,7 +76,21 @@ export async function persistBusinessNotification(
   admin: AdminClient,
   alert: NotificationAlert,
   attempt = 0
-): Promise<NotificationRow> {
+): Promise<NotificationRow | null> {
+  const { data: dismissal, error: dismissalError } = await admin
+    .from("notification_dismissals")
+    .select("dedupe_key")
+    .eq("user_id", alert.userId)
+    .eq("dedupe_key", alert.dedupeKey)
+    .maybeSingle();
+
+  if (dismissalError) {
+    throw new Error(dismissalError.message);
+  }
+  if (dismissal) {
+    return null;
+  }
+
   const { data: existing, error: selectError } = await admin
     .from("notifications")
     .select("id, read_at, last_pushed_at, metadata")
@@ -95,6 +114,9 @@ export async function persistBusinessNotification(
     .single();
 
   if (error) {
+    if (isDismissedRejection(error)) {
+      return null;
+    }
     if (isUniqueViolation(error) && attempt < 1) {
       return persistBusinessNotification(admin, alert, attempt + 1);
     }

@@ -1,6 +1,9 @@
 "use client";
 
+import { useState, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { formatNotificationTime, isSafeInternalHref } from "@/lib/notifications/inbox";
 import { useNotifications } from "@/components/notifications/notifications-provider";
 import { cn } from "@/lib/utils";
@@ -13,7 +16,9 @@ function unreadTone(status: unknown) {
 
 export function NotificationInbox({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  const { notifications, unreadCount, loading, error, markRead, markAllRead } = useNotifications();
+  const { notifications, unreadCount, loading, error, markRead, markAllRead, removeNotification } =
+    useNotifications();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleOpen = async (notificationId: string, href: string | null) => {
     const ok = await markRead(notificationId);
@@ -22,6 +27,23 @@ export function NotificationInbox({ onClose }: { onClose: () => void }) {
       onClose();
       router.push(href);
       return;
+    }
+  };
+
+  const handleDelete = async (event: MouseEvent<HTMLButtonElement>, notificationId: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (deletingId) return;
+    setDeletingId(notificationId);
+    try {
+      const ok = await removeNotification(notificationId);
+      if (ok) {
+        toast.success("Notification supprimée");
+        return;
+      }
+      toast.error("Impossible de supprimer cette notification.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -63,14 +85,17 @@ export function NotificationInbox({ onClose }: { onClose: () => void }) {
             {notifications.map((notification) => {
               const unread = notification.readAt == null;
               return (
-                <li key={notification.id}>
+                <li
+                  key={notification.id}
+                  className={cn(
+                    "flex items-stretch",
+                    unread && "bg-blue-50/50 dark:bg-blue-950/20"
+                  )}
+                >
                   <button
                     type="button"
                     onClick={() => void handleOpen(notification.id, notification.href)}
-                    className={cn(
-                      "flex w-full gap-3 px-3 py-3 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800/70",
-                      unread && "bg-blue-50/50 dark:bg-blue-950/20"
-                    )}
+                    className="flex min-w-0 flex-1 gap-3 px-3 py-3 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800/70"
                   >
                     <span
                       aria-hidden
@@ -98,6 +123,16 @@ export function NotificationInbox({ onClose }: { onClose: () => void }) {
                         {unread ? " · Non lue" : " · Lue"}
                       </span>
                     </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(event) => void handleDelete(event, notification.id)}
+                    disabled={deletingId === notification.id}
+                    aria-label={`Supprimer la notification ${notification.title}`}
+                    title="Supprimer"
+                    className="flex w-11 shrink-0 items-center justify-center text-slate-400 transition hover:bg-slate-50 hover:text-red-600 disabled:opacity-50 dark:text-slate-500 dark:hover:bg-slate-800/70 dark:hover:text-red-400"
+                  >
+                    <Trash2 className="h-4 w-4" strokeWidth={2} aria-hidden />
                   </button>
                 </li>
               );

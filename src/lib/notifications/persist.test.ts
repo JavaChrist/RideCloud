@@ -28,10 +28,35 @@ function alert(overrides: Partial<NotificationAlert> = {}): NotificationAlert {
 
 function createMemoryAdmin() {
   const notifications: NotificationRow[] = [];
+  const dismissals: Array<{ user_id: string; dedupe_key: string }> = [];
   const logs: Array<Record<string, unknown>> = [];
 
   const client = {
     from(table: string) {
+      if (table === "notification_dismissals") {
+        return {
+          select() {
+            return {
+              eq(column: string, value: string) {
+                return {
+                  eq(column2: string, value2: string) {
+                    return {
+                      async maybeSingle() {
+                        const row = dismissals.find(
+                          (item) =>
+                            item[column as "user_id"] === value &&
+                            item[column2 as "dedupe_key"] === value2
+                        );
+                        return { data: row ?? null, error: null };
+                      }
+                    };
+                  }
+                };
+              }
+            };
+          }
+        };
+      }
       if (table === "notifications") {
         return {
           select() {
@@ -124,7 +149,7 @@ function createMemoryAdmin() {
     }
   } as unknown as SupabaseClient<Database>;
 
-  return { client, notifications, logs };
+  return { client, notifications, dismissals, logs };
 }
 
 describe("buildNotificationUpsertRow", () => {
@@ -175,8 +200,8 @@ describe("persistBusinessNotification", () => {
       alert({ title: "Vidange dans 180 km — La noire" })
     );
     expect(notifications).toHaveLength(1);
-    expect(first.id).toBe(second.id);
-    expect(second.title).toBe("Vidange dans 180 km — La noire");
+    expect(first?.id).toBe(second?.id);
+    expect(second?.title).toBe("Vidange dans 180 km — La noire");
     expect(second.read_at).toBeNull();
   });
 
@@ -198,7 +223,7 @@ describe("persistBusinessNotification", () => {
     );
     const rows = await Promise.all([first, second]);
     expect(notifications).toHaveLength(1);
-    expect(rows[0].id).toBe(rows[1].id);
+    expect(rows[0]?.id).toBe(rows[1]?.id);
   });
 
   it("n'inclut pas created_at dans le payload d'upsert due_soon → overdue", () => {
@@ -216,6 +241,51 @@ describe("persistBusinessNotification", () => {
     );
     expect(row).not.toHaveProperty("created_at");
     expect(row.read_at).toBeNull();
+  });
+
+  it("ne recrée pas une occurrence dismissée et n'écrit pas le journal Push", async () => {
+    const { client, notifications, dismissals, logs } = createMemoryAdmin();
+    dismissals.push({ user_id: "user-a", dedupe_key: "maintenance_due:entry-1:10200:none" });
+    const row = await persistBusinessNotification(client, alert());
+    expect(row).toBeNull();
+    expect(notifications).toHaveLength(0);
+    expect(logs).toHaveLength(0);
+  });
+
+  it("laisse un autre utilisateur créer la même clé métier", async () => {
+    const { client, notifications, dismissals } = createMemoryAdmin();
+    dismissals.push({ user_id: "user-a", dedupe_key: "maintenance_due:entry-1:10200:none" });
+    const row = await persistBusinessNotification(client, alert({ userId: "user-b" }));
+    expect(row?.user_id).toBe("user-b");
+    expect(notifications).toHaveLength(1);
+  });
+
+  it("ne touche pas un notification_log déjà présent quand l'occurrence est dismissée", async () => {
+    const { client, notifications, dismissals, logs } = createMemoryAdmin();
+    logs.push({
+      user_id: "user-a",
+      vehicle_id: "veh-1",
+      kind: "maintenance_due",
+      subject_id: "entry-1"
+    });
+    dismissals.push({ user_id: "user-a", dedupe_key: "maintenance_due:entry-1:10200:none" });
+    await persistBusinessNotification(client, alert());
+    expect(notifications).toHaveLength(0);
+    expect(logs).toHaveLength(1);
+  });
+
+  it("autorise une nouvelle occurrence (dedupe_key distinct)", async () => {
+    const { client, notifications, dismissals } = createMemoryAdmin();
+    dismissals.push({ user_id: "user-a", dedupe_key: "maintenance_due:entry-1:10200:none" });
+    const row = await persistBusinessNotification(
+      client,
+      alert({
+        dedupeKey: "maintenance_due:entry-1:21800:none",
+        title: "Vidange dans 200 km — La noire"
+      })
+    );
+    expect(row?.dedupe_key).toBe("maintenance_due:entry-1:21800:none");
+    expect(notifications).toHaveLength(1);
   });
 
   it("met à jour last_pushed_at seulement via markNotificationPushed", async () => {

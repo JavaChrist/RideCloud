@@ -3,6 +3,7 @@ import {
   canAccessNotification,
   countUnreadNotifications,
   filterNotificationsForUser,
+  isOccurrenceDismissed,
   isSameUserDedupeKey,
   isUnreadNotification
 } from "./rules";
@@ -66,6 +67,28 @@ describe("dedupe_key", () => {
         { user_id: userA, dedupe_key: "maintenance_due:entry-1" },
         { user_id: userB, dedupe_key: "maintenance_due:entry-1" }
       )
+    ).toBe(false);
+  });
+
+  it("un tombstone (user_id, dedupe_key) bloque seulement le propriétaire", () => {
+    const dismissals = [{ user_id: userA, dedupe_key: "maintenance_due:entry-1:10200:none" }];
+    expect(
+      isOccurrenceDismissed(dismissals, {
+        user_id: userA,
+        dedupe_key: "maintenance_due:entry-1:10200:none"
+      })
+    ).toBe(true);
+    expect(
+      isOccurrenceDismissed(dismissals, {
+        user_id: userB,
+        dedupe_key: "maintenance_due:entry-1:10200:none"
+      })
+    ).toBe(false);
+    expect(
+      isOccurrenceDismissed(dismissals, {
+        user_id: userA,
+        dedupe_key: "maintenance_due:entry-1:21800:none"
+      })
     ).toBe(false);
   });
 });

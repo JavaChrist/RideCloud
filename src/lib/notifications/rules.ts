@@ -22,6 +22,13 @@ export function isSameUserDedupeKey(
   return left.user_id === right.user_id && left.dedupe_key === right.dedupe_key;
 }
 
+export function isOccurrenceDismissed(
+  dismissals: Array<{ user_id: string; dedupe_key: string }>,
+  occurrence: { user_id: string; dedupe_key: string }
+): boolean {
+  return dismissals.some((row) => isSameUserDedupeKey(row, occurrence));
+}
+
 export function filterNotificationsForUser<T extends { user_id: string }>(
   rows: T[],
   userId: string

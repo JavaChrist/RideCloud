@@ -78,3 +78,24 @@ export function applyMarkOneRead(rows: AppNotification[], notificationId: string
 export function applyMarkAllRead(rows: AppNotification[], readAt: string): AppNotification[] {
   return rows.map((row) => (row.readAt == null ? { ...row, readAt } : row));
 }
+
+export function applyRemoveNotification(
+  rows: AppNotification[],
+  notificationId: string
+): { rows: AppNotification[]; removed: AppNotification | undefined } {
+  const removed = rows.find((row) => row.id === notificationId);
+  return {
+    rows: rows.filter((row) => row.id !== notificationId),
+    removed
+  };
+}
+
+export function unreadCountAfterRemove(
+  count: number,
+  removed: Pick<AppNotification, "readAt"> | undefined
+): number {
+  if (removed == null || removed.readAt != null) {
+    return Math.max(0, count);
+  }
+  return Math.max(0, count - 1);
+}

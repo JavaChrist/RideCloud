@@ -79,6 +79,7 @@ async function handle(request: Request) {
       },
       persistAlert: async (alert) => {
         const row = await persistBusinessNotification(admin, alert);
+        if (!row) return null;
         return {
           id: row.id,
           lastPushedAt: row.last_pushed_at,

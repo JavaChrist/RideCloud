@@ -3,10 +3,12 @@ import type { AppNotification } from "./types";
 import {
   applyMarkAllRead,
   applyMarkOneRead,
+  applyRemoveNotification,
   formatUnreadAriaLabel,
   formatUnreadBadge,
   isSafeInternalHref,
-  sortInboxNotifications
+  sortInboxNotifications,
+  unreadCountAfterRemove
 } from "./inbox";
 import { canAccessNotification } from "./rules";
 
@@ -104,6 +106,35 @@ describe("lecture et tout lu", () => {
     const next = applyMarkAllRead(rows, "2026-08-23T21:00:00.000Z");
     expect(next.every((item) => item.readAt != null)).toBe(true);
     expect(next.filter((item) => item.readAt == null)).toHaveLength(0);
+  });
+});
+
+describe("suppression individuelle", () => {
+  it("retire uniquement la notification ciblée", () => {
+    const rows = [row({ id: "a" }), row({ id: "b" }), row({ id: "c" })];
+    const next = applyRemoveNotification(rows, "b");
+    expect(next.rows.map((item) => item.id)).toEqual(["a", "c"]);
+    expect(next.removed?.id).toBe("b");
+  });
+
+  it("décrémente le compteur si la notification était non lue", () => {
+    expect(unreadCountAfterRemove(3, row({ readAt: null }))).toBe(2);
+  });
+
+  it("laisse le compteur inchangé si la notification était déjà lue", () => {
+    expect(unreadCountAfterRemove(2, row({ readAt: "2026-08-23T10:00:00.000Z" }))).toBe(2);
+  });
+
+  it("ne descend jamais sous 0 et vide la liste sans crash", () => {
+    const next = applyRemoveNotification([row({ id: "only" })], "only");
+    expect(next.rows).toEqual([]);
+    expect(unreadCountAfterRemove(1, next.removed)).toBe(0);
+    expect(unreadCountAfterRemove(0, row({ readAt: null }))).toBe(0);
+    expect(formatUnreadBadge(0)).toBeNull();
+  });
+
+  it("une notification étrangère reste protégée", () => {
+    expect(canAccessNotification("user-a", "user-b")).toBe(false);
   });
 });
 

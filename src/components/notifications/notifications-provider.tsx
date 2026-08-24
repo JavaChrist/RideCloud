@@ -3,12 +3,20 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
+  deleteNotification,
   getNotifications,
   getUnreadNotificationCount,
   markAllNotificationsRead,
   markNotificationRead
 } from "@/lib/notifications/repository";
-import { applyMarkAllRead, applyMarkOneRead, INBOX_NOTIFICATIONS_LIMIT, sortInboxNotifications } from "@/lib/notifications/inbox";
+import {
+  applyMarkAllRead,
+  applyMarkOneRead,
+  applyRemoveNotification,
+  INBOX_NOTIFICATIONS_LIMIT,
+  sortInboxNotifications,
+  unreadCountAfterRemove
+} from "@/lib/notifications/inbox";
 import type { AppNotification } from "@/lib/notifications/types";
 
 interface NotificationsContextValue {
@@ -19,6 +27,7 @@ interface NotificationsContextValue {
   refresh: (options?: { includeList?: boolean }) => Promise<void>;
   markRead: (notificationId: string) => Promise<boolean>;
   markAllRead: () => Promise<boolean>;
+  removeNotification: (notificationId: string) => Promise<boolean>;
 }
 
 const NotificationsContext = createContext<NotificationsContextValue | null>(null);
@@ -110,6 +119,34 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     }
   }, [notifications, refresh, supabase, unreadCount]);
 
+  const removeNotification = useCallback(
+    async (notificationId: string) => {
+      if (!supabase) return false;
+      const previous = notifications;
+      const previousCount = unreadCount;
+      const { rows, removed } = applyRemoveNotification(previous, notificationId);
+      setNotifications(rows);
+      setUnreadCount(unreadCountAfterRemove(previousCount, removed));
+      try {
+        await deleteNotification(supabase, notificationId);
+        try {
+          const count = await getUnreadNotificationCount(supabase);
+          setUnreadCount(count);
+        } catch (cause) {
+          console.error("[notifications] unread recount after delete failed", cause);
+        }
+        return true;
+      } catch (cause) {
+        console.error("[notifications] removeNotification failed", cause);
+        setNotifications(previous);
+        setUnreadCount(previousCount);
+        await refresh({ includeList: true });
+        return false;
+      }
+    },
+    [notifications, refresh, supabase, unreadCount]
+  );
+
   useEffect(() => {
     void refresh();
   }, [refresh]);
@@ -122,9 +159,10 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       error,
       refresh,
       markRead,
-      markAllRead
+      markAllRead,
+      removeNotification
     }),
-    [error, loading, markAllRead, markRead, notifications, refresh, unreadCount]
+    [error, loading, markAllRead, markRead, notifications, refresh, removeNotification, unreadCount]
   );
 
   return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;
