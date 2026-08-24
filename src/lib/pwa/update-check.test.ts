@@ -1,9 +1,16 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { isCapacitorNative, shouldRegisterServiceWorkerOnBoot, shouldRunPwaUpdateClient } from "./environment";
+import {
+  isCapacitorNative,
+  shouldRegisterServiceWorkerOnBoot,
+  shouldRunPwaUpdateClient,
+  shouldUseRemoteVersionFallback
+} from "./environment";
+import { appVersionRequestUrl, buildCacheBustedReloadUrl } from "./app-version";
 import {
   applyWaitingOrReload,
   checkForAppUpdate,
   createReloadGuard,
+  fetchDeployedAppVersion,
   resetUpdateCheckCache,
   shouldPromptForPwaUpdate
 } from "./update-check";
@@ -21,9 +28,11 @@ describe("environnement Capacitor", () => {
     expect(isCapacitorNative({})).toBe(false);
   });
 
-  it("n'enregistre pas le SW et ne lance pas la détection sur Capacitor", () => {
+  it("n'enregistre pas le SW sur Capacitor mais lance le fallback version", () => {
     expect(shouldRegisterServiceWorkerOnBoot({ isNative: true, nodeEnv: "production" })).toBe(false);
-    expect(shouldRunPwaUpdateClient({ isNative: true, nodeEnv: "production" })).toBe(false);
+    expect(shouldRunPwaUpdateClient({ isNative: true, nodeEnv: "production" })).toBe(true);
+    expect(shouldUseRemoteVersionFallback(true)).toBe(true);
+    expect(shouldUseRemoteVersionFallback(false)).toBe(false);
   });
 
   it("n'enregistre pas le SW en next dev (HMR)", () => {
@@ -71,12 +80,20 @@ describe("shouldPromptForPwaUpdate", () => {
     ).toBe(true);
   });
 
-  it("aucune modale dans Capacitor même si version différente", () => {
+  it("Capacitor : modale uniquement via la version distante, pas via le SW", () => {
     expect(
       shouldPromptForPwaUpdate({
         isNative: true,
         loadedVersion: "dpl_1",
         deployedVersion: "dpl_2",
+        hasWaitingWorker: true
+      })
+    ).toBe(true);
+    expect(
+      shouldPromptForPwaUpdate({
+        isNative: true,
+        loadedVersion: "dpl_1",
+        deployedVersion: "dpl_1",
         hasWaitingWorker: true
       })
     ).toBe(false);
@@ -96,11 +113,73 @@ describe("shouldPromptForPwaUpdate", () => {
 });
 
 describe("checkForAppUpdate", () => {
-  it("ne propose rien si Capacitor", async () => {
+  it("Capacitor : propose une mise à jour si la version distante change, sans interroger le SW", async () => {
+    const refreshRegistration = vi.fn().mockResolvedValue({ waiting: {} });
     const result = await checkForAppUpdate({
       isNative: true,
+      loadedVersion: "dpl_old",
       fetchDeployedVersion: async () => "dpl_new",
-      refreshRegistration: async () => null
+      refreshRegistration
+    });
+    expect(result).toMatchObject({
+      shouldPrompt: true,
+      deployedVersion: "dpl_new",
+      hasWaitingWorker: false
+    });
+    expect(refreshRegistration).not.toHaveBeenCalled();
+  });
+
+  it("Capacitor : aucune modale si la version distante est identique", async () => {
+    const result = await checkForAppUpdate({
+      isNative: true,
+      loadedVersion: "dpl_1",
+      fetchDeployedVersion: async () => "dpl_1",
+      refreshRegistration: async () => ({ waiting: {} }) as never
+    });
+    expect(result.shouldPrompt).toBe(false);
+  });
+
+  it("une erreur réseau n'affiche pas de modale et n'explose pas", async () => {
+    const result = await checkForAppUpdate({
+      isNative: true,
+      loadedVersion: "dpl_1",
+      fetchDeployedVersion: async () => {
+        throw new Error("offline");
+      },
+      refreshRegistration: async () => {
+        throw new Error("sw offline");
+      }
+    });
+    expect(result).toMatchObject({
+      shouldPrompt: false,
+      deployedVersion: null,
+      hasWaitingWorker: false
+    });
+  });
+
+  it("après une erreur, la vérification suivante peut proposer une mise à jour", async () => {
+    await checkForAppUpdate({
+      isNative: true,
+      loadedVersion: "dpl_1",
+      fetchDeployedVersion: async () => {
+        throw new Error("offline");
+      }
+    });
+    const result = await checkForAppUpdate({
+      isNative: true,
+      loadedVersion: "dpl_1",
+      fetchDeployedVersion: async () => "dpl_2"
+    });
+    expect(result.shouldPrompt).toBe(true);
+    expect(result.deployedVersion).toBe("dpl_2");
+  });
+
+  it("ne repropose pas la même version après Plus tard", async () => {
+    const result = await checkForAppUpdate({
+      isNative: true,
+      loadedVersion: "dpl_1",
+      dismissedVersion: "dpl_2",
+      fetchDeployedVersion: async () => "dpl_2"
     });
     expect(result.shouldPrompt).toBe(false);
   });
@@ -116,6 +195,37 @@ describe("checkForAppUpdate", () => {
       shouldPrompt: true,
       deployedVersion: "dpl_new",
       hasWaitingWorker: false
+    });
+  });
+
+  it("Web/iOS : conserve la détection Service Worker waiting", async () => {
+    const refreshRegistration = vi.fn().mockResolvedValue({ waiting: { postMessage: vi.fn() } });
+    const result = await checkForAppUpdate({
+      isNative: false,
+      loadedVersion: "dpl_1",
+      fetchDeployedVersion: async () => "dpl_1",
+      refreshRegistration
+    });
+    expect(result.shouldPrompt).toBe(true);
+    expect(result.hasWaitingWorker).toBe(true);
+    expect(refreshRegistration).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("fetchDeployedAppVersion", () => {
+  it("interroge l'API sans cache", async () => {
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ version: "dpl_live" })
+    });
+    await expect(fetchDeployedAppVersion(fetcher, 99)).resolves.toBe("dpl_live");
+    expect(fetcher).toHaveBeenCalledWith(appVersionRequestUrl(99), {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+        "Cache-Control": "no-cache"
+      }
     });
   });
 });

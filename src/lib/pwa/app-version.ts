@@ -1,6 +1,16 @@
 export const APP_VERSION_FALLBACK = "dev";
 export const APP_VERSION_PATH = "/api/app-version";
 
+export function appVersionRequestUrl(now = Date.now()): string {
+  return `${APP_VERSION_PATH}?t=${now}`;
+}
+
+export function buildCacheBustedReloadUrl(href: string, deployedVersion: string | null): string {
+  const url = new URL(href);
+  url.searchParams.set("rcu", deployedVersion && deployedVersion.length > 0 ? deployedVersion : String(Date.now()));
+  return url.toString();
+}
+
 export function resolveAppVersion(
   env: NodeJS.ProcessEnv | Record<string, string | undefined> = process.env
 ): string {

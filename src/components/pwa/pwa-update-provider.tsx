@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { PwaUpdateDialog } from "@/components/pwa/pwa-update-dialog";
 import { isCapacitorNative, shouldRegisterServiceWorkerOnBoot, shouldRunPwaUpdateClient } from "@/lib/pwa/environment";
 import { registerRideCloudServiceWorker } from "@/lib/pwa/service-worker";
+import { buildCacheBustedReloadUrl } from "@/lib/pwa/app-version";
 import { applyWaitingOrReload, checkForAppUpdate, createReloadGuard, PWA_UPDATE_INTERVAL_MS } from "@/lib/pwa/update-check";
 
 export function PwaUpdateProvider() {
@@ -13,15 +14,24 @@ export function PwaUpdateProvider() {
   const deployedVersionRef = useRef<string | null>(null);
   const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
   const allowReloadRef = useRef(false);
-  const reloadOnceRef = useRef(createReloadGuard(() => window.location.reload()));
+  const reloadOnceRef = useRef(
+    createReloadGuard(() => {
+      if (isCapacitorNative()) {
+        window.location.replace(buildCacheBustedReloadUrl(window.location.href, deployedVersionRef.current));
+        return;
+      }
+      window.location.reload();
+    })
+  );
 
   const runCheck = useCallback(async () => {
-    if (!shouldRunPwaUpdateClient({ isNative: isCapacitorNative(), nodeEnv: process.env.NODE_ENV })) {
+    const isNative = isCapacitorNative();
+    if (!shouldRunPwaUpdateClient({ isNative, nodeEnv: process.env.NODE_ENV })) {
       return;
     }
 
     const result = await checkForAppUpdate({
-      isNative: false,
+      isNative,
       dismissedVersion: dismissedVersionRef.current
     });
     deployedVersionRef.current = result.deployedVersion;
@@ -34,7 +44,7 @@ export function PwaUpdateProvider() {
     const isNative = isCapacitorNative();
     const nodeEnv = process.env.NODE_ENV;
 
-    if (isNative || !shouldRunPwaUpdateClient({ isNative, nodeEnv })) {
+    if (!shouldRunPwaUpdateClient({ isNative, nodeEnv })) {
       return;
     }
 
@@ -105,6 +115,11 @@ export function PwaUpdateProvider() {
     if (applying) return;
     setApplying(true);
     allowReloadRef.current = true;
+
+    if (isCapacitorNative()) {
+      reloadOnceRef.current();
+      return;
+    }
 
     const registration =
       registrationRef.current ??

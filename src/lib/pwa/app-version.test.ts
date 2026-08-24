@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { APP_VERSION_FALLBACK, getLoadedAppVersion, hasDeployedAppUpdate, resolveAppVersion } from "./app-version";
+import {
+  APP_VERSION_FALLBACK,
+  APP_VERSION_PATH,
+  appVersionRequestUrl,
+  buildCacheBustedReloadUrl,
+  getLoadedAppVersion,
+  hasDeployedAppUpdate,
+  resolveAppVersion
+} from "./app-version";
 
 describe("resolveAppVersion", () => {
   it("privilégie l'id de déploiement Vercel, déterministe et sans secret", () => {
@@ -29,6 +37,20 @@ describe("hasDeployedAppUpdate", () => {
   it("ignore une version déployée absente", () => {
     expect(hasDeployedAppUpdate("dpl_1", null)).toBe(false);
     expect(hasDeployedAppUpdate("", "dpl_2")).toBe(false);
+  });
+});
+
+describe("appVersionRequestUrl", () => {
+  it("ajoute un cache-buster sur l'endpoint existant", () => {
+    expect(appVersionRequestUrl(1700000000000)).toBe(`${APP_VERSION_PATH}?t=1700000000000`);
+  });
+});
+
+describe("buildCacheBustedReloadUrl", () => {
+  it("remplace rcu pour forcer le WebView à recharger N+1", () => {
+    expect(buildCacheBustedReloadUrl("https://ridecloud.app/categories?rcu=old", "dpl_2")).toBe(
+      "https://ridecloud.app/categories?rcu=dpl_2"
+    );
   });
 });
 

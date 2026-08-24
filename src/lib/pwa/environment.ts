@@ -24,6 +24,10 @@ export function shouldRunPwaUpdateClient(input: {
   isNative: boolean;
   nodeEnv: string | undefined;
 }): boolean {
-  if (input.isNative) return false;
   return input.nodeEnv === "production";
+}
+
+/** WebView Android/iOS : le SW n'est pas fiable. On compare uniquement la version distante. */
+export function shouldUseRemoteVersionFallback(isNative: boolean): boolean {
+  return isNative;
 }

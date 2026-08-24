@@ -1,4 +1,5 @@
-import { APP_VERSION_PATH, getLoadedAppVersion, hasDeployedAppUpdate } from "@/lib/pwa/app-version";
+import { appVersionRequestUrl, getLoadedAppVersion, hasDeployedAppUpdate } from "@/lib/pwa/app-version";
+import { shouldUseRemoteVersionFallback } from "@/lib/pwa/environment";
 import { getRideCloudServiceWorkerRegistration, postSkipWaiting } from "@/lib/pwa/service-worker";
 
 export const PWA_UPDATE_INTERVAL_MS = 60_000;
@@ -10,7 +11,6 @@ export function shouldPromptForPwaUpdate(input: {
   hasWaitingWorker: boolean;
   dismissedVersion?: string | null;
 }): boolean {
-  if (input.isNative) return false;
   if (input.dismissedVersion) {
     const dismissedThisDeploy =
       input.deployedVersion !== null
@@ -18,7 +18,7 @@ export function shouldPromptForPwaUpdate(input: {
         : input.dismissedVersion === "waiting";
     if (dismissedThisDeploy) return false;
   }
-  if (input.hasWaitingWorker) return true;
+  if (!input.isNative && input.hasWaitingWorker) return true;
   return hasDeployedAppUpdate(input.loadedVersion, input.deployedVersion);
 }
 
@@ -45,12 +45,16 @@ export function applyWaitingOrReload(input: {
 }
 
 export async function fetchDeployedAppVersion(
-  fetcher: typeof fetch = fetch
+  fetcher: typeof fetch = fetch,
+  now = Date.now()
 ): Promise<string | null> {
-  const response = await fetcher(APP_VERSION_PATH, {
+  const response = await fetcher(appVersionRequestUrl(now), {
     method: "GET",
     cache: "no-store",
-    headers: { Accept: "application/json" }
+    headers: {
+      Accept: "application/json",
+      "Cache-Control": "no-cache"
+    }
   });
   if (!response.ok) return null;
   const body = (await response.json()) as { version?: unknown };
@@ -75,24 +79,23 @@ export async function checkForAppUpdate(input: {
   if (inFlightCheck) return inFlightCheck;
 
   inFlightCheck = (async () => {
-    if (input.isNative) {
-      return { shouldPrompt: false, deployedVersion: null, hasWaitingWorker: false };
-    }
-
+    const skipServiceWorker = shouldUseRemoteVersionFallback(input.isNative);
     const [deployedVersion, registration] = await Promise.all([
       (input.fetchDeployedVersion ?? fetchDeployedAppVersion)().catch(() => null),
-      (input.refreshRegistration ??
-        (async () => {
-          const existing = await getRideCloudServiceWorkerRegistration();
-          if (existing) {
-            try {
-              await existing.update();
-            } catch {
-              // update() peut échouer hors ligne — on continue avec l'état connu.
-            }
-          }
-          return existing;
-        }))()
+      skipServiceWorker
+        ? Promise.resolve(null)
+        : (input.refreshRegistration ??
+            (async () => {
+              const existing = await getRideCloudServiceWorkerRegistration();
+              if (existing) {
+                try {
+                  await existing.update();
+                } catch {
+                  // update() peut échouer hors ligne — on continue avec l'état connu.
+                }
+              }
+              return existing;
+            }))()
     ]);
 
     const hasWaitingWorker = Boolean(registration?.waiting);
@@ -102,7 +105,7 @@ export async function checkForAppUpdate(input: {
       deployedVersion,
       hasWaitingWorker,
       shouldPrompt: shouldPromptForPwaUpdate({
-        isNative: false,
+        isNative: input.isNative,
         loadedVersion,
         deployedVersion,
         hasWaitingWorker,
