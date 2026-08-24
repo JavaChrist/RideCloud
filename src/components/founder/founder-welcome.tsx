@@ -186,7 +186,7 @@ function PitchView({ slotsTaken, slotsRemaining, claiming, onClaim }: PitchViewP
             </ol>
           </div>
 
-          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-col items-center gap-3">
             <Button
               size="lg"
               onClick={onClaim}
@@ -202,7 +202,7 @@ function PitchView({ slotsTaken, slotsRemaining, claiming, onClaim }: PitchViewP
               {!isFull && !claiming && <ArrowRight className="h-4 w-4" />}
             </Button>
 
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-center text-xs text-slate-500 dark:text-slate-400">
               Idempotent — si vous avez déjà une place, on vous renvoie la vôtre.
             </p>
           </div>
