@@ -134,7 +134,7 @@ function PitchView({ slotsTaken, slotsRemaining, claiming, onClaim }: PitchViewP
       <Card className="relative overflow-hidden border-indigo-200/60 bg-gradient-to-br from-blue-50 via-indigo-50 to-violet-50 dark:border-indigo-800/60 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-violet-950/40">
         <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-500/60 to-transparent" />
         <CardHeader className="space-y-3">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-2">
             <Badge variant="outline" className="border-indigo-500/40 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">
               <Sparkles className="mr-1 h-3 w-3" /> Programme limité
             </Badge>
