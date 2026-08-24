@@ -6,6 +6,12 @@
   html {
     scroll-behavior: smooth;
     scroll-padding-top: 5rem;
+    /*
+      Capacitor 8 (Android) injecte --safe-area-inset-* car env() est
+      souvent faux/à 0 sous WebView < 140. iOS / Safari / PWA utilisent env().
+    */
+    --rc-safe-area-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+    --rc-safe-area-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
   }
 
   :root {
@@ -100,6 +106,10 @@
 }
 
 @layer utilities {
+  .pt-safe-top {
+    padding-top: var(--rc-safe-area-top);
+  }
+
   .ride-text-balance {
     text-wrap: balance;
   }

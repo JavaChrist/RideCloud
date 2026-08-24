@@ -45,14 +45,14 @@ export function ProtectedShell({ children, planState, founderRecord }: Protected
         pour que la bannière fondateur (et le main) commencent sous le header.
         Hauteur = safe-area-inset-top + ~3.5rem (py-3 × 2 + logo compact).
       */}
-      <div aria-hidden className="h-[calc(env(safe-area-inset-top)+3.5rem)] shrink-0" />
+      <div aria-hidden className="h-[calc(var(--rc-safe-area-top)+3.5rem)] shrink-0" />
 
       {showFounderBanner && founderRecord && (
         <FounderBanner slot={founderRecord.slot} daysRemaining={remaining} />
       )}
 
       <main className={`relative mx-auto w-full max-w-6xl flex-1 px-4 pb-10 md:px-6 ${
-        showFounderBanner ? "pt-4 md:pt-6" : "pt-[calc(env(safe-area-inset-top)+3.5rem)]"
+        showFounderBanner ? "pt-4 md:pt-6" : "pt-[calc(var(--rc-safe-area-top)+3.5rem)]"
       }`}>
         {children}
       </main>

@@ -34,7 +34,7 @@ export default async function TarifsPage() {
         className="pointer-events-none absolute inset-x-0 top-[420px] -z-10 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent"
       />
 
-      <header className="sticky top-0 z-40 border-b border-slate-200/70 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/70 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-slate-50/70 pt-safe-top backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 md:px-6">
           <Link href="/" className="transition hover:opacity-80">
             <Logo compact />

@@ -51,7 +51,7 @@ export function NotificationInbox({ onClose }: { onClose: () => void }) {
     <div
       role="dialog"
       aria-label="Boîte de réception des notifications"
-      className="absolute right-0 top-full z-50 mt-2 flex w-[min(24rem,calc(100vw-1.5rem))] max-h-[min(28rem,70vh)] flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-lg dark:border-slate-700/80 dark:bg-slate-900 max-sm:fixed max-sm:left-3 max-sm:right-3 max-sm:top-[calc(env(safe-area-inset-top)+3.25rem)] max-sm:mt-0 max-sm:w-auto"
+      className="absolute right-0 top-full z-50 mt-2 flex w-[min(24rem,calc(100vw-1.5rem))] max-h-[min(28rem,70vh)] flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-lg dark:border-slate-700/80 dark:bg-slate-900 max-sm:fixed max-sm:left-3 max-sm:right-3 max-sm:top-[calc(var(--rc-safe-area-top)+3.25rem)] max-sm:mt-0 max-sm:w-auto"
     >
       <div className="flex items-center justify-between gap-3 border-b border-slate-200/80 px-3 py-2.5 dark:border-slate-700/80">
         <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Notifications</p>

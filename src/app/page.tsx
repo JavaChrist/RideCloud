@@ -67,7 +67,7 @@ function BackgroundDecor() {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/60 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/70 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-50/50 dark:supports-[backdrop-filter]:bg-slate-950/50">
+    <header className="sticky top-0 z-50 border-b border-slate-200/60 bg-slate-50/70 pt-safe-top backdrop-blur-xl supports-[backdrop-filter]:bg-slate-50/50 dark:border-slate-800 dark:bg-slate-950/70 dark:supports-[backdrop-filter]:bg-slate-950/50">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="group flex items-center gap-2.5">
           <Image

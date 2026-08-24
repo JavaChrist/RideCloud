@@ -14,7 +14,7 @@ export default function LegalLayout({ children }: { children: ReactNode }) {
         <div className="absolute inset-x-0 top-0 h-[800px] bg-ride-grid dark:bg-ride-grid-light bg-ride-grid-sm [mask-image:radial-gradient(ellipse_60%_40%_at_50%_0%,black,transparent)]" />
       </div>
 
-      <header className="sticky top-0 z-40 border-b border-slate-200/70 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/70 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-slate-50/70 pt-safe-top backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-200/70 to-transparent"
