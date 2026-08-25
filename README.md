@@ -162,7 +162,9 @@ RideCloud envoie les rappels d'entretien et de mise à jour du compteur hors de 
 | Web Push VAPID | Navigateur / PWA | `push_subscriptions` |
 | FCM Android | App Capacitor (`fr.javachrist.ridecloud`) | `native_push_tokens` |
 
-**Push Android natif = VALIDÉ EN PRODUCTION le 25/08/2026** (appareil réel SHARK 9 : app fermée, arrière-plan et premier plan = PASS). Token FCM enregistré dans `native_push_tokens`. Détail opérationnel : [`docs/ANDROID-NATIVE-PUSH.md`](docs/ANDROID-NATIVE-PUSH.md).
+**Push Android natif = VALIDÉ EN PRODUCTION le 25/08/2026** (appareil réel SHARK 9 : app fermée, arrière-plan et premier plan = PASS). Token FCM enregistré dans `native_push_tokens`. Détail : [`docs/ANDROID-NATIVE-PUSH.md`](docs/ANDROID-NATIVE-PUSH.md).
+
+**Google Play Internal Testing = PASS** (25/08/2026) : AAB `1.0` / `versionCode` 1, installation Play (`com.android.vending`) sur SHARK 9, push FCM app fermée + inbox. Voir [`docs/ANDROID-GOOGLE-PLAY.md`](docs/ANDROID-GOOGLE-PLAY.md).
 
 Ne pas modifier le setup Firebase / Capacitor sans besoin identifié. `google-services.json` reste local et exclu de Git.
 
@@ -252,7 +254,9 @@ supabase/
   schema.sql                 # schéma de base (entités principales)
   migrations/                # migrations idempotentes datées
 docs/
+  ANDROID-GOOGLE-PLAY.md     # Internal Testing PASS + Closed Testing (25/08/2026)
   ANDROID-NATIVE-PUSH.md     # état validé Push Android (25/08/2026)
+  ANDROID-RELEASE-SIGNING.md # upload key / Play App Signing
   RideCloud-Product-Sheet.md
   RideCloud-Landing-Page.md
   AI-MAINTENANCE-PLAN.md
@@ -307,6 +311,7 @@ select public.claim_founder_slot();
 ### Livré en production ✅
 - Notifications push Web Push (rappels entretien, mise à jour compteur)
 - Push Android natif FCM (Capacitor) — validé le 25/08/2026 sur SHARK 9
+- Google Play Internal Testing — AAB 1.0 installé depuis Play (SHARK 9)
 - Paiements Mollie récurrents + rétrogradation automatique + résiliation RGPD
 
 ### V1 (1-3 mois)
@@ -317,7 +322,7 @@ select public.claim_founder_slot();
 - Onboarding guidé premier véhicule
 
 ### V2+
-- Google Play Closed Testing (publication AAB — hors chantier push)
+- Google Play Closed Testing (fiche Play, Data safety, bêta-testeurs)
 - OCR factures
 - Intégration contrôle technique / assurance
 - API publique partenaires

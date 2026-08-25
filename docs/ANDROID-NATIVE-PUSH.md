@@ -5,7 +5,12 @@
 > Bundle web : `https://ridecloud.app` (Capacitor `server.url`)  
 > Commit de référence du correctif thenable : `51b5b1d`
 
-Ce document clôt le chantier Push Android avant Google Play Closed Testing.
+Ce document clôt le chantier Push Android.
+
+**Google Play Internal Testing = PASS** (25/08/2026, SHARK 9, installation
+`com.android.vending`). Chaîne Play → Android → FCM → RideCloud validée.
+Référence store : [`ANDROID-GOOGLE-PLAY.md`](ANDROID-GOOGLE-PLAY.md).
+
 Ne pas modifier le setup Firebase / Capacitor sans besoin identifié.
 
 ---
@@ -100,6 +105,7 @@ Logs attendus (Logcat) :
 - Ne pas lancer `cap sync` ni reconstruire l’APK pour un changement web seul.
 - Ne pas modifier Firebase, `google-services.json`, `AndroidManifest`, le channel,
   le backend FCM, les payloads, la RLS, le cron ou Web Push sans besoin identifié.
-- Prochaine étape produit : **Google Play Closed Testing** (AAB / Play Console).
-  Signature : **Google Play App Signing** + upload key locale — voir
+- Signature : **Google Play App Signing** + upload key locale — voir
   [`ANDROID-RELEASE-SIGNING.md`](ANDROID-RELEASE-SIGNING.md).
+- Internal Testing Play : **PASS**. Prochaine étape : **Closed Testing**
+  (fiche Play, Data safety, testeurs) — [`ANDROID-GOOGLE-PLAY.md`](ANDROID-GOOGLE-PLAY.md).

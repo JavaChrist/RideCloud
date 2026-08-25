@@ -48,7 +48,16 @@ Un build Release **sans** cette configuration échoue explicitement. Aucun fallb
 
 ---
 
+## État au 25/08/2026
+
+Upload key locale configurée. Premier AAB Release (`versionCode` 1 / `versionName` 1.0)
+signé, vérifié (`jarsigner` PASS), uploadé. **Google Play App Signing actif.**
+Internal Testing validé — voir [`ANDROID-GOOGLE-PLAY.md`](ANDROID-GOOGLE-PLAY.md).
+
+Réutiliser **la même upload key** pour les AAB suivants. Incrémenter `versionCode`
+uniquement pour un nouvel upload Play.
+
 ## Hors périmètre
 
-- Ne pas générer l’AAB tant que l’upload key n’existe pas.
-- Ne pas modifier `server.url` / REMOTE_URL, Firebase, FCM, `versionCode` ou `versionName` pour cette préparation.
+- Ne pas modifier `server.url` / REMOTE_URL, Firebase, FCM sans besoin identifié.
+- Ne pas régénérer l’AAB `1.0` / `versionCode` 1 sans besoin identifié.

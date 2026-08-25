@@ -46,8 +46,9 @@ L'objectif : que vendre, acheter, entretenir ou transmettre un véhicule devienn
 - **Phase actuelle** : **production ouverte**, bêta publique.
 - **Couverture fonctionnelle** : authentification PKCE, CRUD complet multi-catégories, plan d'entretien intelligent + IA, exports/imports, paiements récurrents Mollie, conformité RGPD complète, emails transactionnels personnalisés, **Web Push + Push Android FCM**.
 - **Push Android natif** : **VALIDÉ EN PRODUCTION le 25/08/2026** (SHARK 9 — foreground / background / app fermée = PASS). Voir `docs/ANDROID-NATIVE-PUSH.md`.
+- **Google Play Internal Testing** : **PASS** le 25/08/2026 — AAB `1.0` / `versionCode` 1, Play App Signing, installation `com.android.vending` sur SHARK 9. Voir `docs/ANDROID-GOOGLE-PLAY.md`.
 - **Disponibilité** : `https://ridecloud.app` — accessible à tout utilisateur disposant d'un email.
-- **Prochaine étape technique** : Google Play Closed Testing (publication AAB). Pas de changement Firebase / Capacitor sans besoin identifié.
+- **Prochaine étape technique** : Google Play Closed Testing (fiche Play, Data safety, testeurs). Pas de changement Firebase / Capacitor sans besoin identifié.
 
 ---
 
@@ -718,7 +719,7 @@ Aucune infra serveur custom : tout passe par **Supabase + Routes API Next.js**.
 - Marketplace de dossiers / revente facilitée.
 - Assistant IA contextuel par véhicule (questions/réponses).
 - Expansion EU multi-langue (DE, ES, IT, EN).
-- Publication store : Google Play Closed Testing (shell Android Capacitor déjà en place) ; iOS natif si pertinent vs PWA.
+- Publication store : Closed Testing (Internal Testing déjà PASS) ; iOS natif si pertinent vs PWA.
 - "Passeport numérique du véhicule" — standard partagé entre acheteurs / vendeurs.
 - Partenariats constructeurs (intégration officielle des plans d'entretien).
 - Partenariats assurances (réductions sur dossier propre).
