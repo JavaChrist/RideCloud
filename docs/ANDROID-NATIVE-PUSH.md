@@ -100,5 +100,6 @@ Logs attendus (Logcat) :
 - Ne pas lancer `cap sync` ni reconstruire l’APK pour un changement web seul.
 - Ne pas modifier Firebase, `google-services.json`, `AndroidManifest`, le channel,
   le backend FCM, les payloads, la RLS, le cron ou Web Push sans besoin identifié.
-- Prochaine étape produit : **Google Play Closed Testing** (AAB / Play Console),
-  hors périmètre de ce chantier.
+- Prochaine étape produit : **Google Play Closed Testing** (AAB / Play Console).
+  Signature : **Google Play App Signing** + upload key locale — voir
+  [`ANDROID-RELEASE-SIGNING.md`](ANDROID-RELEASE-SIGNING.md).

@@ -28,3 +28,11 @@ supabase/.temp/
 # Firebase Android (ne jamais committer)
 google-services.json
 **/google-services.json
+
+# Android upload key / signature Release (ne jamais committer)
+*.jks
+*.keystore
+keystore.properties
+key.properties
+**/keystore.properties
+**/key.properties

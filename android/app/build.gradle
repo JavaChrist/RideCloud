@@ -1,5 +1,54 @@
 apply plugin: 'com.android.application'
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.isFile()) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+
+def resolveUploadStoreFile(String rawPath) {
+    def home = System.getProperty("user.home")
+    def resolved = rawPath
+        .replace('%USERPROFILE%', home)
+        .replace('${USERPROFILE}', home)
+        .replaceFirst('^~', home)
+    return file(resolved)
+}
+
+def releaseSigningReady = false
+def releaseStoreFile = null
+def requiredSigningKeys = ["storeFile", "storePassword", "keyAlias", "keyPassword"]
+def signingValuesPresent = requiredSigningKeys.every { key ->
+    def value = keystoreProperties.getProperty(key)
+    return value != null && !value.trim().isEmpty()
+}
+if (signingValuesPresent) {
+    releaseStoreFile = resolveUploadStoreFile(keystoreProperties.getProperty("storeFile").trim())
+    releaseSigningReady = releaseStoreFile.isFile()
+}
+
+def assertReleaseSigningConfigured(String taskLabel) {
+    if (!keystorePropertiesFile.isFile()) {
+        throw new GradleException(
+            "RideCloud: signature Release absente. Crée android/keystore.properties (hors Git) " +
+            "et l'upload keystore. Aucun fallback vers la clé debug. Tâche: ${taskLabel}. " +
+            "Voir docs/ANDROID-RELEASE-SIGNING.md"
+        )
+    }
+    if (!signingValuesPresent) {
+        throw new GradleException(
+            "RideCloud: android/keystore.properties incomplet " +
+            "(storeFile, storePassword, keyAlias, keyPassword). Aucun fallback debug. Tâche: ${taskLabel}."
+        )
+    }
+    if (releaseStoreFile == null || !releaseStoreFile.isFile()) {
+        throw new GradleException(
+            "RideCloud: upload keystore introuvable (chemin storeFile). " +
+            "Aucun fallback vers la clé debug. Tâche: ${taskLabel}."
+        )
+    }
+}
+
 android {
     namespace = "fr.javachrist.ridecloud"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,11 +65,32 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (releaseSigningReady) {
+                storeFile releaseStoreFile
+                storePassword keystoreProperties.getProperty("storePassword")
+                keyAlias keystoreProperties.getProperty("keyAlias")
+                keyPassword keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (releaseSigningReady) {
+                signingConfig signingConfigs.release
+            }
         }
+    }
+}
+
+gradle.taskGraph.whenReady { graph ->
+    graph.allTasks.findAll { task ->
+        task.name.toLowerCase().contains("release")
+    }.each { task ->
+        assertReleaseSigningConfigured(task.name)
     }
 }
 
