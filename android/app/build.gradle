@@ -27,7 +27,7 @@ if (signingValuesPresent) {
     releaseSigningReady = releaseStoreFile.isFile()
 }
 
-def assertReleaseSigningConfigured(String taskLabel) {
+def assertReleaseSigningConfigured = { String taskLabel ->
     if (!keystorePropertiesFile.isFile()) {
         throw new GradleException(
             "RideCloud: signature Release absente. Crée android/keystore.properties (hors Git) " +
