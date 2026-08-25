@@ -63,6 +63,19 @@ export interface PushSubscriptionRow {
   last_error_reason: string | null;
 }
 
+export type NativePushPlatform = "android" | "ios";
+
+export interface NativePushTokenRow {
+  id: UUID;
+  user_id: UUID;
+  platform: NativePushPlatform;
+  token: string;
+  installation_id: string | null;
+  created_at: string;
+  updated_at: string;
+  last_seen_at: string;
+}
+
 export interface NotificationLogRow {
   id: UUID;
   user_id: UUID;
@@ -329,6 +342,17 @@ export interface Database {
           last_seen_at?: string;
         };
         Update: Partial<PushSubscriptionRow>;
+        Relationships: [];
+      };
+      native_push_tokens: {
+        Row: NativePushTokenRow;
+        Insert: Omit<NativePushTokenRow, "id" | "created_at" | "updated_at" | "last_seen_at"> & {
+          id?: UUID;
+          created_at?: string;
+          updated_at?: string;
+          last_seen_at?: string;
+        };
+        Update: Partial<NativePushTokenRow>;
         Relationships: [];
       };
       notification_log: {

@@ -88,7 +88,9 @@ export async function dispatchNotificationAlerts(
       title: alert.title,
       body: alert.body,
       url: alert.href,
-      tag: alert.tag
+      tag: alert.tag,
+      notificationId: row.id,
+      type: alert.type
     });
     const success = outcomes.some((outcome) => outcome.success);
 

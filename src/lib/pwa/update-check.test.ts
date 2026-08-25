@@ -5,6 +5,7 @@ import {
   type VersionStorage
 } from "./acknowledged-version";
 import {
+  isCapacitorAndroid,
   isCapacitorNative,
   shouldRegisterServiceWorkerOnBoot,
   shouldRunPwaUpdateClient,
@@ -41,6 +42,16 @@ describe("environnement Capacitor", () => {
     expect(isCapacitorNative({ Capacitor: { isNativePlatform: () => true } })).toBe(true);
     expect(isCapacitorNative({ Capacitor: { isNativePlatform: () => false } })).toBe(false);
     expect(isCapacitorNative({})).toBe(false);
+    expect(
+      isCapacitorAndroid({
+        Capacitor: { isNativePlatform: () => true, getPlatform: () => "android" }
+      })
+    ).toBe(true);
+    expect(
+      isCapacitorAndroid({
+        Capacitor: { isNativePlatform: () => true, getPlatform: () => "ios" }
+      })
+    ).toBe(false);
   });
 
   it("n'enregistre pas le SW sur Capacitor mais lance le fallback version", () => {

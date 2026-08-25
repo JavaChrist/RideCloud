@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { sendToUser } from "@/lib/push/server";
+import { collectPushRecipientIds } from "@/lib/push/native-tokens";
 import {
   insertNotificationLog,
   markNotificationPushed,
@@ -42,15 +43,23 @@ export function createAdminNotificationDeps(
       return (data as { sent_at: string } | null)?.sent_at ?? null;
     },
     loadPushUserIds: async () => {
-      let query = admin.from("push_subscriptions").select("user_id");
+      let webQuery = admin.from("push_subscriptions").select("user_id");
+      let nativeQuery = admin.from("native_push_tokens").select("user_id");
       if (options?.pushUserId) {
-        query = query.eq("user_id", options.pushUserId);
+        webQuery = webQuery.eq("user_id", options.pushUserId);
+        nativeQuery = nativeQuery.eq("user_id", options.pushUserId);
       }
-      const { data, error } = await query;
-      if (error) {
-        throw new Error(error.message);
+      const [web, native] = await Promise.all([webQuery, nativeQuery]);
+      if (web.error) {
+        throw new Error(web.error.message);
       }
-      return new Set((data ?? []).map((row) => (row as { user_id: string }).user_id));
+      if (native.error) {
+        throw new Error(native.error.message);
+      }
+      return collectPushRecipientIds(
+        (web.data ?? []).map((row) => (row as { user_id: string }).user_id),
+        (native.data ?? []).map((row) => (row as { user_id: string }).user_id)
+      );
     },
     sendPush: (userId, payload) => sendToUser(userId, payload),
     markPushed: (notificationId, at) => markNotificationPushed(admin, notificationId, at),

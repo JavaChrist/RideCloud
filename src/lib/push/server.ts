@@ -42,6 +42,8 @@ export interface PushPayload {
   body: string;
   url?: string;
   tag?: string;
+  notificationId?: string;
+  type?: string;
 }
 
 export interface SendOutcome {
@@ -115,10 +117,9 @@ export async function sendToSubscription(
 }
 
 /**
- * Envoie le MÊME payload à toutes les souscriptions d'un utilisateur
- * (multi-device : téléphone + tablette + desktop). Renvoie un récap.
+ * Envoie le MÊME payload à toutes les souscriptions Web Push d'un utilisateur.
  */
-export async function sendToUser(userId: string, payload: PushPayload): Promise<SendOutcome[]> {
+export async function sendWebPushToUser(userId: string, payload: PushPayload): Promise<SendOutcome[]> {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("push_subscriptions")
@@ -133,4 +134,24 @@ export async function sendToUser(userId: string, payload: PushPayload): Promise<
     outcomes.push(await sendToSubscription(sub, payload));
   }
   return outcomes;
+}
+
+/**
+ * Orchestration Web Push VAPID + FCM Android. Ne s'arrête pas si un canal est vide.
+ */
+export async function sendToUser(
+  userId: string,
+  payload: PushPayload,
+  sendNative: (userId: string, payload: PushPayload) => Promise<SendOutcome[]> = defaultSendNative
+): Promise<SendOutcome[]> {
+  const [webOutcomes, nativeOutcomes] = await Promise.all([
+    sendWebPushToUser(userId, payload),
+    sendNative(userId, payload)
+  ]);
+  return [...webOutcomes, ...nativeOutcomes];
+}
+
+async function defaultSendNative(userId: string, payload: PushPayload): Promise<SendOutcome[]> {
+  const { sendNativePushToUser } = await import("@/lib/push/native-send");
+  return sendNativePushToUser(userId, payload);
 }

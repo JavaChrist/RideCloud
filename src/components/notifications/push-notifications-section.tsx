@@ -5,7 +5,14 @@ import { Bell, BellOff, Loader2, ShieldAlert, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { isCapacitorAndroid } from "@/lib/pwa/environment";
 import { disablePush, enablePush, getPushStatus, type PushStatus } from "@/lib/push/client";
+import {
+  disableNativePush,
+  enableNativePush,
+  getNativePushStatus,
+  type NativePushStatus
+} from "@/lib/push/native-client";
 
 interface PushNotificationsSectionProps {
   vapidPublicKey: string | null;
@@ -28,10 +35,20 @@ interface PushNotificationsSectionProps {
  *     réglages du navigateur.
  */
 export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSectionProps) {
+  const [isAndroidNative, setIsAndroidNative] = useState(false);
   const [status, setStatus] = useState<PushStatus | null>(null);
+  const [nativeStatus, setNativeStatus] = useState<NativePushStatus | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    setIsAndroidNative(isCapacitorAndroid());
+  }, []);
+
   const refresh = useCallback(async () => {
+    if (isCapacitorAndroid()) {
+      setNativeStatus(await getNativePushStatus());
+      return;
+    }
     const next = await getPushStatus();
     setStatus(next);
   }, []);
@@ -41,20 +58,29 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
   }, [refresh]);
 
   const handleEnable = async () => {
-    if (!vapidPublicKey) {
-      toast.error("Notifications indisponibles : configuration serveur incomplète.");
-      return;
-    }
     setLoading(true);
     try {
+      if (isCapacitorAndroid()) {
+        const result = await enableNativePush();
+        if (result.ok) {
+          toast.success("Notifications activées. Tu recevras les rappels d'entretien sur ce téléphone.");
+        } else {
+          toast.error(result.reason);
+        }
+        await refresh();
+        return;
+      }
+      if (!vapidPublicKey) {
+        toast.error("Notifications indisponibles : configuration serveur incomplète.");
+        return;
+      }
       const result = await enablePush(vapidPublicKey);
       if (result.ok) {
         toast.success("Notifications activées. Tu recevras les rappels d'entretien sur ce téléphone.");
-        await refresh();
       } else {
         toast.error(result.reason);
-        await refresh();
       }
+      await refresh();
     } finally {
       setLoading(false);
     }
@@ -63,7 +89,7 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
   const handleDisable = async () => {
     setLoading(true);
     try {
-      const result = await disablePush();
+      const result = isCapacitorAndroid() ? await disableNativePush() : await disablePush();
       if (result.ok) {
         toast.success("Notifications désactivées sur ce device.");
         await refresh();
@@ -75,9 +101,8 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
     }
   };
 
-  // ----- Rendu -----
-
-  if (!status) {
+  const waitingStatus = isAndroidNative ? !nativeStatus : !status;
+  if (waitingStatus) {
     return (
       <article className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-6 shadow-ride-sm md:p-8">
         <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
@@ -88,7 +113,9 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
     );
   }
 
-  const isSubscribed = status.subscribed && status.permission === "granted";
+  const isNativeLinked = Boolean(nativeStatus?.linked && nativeStatus.permission === "granted");
+  const isWebSubscribed = Boolean(status?.subscribed && status.permission === "granted");
+  const isSubscribed = isAndroidNative ? isNativeLinked : isWebSubscribed;
 
   return (
     <article className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-6 shadow-ride-sm md:p-8">
@@ -107,23 +134,58 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
             Notifications sur le téléphone
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-            Reçois directement sur ton téléphone les rappels d&apos;entretien (overdue / bientôt
-            dû) et l&apos;invitation à recaler ton compteur, même quand l&apos;app n&apos;est pas
-            ouverte. Tu peux désactiver à tout moment depuis ici.
+            {isAndroidNative
+              ? "RideCloud t'envoie les rappels d'entretien même si l'app est fermée. Android demandera l'autorisation uniquement après ce bouton."
+              : "Reçois directement sur ton téléphone les rappels d'entretien (overdue / bientôt dû) et l'invitation à recaler ton compteur, même quand l'app n'est pas ouverte. Tu peux désactiver à tout moment depuis ici."}
           </p>
         </div>
       </div>
 
       <Separator className="my-5 bg-slate-200/70 dark:bg-slate-800/70" />
 
-      {status.support === "unsupported" && (
+      {isAndroidNative && nativeStatus?.permission === "denied" && (
+        <div className="flex items-start gap-2 rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/60 dark:bg-rose-950/40 p-3 text-sm text-rose-800 dark:text-rose-300">
+          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          <span>
+            Les notifications sont bloquées pour RideCloud. Ouvre <strong>Paramètres Android → Applications → RideCloud → Notifications</strong> pour les autoriser, puis reviens ici.
+          </span>
+        </div>
+      )}
+
+      {isAndroidNative && nativeStatus?.permission !== "denied" && (
+        <div className="flex flex-col-reverse items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            {isNativeLinked
+              ? "Ce téléphone Android est inscrit : les rappels arriveront ici."
+              : "Active les notifications pour recevoir les rappels d'entretien hors de l'app."}
+          </p>
+          {isNativeLinked ? (
+            <Button type="button" variant="outline" onClick={handleDisable} disabled={loading} className="gap-2">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <BellOff className="h-4 w-4" aria-hidden />}
+              Désactiver sur ce device
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={handleEnable}
+              disabled={loading}
+              className="gap-2 bg-blue-700 text-white shadow-[0_4px_14px_-4px_rgba(29,78,216,0.6)] transition hover:bg-blue-800"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Bell className="h-4 w-4" aria-hidden />}
+              Activer les notifications
+            </Button>
+          )}
+        </div>
+      )}
+
+      {!isAndroidNative && status?.support === "unsupported" && (
         <div className="flex items-start gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-3 text-sm text-slate-600 dark:text-slate-300">
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <span>Ce navigateur ne supporte pas les notifications push. Ouvre l&apos;app depuis Chrome, Edge, Firefox ou Safari 16.4+ pour activer cette fonctionnalité.</span>
         </div>
       )}
 
-      {status.support === "needs-install" && (
+      {!isAndroidNative && status?.support === "needs-install" && (
         <div className="flex items-start gap-2 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50/60 dark:bg-amber-950/40 p-3 text-sm text-amber-800 dark:text-amber-300">
           <Smartphone className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <span>
@@ -132,7 +194,7 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
         </div>
       )}
 
-      {status.support === "supported" && status.permission === "denied" && (
+      {!isAndroidNative && status?.support === "supported" && status.permission === "denied" && (
         <div className="flex items-start gap-2 rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/60 dark:bg-rose-950/40 p-3 text-sm text-rose-800 dark:text-rose-300">
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <span>
@@ -141,21 +203,15 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
         </div>
       )}
 
-      {status.support === "supported" && status.permission !== "denied" && (
+      {!isAndroidNative && status?.support === "supported" && status.permission !== "denied" && (
         <div className="flex flex-col-reverse items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-600 dark:text-slate-300">
-            {isSubscribed
+            {isWebSubscribed
               ? "Ce device est inscrit : les rappels arriveront ici."
               : "Active les notifications pour recevoir les rappels d'entretien hors de l'app."}
           </p>
-          {isSubscribed ? (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleDisable}
-              disabled={loading}
-              className="gap-2"
-            >
+          {isWebSubscribed ? (
+            <Button type="button" variant="outline" onClick={handleDisable} disabled={loading} className="gap-2">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <BellOff className="h-4 w-4" aria-hidden />}
               Désactiver sur ce device
             </Button>

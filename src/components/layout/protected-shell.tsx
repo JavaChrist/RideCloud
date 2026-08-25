@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ProtectedHeader } from "@/components/layout/protected-header";
+import { NativePushListener } from "@/components/notifications/native-push-listener";
 import { FounderBanner } from "@/components/founder/founder-banner";
 import type { UserPlanState } from "@/lib/billing/limits";
 import { daysLeft, effectiveStatus, type FounderRecord } from "@/lib/billing/founder-program";
@@ -35,6 +36,7 @@ export function ProtectedShell({ children, planState, founderRecord }: Protected
         <div className="absolute inset-x-0 top-0 h-[1200px] bg-ride-grid dark:bg-ride-grid-light bg-ride-grid-sm [mask-image:radial-gradient(ellipse_60%_45%_at_50%_0%,black,transparent)]" />
       </div>
 
+      <NativePushListener />
       <ProtectedHeader
         founderBadge={planState?.founderBadge ? founderRecord?.slot ?? null : null}
         showFounderCta={showFounderCta}

@@ -22,13 +22,16 @@ vi.mock("@/lib/supabase/admin", () => ({
         delete: () => ({ eq: deleteEq }),
         update: () => ({ eq: updateEq }),
         select: () => ({
-          eq: vi.fn().mockResolvedValue({
-            data: [
-              { id: "sub-phone", endpoint: "https://push.example/phone", p256dh: "p1", auth: "a1" },
-              { id: "sub-desktop", endpoint: "https://push.example/desktop", p256dh: "p2", auth: "a2" }
-            ],
+          eq: vi.fn(async (_column: string, userId: string) => ({
+            data:
+              userId === "user-empty"
+                ? []
+                : [
+                    { id: "sub-phone", endpoint: "https://push.example/phone", p256dh: "p1", auth: "a1" },
+                    { id: "sub-desktop", endpoint: "https://push.example/desktop", p256dh: "p2", auth: "a2" }
+                  ],
             error: null
-          })
+          }))
         })
       };
     }
@@ -111,9 +114,38 @@ describe("sendToUser multi-device", () => {
       .mockResolvedValueOnce({ statusCode: 201 })
       .mockResolvedValueOnce({ statusCode: 201 });
     const { sendToUser } = await import("./server");
-    const outcomes = await sendToUser("user-a", { title: "t", body: "b", tag: "odometer-veh-1" });
+    const outcomes = await sendToUser("user-a", { title: "t", body: "b", tag: "odometer-veh-1" }, async () => []);
     expect(outcomes).toHaveLength(2);
     expect(outcomes.every((outcome) => outcome.success)).toBe(true);
+    expect(sendNotification).toHaveBeenCalledTimes(2);
+  });
+
+  it("Web seul : pas de token natif → VAPID inchangé", async () => {
+    sendNotification.mockResolvedValue({ statusCode: 201 });
+    const { sendToUser } = await import("./server");
+    const outcomes = await sendToUser("user-a", { title: "t", body: "b" }, async () => []);
+    expect(outcomes).toHaveLength(2);
+    expect(outcomes.every((outcome) => outcome.success)).toBe(true);
+    expect(sendNotification).toHaveBeenCalledTimes(2);
+  });
+
+  it("FCM seul : pas Web Push, token Android présent", async () => {
+    const { sendToUser } = await import("./server");
+    const outcomes = await sendToUser("user-empty", { title: "t", body: "b" }, async () => [
+      { endpoint: "fcm:native-1", success: true }
+    ]);
+    expect(outcomes).toEqual([{ endpoint: "fcm:native-1", success: true }]);
+    expect(sendNotification).not.toHaveBeenCalled();
+  });
+
+  it("sendToUser orchestre Web Push + FCM", async () => {
+    sendNotification.mockResolvedValue({ statusCode: 201 });
+    const { sendToUser } = await import("./server");
+    const outcomes = await sendToUser("user-a", { title: "t", body: "b" }, async () => [
+      { endpoint: "fcm:native-1", success: true }
+    ]);
+    expect(outcomes).toHaveLength(3);
+    expect(outcomes.filter((outcome) => outcome.success)).toHaveLength(3);
     expect(sendNotification).toHaveBeenCalledTimes(2);
   });
 });

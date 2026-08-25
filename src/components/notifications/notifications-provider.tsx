@@ -151,6 +151,14 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
+  useEffect(() => {
+    const onInboxRefresh = () => {
+      void refresh();
+    };
+    window.addEventListener("ridecloud:inbox-refresh", onInboxRefresh);
+    return () => window.removeEventListener("ridecloud:inbox-refresh", onInboxRefresh);
+  }, [refresh]);
+
   const value = useMemo(
     () => ({
       unreadCount,

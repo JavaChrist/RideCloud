@@ -1,5 +1,6 @@
 export interface CapacitorBridge {
   isNativePlatform?: () => boolean;
+  getPlatform?: () => string;
 }
 
 export function isCapacitorNative(
@@ -10,6 +11,20 @@ export function isCapacitorNative(
     return win.Capacitor.isNativePlatform();
   }
   return true;
+}
+
+export function getCapacitorPlatform(
+  win: { Capacitor?: CapacitorBridge } | undefined = globalThis.window as { Capacitor?: CapacitorBridge } | undefined
+): "android" | "ios" | "web" {
+  const platform = win?.Capacitor?.getPlatform?.();
+  if (platform === "android" || platform === "ios" || platform === "web") return platform;
+  return "web";
+}
+
+export function isCapacitorAndroid(
+  win: { Capacitor?: CapacitorBridge } | undefined = globalThis.window as { Capacitor?: CapacitorBridge } | undefined
+): boolean {
+  return isCapacitorNative(win) && getCapacitorPlatform(win) === "android";
 }
 
 export function shouldRegisterServiceWorkerOnBoot(input: {

@@ -24,3 +24,7 @@ EOF
 
 # supabase CLI
 supabase/.temp/
+
+# Firebase Android (ne jamais committer)
+google-services.json
+**/google-services.json

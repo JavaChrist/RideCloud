@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { unregisterNativePushOnLogout } from "@/lib/push/native-client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ export function SignOutButton({
   const handleSignOut = async () => {
     setIsLoading(true);
     try {
+      await unregisterNativePushOnLogout();
       const supabase = createClient();
       const { error } = await supabase.auth.signOut();
       if (error) {
