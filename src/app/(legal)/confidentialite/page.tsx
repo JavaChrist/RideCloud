@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 const toc = [
   { id: "responsable", label: "Responsable du traitement" },
   { id: "donnees", label: "Données collectées" },
+  { id: "notifications", label: "Notifications push" },
   { id: "finalites", label: "Finalités et bases légales" },
   { id: "duree", label: "Durées de conservation" },
   { id: "destinataires", label: "Destinataires & sous-traitants" },
@@ -27,7 +28,7 @@ export default function ConfidentialitePage() {
       badge="Politique de confidentialité"
       title="Politique de confidentialité"
       description="Comment nous collectons, utilisons et protégeons vos données personnelles dans le respect du RGPD et de la loi française Informatique et Libertés."
-      lastUpdated="17 mai 2026"
+      lastUpdated="25 août 2026"
       toc={toc}
     >
       <LegalCallout variant="info">
@@ -66,7 +67,8 @@ export default function ConfidentialitePage() {
             <li>Historique des entretiens, réparations et révisions&nbsp;;</li>
             <li>Coûts associés (factures, dépenses)&nbsp;;</li>
             <li>Documents téléversés (PDF de factures, photos, attestations)&nbsp;;</li>
-            <li>Rappels et préférences de notification.</li>
+            <li>Rappels et messages de l&apos;inbox RideCloud (entretiens, compteur)&nbsp;;</li>
+            <li>Préférences d&apos;activation des notifications (Paramètres).</li>
           </ul>
           <p className="text-sm text-slate-600 dark:text-slate-300">
             L&apos;Utilisateur est seul responsable du contenu des données qu&apos;il saisit dans le Service.
@@ -78,12 +80,68 @@ export default function ConfidentialitePage() {
             <li>Adresse IP (anonymisée après traitement)&nbsp;;</li>
             <li>Type et version du navigateur&nbsp;;</li>
             <li>Système d&apos;exploitation&nbsp;;</li>
-            <li>Pages consultées et durée de session (uniquement à des fins de mesure agrégée et anonyme).</li>
+            <li>Pages consultées et durée de session (uniquement à des fins de mesure agrégée et anonyme)&nbsp;;</li>
+            <li>
+              Identifiants techniques de notification, uniquement après activation&nbsp;: jeton Android FCM
+              et identifiant d&apos;installation, ou souscription Web Push (voir section 3).
+            </li>
           </ul>
         </LegalSubsection>
       </LegalSection>
 
-      <LegalSection id="finalites" title="3. Finalités et bases légales">
+      <LegalSection id="notifications" title="3. Notifications push">
+        <p>
+          RideCloud peut vous envoyer des notifications hors de l&apos;application (rappels
+          d&apos;entretien, mise à jour du compteur) uniquement si vous les activez depuis
+          <strong> Paramètres → Notifications</strong>. Ces notifications ne servent pas
+          à de la publicité ni à du marketing ciblé.
+        </p>
+
+        <LegalSubsection title="3.1 Application Android (Google Play)">
+          <p>
+            Sur l&apos;application Android RideCloud (package <code>fr.javachrist.ridecloud</code>),
+            l&apos;acheminement utilise <strong>Firebase Cloud Messaging</strong> (Google).
+            Après votre activation et l&apos;autorisation système Android, un
+            <strong> jeton technique</strong> (token FCM) est créé par l&apos;appareil.
+          </p>
+          <p>Ce jeton est stocké dans RideCloud et associé&nbsp;:</p>
+          <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
+            <li>à votre compte utilisateur (<code>user_id</code>)&nbsp;;</li>
+            <li>à la plateforme (<code>android</code>)&nbsp;;</li>
+            <li>à l&apos;installation de l&apos;application sur cet appareil (<code>installation_id</code>)&nbsp;;</li>
+            <li>à des horodatages techniques (<code>created_at</code>, <code>updated_at</code>, <code>last_seen_at</code>).</li>
+          </ul>
+          <p>
+            Finalité exclusive&nbsp;: permettre à RideCloud d&apos;envoyer, via Firebase, la
+            notification que vous avez acceptée (titre, texte, lien interne vers l&apos;app).
+            Le jeton n&apos;est pas utilisé pour vous identifier auprès d&apos;annonceurs, ni
+            pour un profilage publicitaire.
+          </p>
+        </LegalSubsection>
+
+        <LegalSubsection title="3.2 Navigateur / PWA (Web Push)">
+          <p>
+            Sur le web, l&apos;activation enregistre une souscription Web Push (adresse
+            d&apos;acheminement du navigateur et clés techniques associées), distincte du
+            jeton Android.
+          </p>
+        </LegalSubsection>
+
+        <LegalSubsection title="3.3 Désactivation et suppression">
+          <p>Vous pouvez&nbsp;:</p>
+          <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
+            <li>désactiver les notifications dans <strong>Paramètres</strong> — le jeton ou la souscription de l&apos;installation courante est alors supprimé côté RideCloud&nbsp;;</li>
+            <li>révoquer l&apos;autorisation dans les réglages Android ou du navigateur&nbsp;;</li>
+            <li>supprimer votre compte — les jetons et souscriptions liés au compte sont alors effacés avec le compte.</li>
+          </ul>
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            Un jeton devenu invalide peut aussi être retiré automatiquement lorsqu&apos;un
+            envoi échoue définitivement.
+          </p>
+        </LegalSubsection>
+      </LegalSection>
+
+      <LegalSection id="finalites" title="4. Finalités et bases légales">
         <p>
           Les données personnelles collectées sont traitées pour les finalités suivantes, sur les bases légales suivantes (article 6 du RGPD)&nbsp;:
         </p>
@@ -101,12 +159,20 @@ export default function ConfidentialitePage() {
                 <td className="px-4 py-3 align-top">Exécution du contrat (art. 6.1.b)</td>
               </tr>
               <tr>
-                <td className="px-4 py-3 align-top">Fourniture des fonctionnalités du Service (gestion des véhicules, rappels, exports)</td>
+                <td className="px-4 py-3 align-top">Fourniture des fonctionnalités du Service (gestion des véhicules, rappels, exports, notifications inbox)</td>
                 <td className="px-4 py-3 align-top">Exécution du contrat (art. 6.1.b)</td>
               </tr>
               <tr>
                 <td className="px-4 py-3 align-top">Envoi d&apos;e-mails transactionnels (confirmation d&apos;inscription, réinitialisation de mot de passe, rappels)</td>
                 <td className="px-4 py-3 align-top">Exécution du contrat (art. 6.1.b)</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 align-top">
+                  Acheminement des notifications push (Web Push et/ou Android via Firebase Cloud Messaging), uniquement après activation dans les Paramètres
+                </td>
+                <td className="px-4 py-3 align-top">
+                  Même finalité de rappel que le Service. L&apos;enregistrement du jeton ou de la souscription n&apos;a lieu qu&apos;après votre action d&apos;activation (et l&apos;autorisation système le cas échéant).
+                </td>
               </tr>
               <tr>
                 <td className="px-4 py-3 align-top">Amélioration du Service (statistiques d&apos;usage anonymisées)</td>
@@ -129,18 +195,23 @@ export default function ConfidentialitePage() {
         </div>
       </LegalSection>
 
-      <LegalSection id="duree" title="4. Durées de conservation">
+      <LegalSection id="duree" title="5. Durées de conservation">
         <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li><strong>Données de compte actif</strong>&nbsp;: pendant toute la durée d&apos;utilisation du Service&nbsp;;</li>
           <li><strong>Compte inactif</strong>&nbsp;: après 24 mois consécutifs d&apos;inactivité, l&apos;Utilisateur reçoit une notification. À défaut de réactivation dans les 30 jours, le compte est supprimé automatiquement&nbsp;;</li>
           <li><strong>Compte supprimé</strong>&nbsp;: suppression définitive des données dans un délai maximal de <strong>30 jours</strong>, sauf obligations légales contraires&nbsp;;</li>
+          <li>
+            <strong>Jetons Android (FCM) et souscriptions Web Push</strong>&nbsp;: conservés tant que les notifications restent activées pour cette installation.
+            Ils sont supprimés lorsque vous désactivez les notifications dans les Paramètres, lorsque le compte est supprimé, ou lorsqu&apos;un jeton/souscription est devenu invalide lors d&apos;un envoi.
+            Aucune durée maximale distincte n&apos;est appliquée au-delà de ces événements&nbsp;;
+          </li>
           <li><strong>Logs techniques</strong>&nbsp;: 12 mois maximum&nbsp;;</li>
           <li><strong>Données comptables</strong> (factures futures)&nbsp;: 10 ans (article L.123-22 du Code de commerce)&nbsp;;</li>
           <li><strong>Données de prospection</strong> (si consentement)&nbsp;: 3 ans à compter du dernier contact actif.</li>
         </ul>
       </LegalSection>
 
-      <LegalSection id="destinataires" title="5. Destinataires et sous-traitants">
+      <LegalSection id="destinataires" title="6. Destinataires et sous-traitants">
         <p>
           Les données personnelles ne sont communiquées qu&apos;aux personnes habilitées au sein de l&apos;équipe RideCloud, ainsi qu&apos;à des sous-traitants techniques rigoureusement sélectionnés, présentant des garanties suffisantes au regard du RGPD&nbsp;:
         </p>
@@ -185,6 +256,13 @@ export default function ConfidentialitePage() {
                 <td className="px-4 py-3 align-top">Génération des plans d&apos;entretien personnalisés (IA) — données transmises : marque, modèle, kilométrage, historique d&apos;entretien, sans identifiant direct</td>
                 <td className="px-4 py-3 align-top">France (UE)</td>
               </tr>
+              <tr>
+                <td className="px-4 py-3 align-top font-medium">Google LLC (Firebase Cloud Messaging)</td>
+                <td className="px-4 py-3 align-top">
+                  Acheminement des notifications de l&apos;application Android — réception du jeton technique et du contenu de la notification (titre, texte, lien interne) uniquement pour la délivrance
+                </td>
+                <td className="px-4 py-3 align-top">États-Unis — traitement encadré (CCT / DPF selon les conditions Google)</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -194,9 +272,9 @@ export default function ConfidentialitePage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="transferts" title="6. Transferts hors Union européenne">
+      <LegalSection id="transferts" title="7. Transferts hors Union européenne">
         <p>
-          RideCloud s&apos;efforce de localiser l&apos;ensemble des traitements au sein de l&apos;Union européenne. Toutefois, certains sous-traitants (Supabase, Vercel, Resend) sont des sociétés constituées aux États-Unis. Les flux de données entre les datacenters européens et les sièges sociaux américains, lorsqu&apos;ils existent (support technique, monitoring), sont encadrés par&nbsp;:
+          RideCloud s&apos;efforce de localiser l&apos;ensemble des traitements au sein de l&apos;Union européenne. Toutefois, certains sous-traitants (Supabase, Vercel, Resend, Google Firebase Cloud Messaging) sont des sociétés constituées aux États-Unis. Les flux de données entre les datacenters européens et les sièges sociaux américains, lorsqu&apos;ils existent (support technique, monitoring, acheminement des notifications Android), sont encadrés par&nbsp;:
         </p>
         <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li>les <strong>Clauses Contractuelles Types</strong> (CCT) adoptées par la Commission européenne&nbsp;;</li>
@@ -205,7 +283,7 @@ export default function ConfidentialitePage() {
         </ul>
       </LegalSection>
 
-      <LegalSection id="securite" title="7. Sécurité des données">
+      <LegalSection id="securite" title="8. Sécurité des données">
         <p>
           L&apos;Éditeur met en œuvre des mesures techniques et organisationnelles appropriées pour garantir la sécurité, la confidentialité et l&apos;intégrité des données personnelles, et notamment&nbsp;:
         </p>
@@ -214,7 +292,8 @@ export default function ConfidentialitePage() {
           <li>chiffrement au repos des bases de données (AES-256)&nbsp;;</li>
           <li>hachage des mots de passe avec bcrypt et sel cryptographique&nbsp;;</li>
           <li>authentification multi-facteurs disponible (à venir)&nbsp;;</li>
-          <li>contrôle d&apos;accès strict, journalisation des actions sensibles&nbsp;;</li>
+          <li>contrôle d&apos;accès strict (y compris politiques d&apos;accès sur les jetons de notification, limités au compte concerné)&nbsp;;</li>
+          <li>journalisation des actions sensibles&nbsp;;</li>
           <li>sauvegardes automatiques chiffrées avec rétention de 7 jours&nbsp;;</li>
           <li>tests de sécurité réguliers et application immédiate des correctifs critiques.</li>
         </ul>
@@ -227,7 +306,7 @@ export default function ConfidentialitePage() {
         </ul>
       </LegalSection>
 
-      <LegalSection id="cookies" title="8. Cookies et traceurs">
+      <LegalSection id="cookies" title="9. Cookies et traceurs">
         <p>
           RideCloud utilise uniquement des cookies <strong>strictement nécessaires</strong> au fonctionnement du Service, dispensés du recueil de consentement préalable conformément à l&apos;article 82 de la loi Informatique et Libertés&nbsp;:
         </p>
@@ -243,7 +322,7 @@ export default function ConfidentialitePage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="droits" title="9. Vos droits">
+      <LegalSection id="droits" title="10. Vos droits">
         <p>
           Conformément au RGPD et à la loi française Informatique et Libertés, vous disposez de plusieurs droits sur vos données personnelles, détaillés sur la page dédiée&nbsp;:
         </p>
@@ -257,7 +336,7 @@ export default function ConfidentialitePage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="contact" title="10. Contact">
+      <LegalSection id="contact" title="11. Contact">
         <p>
           Pour toute question relative à cette politique de confidentialité ou au traitement de vos données personnelles, vous pouvez nous contacter à l&apos;adresse&nbsp;:
         </p>

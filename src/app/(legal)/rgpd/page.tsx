@@ -13,6 +13,7 @@ const toc = [
   { id: "acces", label: "Droit d'accès" },
   { id: "rectification", label: "Droit de rectification" },
   { id: "effacement", label: "Droit à l'effacement" },
+  { id: "notifications", label: "Notifications push" },
   { id: "limitation", label: "Droit à la limitation" },
   { id: "portabilite", label: "Droit à la portabilité" },
   { id: "opposition", label: "Droit d'opposition" },
@@ -28,7 +29,7 @@ export default function RgpdPage() {
       badge="RGPD · Vos droits"
       title="Vos droits RGPD"
       description="Découvrez les droits dont vous bénéficiez sur vos données personnelles dans RideCloud, et la procédure pour les exercer."
-      lastUpdated="17 mai 2026"
+      lastUpdated="25 août 2026"
       toc={toc}
     >
       <LegalCallout variant="success">
@@ -87,10 +88,66 @@ export default function RgpdPage() {
           <p className="text-sm text-slate-600 dark:text-slate-300">
             Certaines données peuvent être conservées au-delà de ce délai si la loi nous y oblige (obligations comptables, lutte contre la fraude). Dans ce cas, elles sont strictement isolées et inaccessibles en dehors de ces finalités légales.
           </p>
+          <p>
+            La suppression du compte entraîne aussi l&apos;effacement des jetons de notification
+            Android et des souscriptions Web Push liés à ce compte (suppression en cascade
+            avec le compte d&apos;authentification).
+          </p>
         </LegalSubsection>
       </LegalSection>
 
-      <LegalSection id="limitation" title="5. Droit à la limitation du traitement">
+      <LegalSection id="notifications" title="5. Notifications push et données techniques">
+        <p>
+          Lorsque vous activez les notifications dans <strong>Paramètres</strong>, RideCloud
+          traite des données techniques nécessaires à l&apos;acheminement, distinctes de
+          l&apos;inbox affichée dans l&apos;application.
+        </p>
+        <LegalSubsection title="Données concernées">
+          <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
+            <li>
+              <strong>Android (Firebase Cloud Messaging)</strong>&nbsp;: jeton technique FCM,
+              plateforme, identifiant d&apos;installation, dates de création / mise à jour /
+              dernière utilisation — stockés pour votre compte uniquement.
+            </li>
+            <li>
+              <strong>Web / PWA</strong>&nbsp;: souscription Web Push (adresse d&apos;acheminement
+              du navigateur et clés techniques).
+            </li>
+            <li>
+              <strong>Contenu envoyé</strong>&nbsp;: titre, texte et lien interne de la
+              notification RideCloud, afin de l&apos;afficher sur l&apos;appareil.
+            </li>
+          </ul>
+        </LegalSubsection>
+        <LegalSubsection title="Finalité, destinataires, conservation, sécurité">
+          <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
+            <li>
+              <strong>Finalité</strong>&nbsp;: vous transmettre les rappels RideCloud que vous
+              avez acceptés. Pas d&apos;usage publicitaire de ces jetons.
+            </li>
+            <li>
+              <strong>Destinataires</strong>&nbsp;: RideCloud (hébergement Supabase) et, pour
+              l&apos;Android, Google Firebase Cloud Messaging en tant qu&apos;acheminement.
+              Détail des sous-traitants&nbsp;: <a href="/confidentialite" className="text-blue-700 dark:text-blue-300 hover:underline">politique de confidentialité</a>.
+            </li>
+            <li>
+              <strong>Conservation</strong>&nbsp;: tant que les notifications restent activées
+              pour l&apos;installation&nbsp;; suppression à la désactivation, à la suppression
+              du compte, ou si le jeton/souscription devient invalide.
+            </li>
+            <li>
+              <strong>Sécurité</strong>&nbsp;: accès limité à votre compte&nbsp;; le jeton n&apos;est
+              pas affiché dans l&apos;interface.
+            </li>
+            <li>
+              <strong>Suppression / opposition pratique</strong>&nbsp;: bouton «&nbsp;Désactiver&nbsp;»
+              dans Paramètres, ou suppression du compte.
+            </li>
+          </ul>
+        </LegalSubsection>
+      </LegalSection>
+
+      <LegalSection id="limitation" title="6. Droit à la limitation du traitement">
         <p>
           <strong>Article 18 du RGPD</strong>. Vous pouvez demander la suspension temporaire de l&apos;utilisation de vos données, notamment&nbsp;:
         </p>
@@ -101,7 +158,7 @@ export default function RgpdPage() {
         </ul>
       </LegalSection>
 
-      <LegalSection id="portabilite" title="6. Droit à la portabilité">
+      <LegalSection id="portabilite" title="7. Droit à la portabilité">
         <p>
           <strong>Article 20 du RGPD</strong>. Vous avez le droit de récupérer dans un format structuré, couramment utilisé et lisible par machine, l&apos;ensemble des données que vous avez fournies à RideCloud, afin de les transmettre à un autre service.
         </p>
@@ -118,7 +175,7 @@ export default function RgpdPage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="opposition" title="7. Droit d'opposition">
+      <LegalSection id="opposition" title="8. Droit d'opposition">
         <p>
           <strong>Article 21 du RGPD</strong>. Vous pouvez vous opposer, à tout moment et pour des raisons tenant à votre situation particulière, à un traitement de vos données fondé sur l&apos;intérêt légitime de RideCloud (par exemple, l&apos;analyse statistique d&apos;usage).
         </p>
@@ -127,7 +184,7 @@ export default function RgpdPage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="consentement" title="8. Retrait du consentement">
+      <LegalSection id="consentement" title="9. Retrait du consentement">
         <p>
           <strong>Article 7 du RGPD</strong>. Lorsque le traitement de vos données repose sur votre consentement (par exemple, l&apos;inscription à la newsletter), vous pouvez le retirer à tout moment, sans avoir à justifier votre décision.
         </p>
@@ -136,7 +193,7 @@ export default function RgpdPage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="directives" title="9. Sort de vos données après votre décès">
+      <LegalSection id="directives" title="10. Sort de vos données après votre décès">
         <p>
           <strong>Article 85 de la loi Informatique et Libertés</strong>. Vous pouvez définir des directives relatives à la conservation, l&apos;effacement et la communication de vos données après votre décès. Ces directives peuvent être&nbsp;:
         </p>
@@ -146,7 +203,7 @@ export default function RgpdPage() {
         </ul>
       </LegalSection>
 
-      <LegalSection id="exercer" title="10. Comment exercer vos droits ?">
+      <LegalSection id="exercer" title="11. Comment exercer vos droits ?">
         <p>
           Pour exercer l&apos;un de ces droits, contactez-nous à l&apos;adresse&nbsp;:
         </p>
@@ -183,7 +240,7 @@ export default function RgpdPage() {
         </LegalSubsection>
       </LegalSection>
 
-      <LegalSection id="cnil" title="11. Recours auprès de la CNIL">
+      <LegalSection id="cnil" title="12. Recours auprès de la CNIL">
         <p>
           Si vous estimez, après nous avoir contactés, que vos droits ne sont pas respectés, vous avez la possibilité d&apos;introduire une réclamation auprès de la <strong>Commission Nationale de l&apos;Informatique et des Libertés</strong> (CNIL)&nbsp;:
         </p>

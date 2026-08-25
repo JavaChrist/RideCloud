@@ -110,8 +110,8 @@ Ne pas modifier le code applicatif dans ce chantier. À planifier :
 | Sujet | État | Quand |
 | --- | --- | --- |
 | Landing / Kit-Contenu « PWA sans store » | Copy marketing encore vraie pour le web ; le shell Play existe | Avant Production store (ou Closed si la fiche promet le store) |
-| Page `/confidentialite` | Pas de mention explicite Firebase / FCM / `native_push_tokens` | **Avant Closed Testing / Data safety** |
-| Page `/rgpd` | Idem | **Avant Closed Testing** |
+| Page `/confidentialite` | Mise à jour 25/08/2026 (FCM, jeton, désactivation, suppression) | Relire avant Data safety |
+| Page `/rgpd` | Mise à jour 25/08/2026 (section notifications natives) | Relire avant Data safety |
 | Suppression de compte | UI + API existantes ; tokens en `ON DELETE CASCADE` | Vérifier le libellé Data safety |
 | Data safety Play | Formulaire Console à remplir (notifications, identifiants d’appareil) | **Avant Closed Testing** |
 
