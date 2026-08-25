@@ -11,6 +11,7 @@ import {
   disableNativePush,
   enableNativePush,
   getNativePushStatus,
+  retryNativePushRegistration,
   type NativePushStatus
 } from "@/lib/push/native-client";
 import {
@@ -99,6 +100,21 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
     }
   };
 
+  const handleRetryNative = async () => {
+    setLoading(true);
+    try {
+      const result = await retryNativePushRegistration();
+      if (result.ok) {
+        toast.success("Notifications Android détectées.");
+      } else {
+        toast.error("Impossible de vérifier les notifications. Réessaie dans un instant.");
+      }
+      await refresh();
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDisable = async () => {
     setLoading(true);
     try {
@@ -140,7 +156,14 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <div className="flex-1">
             <p>{detectionView.message}</p>
-            <Button type="button" variant="outline" onClick={() => void refresh()} className="mt-3 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void handleRetryNative()}
+              disabled={loading}
+              className="mt-3 gap-2"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
               Réessayer
             </Button>
           </div>
@@ -193,7 +216,14 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <div className="flex-1">
             <p>Impossible de vérifier les notifications. Tes alertes ne sont pas désactivées.</p>
-            <Button type="button" variant="outline" onClick={() => void refresh()} className="mt-3 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void handleRetryNative()}
+              disabled={loading}
+              className="mt-3 gap-2"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
               Réessayer
             </Button>
           </div>

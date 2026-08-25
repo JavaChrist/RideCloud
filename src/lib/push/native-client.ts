@@ -1,5 +1,9 @@
 import { isCapacitorAndroid } from "@/lib/pwa/environment";
 import {
+  runNativePushRegistration,
+  type NativeRegisterResult
+} from "@/lib/push/native-register-flow";
+import {
   NATIVE_PUSH_DETECTION_TIMEOUT_MS,
   withTimeout,
   type NativePushPermission,
@@ -83,26 +87,31 @@ async function persistRegistrationToken(token: string): Promise<void> {
   writeLinkedFlag(true);
 }
 
-function waitForRegistrationToken(timeoutMs = NATIVE_PUSH_DETECTION_TIMEOUT_MS): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      pendingTokenResolve = undefined;
-      pendingTokenReject = undefined;
-      reject(new Error("token_timeout"));
-    }, timeoutMs);
-    pendingTokenResolve = (token) => {
-      clearTimeout(timer);
-      pendingTokenResolve = undefined;
-      pendingTokenReject = undefined;
-      resolve(token);
-    };
-    pendingTokenReject = (error) => {
-      clearTimeout(timer);
-      pendingTokenResolve = undefined;
-      pendingTokenReject = undefined;
-      reject(error);
-    };
-  });
+async function resetNativePushListeners(): Promise<void> {
+  listenersReady = false;
+  pendingTokenResolve = undefined;
+  pendingTokenReject = undefined;
+  try {
+    const PushNotifications = await getPushPlugin();
+    await PushNotifications.removeAllListeners();
+  } catch (error) {
+    console.error("[native-push] reset listeners failed", error);
+  }
+}
+
+function logNativePush(
+  event: string,
+  extra?: { tokenReceived?: boolean; tokenLength?: number; code?: string }
+): void {
+  if (extra?.tokenReceived) {
+    console.info(`[native-push] ${event}`, { tokenReceived: true, tokenLength: extra.tokenLength });
+    return;
+  }
+  if (extra?.code) {
+    console.info(`[native-push] ${event}`, { code: extra.code });
+    return;
+  }
+  console.info(`[native-push] ${event}`);
 }
 
 export async function ensureNativePushListeners(handlers?: {
@@ -116,6 +125,7 @@ export async function ensureNativePushListeners(handlers?: {
   await PushNotifications.removeAllListeners();
 
   await PushNotifications.addListener("registration", (token) => {
+    logNativePush("registration:event", { tokenReceived: true, tokenLength: token.value.length });
     pendingTokenResolve?.(token.value);
     void persistRegistrationToken(token.value).catch((error) => {
       console.error("[native-push] register token failed", error);
@@ -123,8 +133,9 @@ export async function ensureNativePushListeners(handlers?: {
   });
 
   await PushNotifications.addListener("registrationError", (error) => {
-    console.error("[native-push] registrationError", error);
-    pendingTokenReject?.(new Error("registration_error"));
+    const code = typeof error === "object" && error && "error" in error ? String(error.error) : "registration_error";
+    logNativePush("registration:error", { code });
+    pendingTokenReject?.(new Error(code));
   });
 
   await PushNotifications.addListener("pushNotificationReceived", () => {
@@ -178,48 +189,92 @@ export async function enableNativePush(): Promise<{ ok: true } | { ok: false; re
     return { ok: false, reason: "Notifications natives disponibles uniquement dans l'app Android.", permission: "unsupported" };
   }
 
-  await ensureNativePushListeners();
-  await ensureAndroidChannel();
-
   const PushNotifications = await getPushPlugin();
-  let current = await PushNotifications.checkPermissions();
-  if (current.receive === "denied") {
-    return {
-      ok: false,
-      reason:
-        "Les notifications sont bloquées pour RideCloud. Ouvre Paramètres Android → Applications → RideCloud → Notifications pour les autoriser.",
-      permission: "denied"
-    };
-  }
-
-  if (current.receive !== "granted") {
-    current = await PushNotifications.requestPermissions();
-  }
-
-  if (current.receive !== "granted") {
-    return {
-      ok: false,
-      reason:
-        current.receive === "denied"
-          ? "Permission refusée. Tu pourras l'activer plus tard depuis les paramètres Android de RideCloud."
-          : "Permission non accordée.",
-      permission: mapReceivePermission(current.receive)
-    };
-  }
-
-  const tokenWait = waitForRegistrationToken();
-  await PushNotifications.register();
   try {
-    const token = await tokenWait;
-    await persistRegistrationToken(token);
-  } catch {
-    return {
-      ok: false,
-      reason: "Impossible de récupérer le jeton de notification. Réessaie dans un instant.",
-      permission: "granted"
-    };
+    let current = await withTimeout(
+      PushNotifications.checkPermissions(),
+      NATIVE_PUSH_DETECTION_TIMEOUT_MS,
+      "permission_timeout"
+    );
+    if (current.receive === "denied") {
+      return {
+        ok: false,
+        reason:
+          "Les notifications sont bloquées pour RideCloud. Ouvre Paramètres Android → Applications → RideCloud → Notifications pour les autoriser.",
+        permission: "denied"
+      };
+    }
+    if (current.receive !== "granted") {
+      current = await withTimeout(
+        PushNotifications.requestPermissions(),
+        NATIVE_PUSH_DETECTION_TIMEOUT_MS,
+        "permission_timeout"
+      );
+    }
+    if (current.receive !== "granted") {
+      return {
+        ok: false,
+        reason:
+          current.receive === "denied"
+            ? "Permission refusée. Tu pourras l'activer plus tard depuis les paramètres Android de RideCloud."
+            : "Permission non accordée.",
+        permission: mapReceivePermission(current.receive)
+      };
+    }
+  } catch (error) {
+    console.error("[native-push] permission check timed out, continuing register", error);
   }
-  return { ok: true };
+
+  const result = await registerNativePushTokenWithPlugin();
+  if (result.ok) return { ok: true };
+  return {
+    ok: false,
+    reason:
+      result.reason === "register_api"
+        ? "Impossible d'enregistrer les notifications. Réessaie dans un instant."
+        : "Impossible de récupérer le jeton de notification. Réessaie dans un instant.",
+    permission: "granted"
+  };
+}
+
+export async function retryNativePushRegistration(): Promise<NativeRegisterResult> {
+  return registerNativePushTokenWithPlugin();
+}
+
+async function registerNativePushTokenWithPlugin(): Promise<NativeRegisterResult> {
+  const PushNotifications = await getPushPlugin();
+  try {
+    await withTimeout(ensureAndroidChannel(), NATIVE_PUSH_DETECTION_TIMEOUT_MS, "channel_timeout");
+  } catch (error) {
+    console.error("[native-push] channel timeout", error);
+  }
+
+  return runNativePushRegistration({
+    timeoutMs: NATIVE_PUSH_DETECTION_TIMEOUT_MS,
+    log: logNativePush,
+    resetListeners: resetNativePushListeners,
+    installListeners: async (handlers) => {
+      await PushNotifications.addListener("registration", (token) => {
+        logNativePush("registration:event", { tokenReceived: true, tokenLength: token.value.length });
+        handlers.onRegistration(token.value);
+      });
+      await PushNotifications.addListener("registrationError", (error) => {
+        const code = typeof error === "object" && error && "error" in error ? String(error.error) : "registration_error";
+        logNativePush("registration:error", { code });
+        handlers.onRegistrationError(code);
+      });
+      await PushNotifications.addListener("pushNotificationReceived", () => {
+        onForegroundReceivedHandler?.();
+        window.dispatchEvent(new Event("ridecloud:inbox-refresh"));
+      });
+      await PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+        onActionUrlHandler?.(extractPushNotificationHref(action.notification));
+      });
+      listenersReady = true;
+    },
+    register: () => PushNotifications.register(),
+    persistToken: persistRegistrationToken
+  });
 }
 
 /** Si la permission est déjà accordée, rafraîchit le token sans redemander. */
@@ -229,10 +284,24 @@ export async function syncNativePushIfGranted(handlers?: {
 }): Promise<void> {
   if (!isCapacitorAndroid()) return;
   const PushNotifications = await getPushPlugin();
-  const current = await PushNotifications.checkPermissions();
-  if (current.receive !== "granted") return;
+  try {
+    const current = await withTimeout(
+      PushNotifications.checkPermissions(),
+      NATIVE_PUSH_DETECTION_TIMEOUT_MS,
+      "permission_timeout"
+    );
+    if (current.receive !== "granted") return;
+  } catch (error) {
+    console.error("[native-push] silent sync permission check failed", error);
+    return;
+  }
   await ensureNativePushListeners(handlers);
-  await ensureAndroidChannel();
+  try {
+    await withTimeout(ensureAndroidChannel(), NATIVE_PUSH_DETECTION_TIMEOUT_MS, "channel_timeout");
+  } catch (error) {
+    console.error("[native-push] silent sync channel timeout", error);
+  }
+  logNativePush("register:start");
   await PushNotifications.register();
 }
 

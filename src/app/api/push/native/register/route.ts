@@ -26,6 +26,7 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (!user) {
+    console.info("[native-push-register] authenticated=false");
     return NextResponse.json({ ok: false, reason: "unauthenticated" }, { status: 401 });
   }
 
@@ -41,6 +42,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, reason: "invalid_payload" }, { status: 400 });
   }
 
+  console.info("[native-push-register] authenticated=true", {
+    platform: parsed.data.platform,
+    hasInstallationId: Boolean(parsed.data.installationId),
+    tokenLength: parsed.data.token.length
+  });
+
   const result = await registerNativePushToken({
     admin: createAdminClient(),
     sessionUserId: user.id,
@@ -51,8 +58,10 @@ export async function POST(request: Request) {
   });
 
   if (!result.ok) {
+    console.info("[native-push-register] upsert=fail", { reason: result.reason });
     return NextResponse.json({ ok: false, reason: result.reason }, { status: result.status });
   }
 
+  console.info("[native-push-register] upsert=success", { platform: parsed.data.platform });
   return NextResponse.json({ ok: true });
 }
