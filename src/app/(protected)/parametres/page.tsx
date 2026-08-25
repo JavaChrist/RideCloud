@@ -168,6 +168,15 @@ export default async function ParametresPage() {
           </li>
           <li>
             <Link
+              href="/suppression-compte"
+              className="inline-flex items-center gap-1.5 font-medium text-blue-700 dark:text-blue-300 transition hover:text-blue-800 dark:hover:text-blue-200"
+            >
+              Supprimer mon compte
+              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/cgu"
               className="inline-flex items-center gap-1.5 font-medium text-blue-700 dark:text-blue-300 transition hover:text-blue-800 dark:hover:text-blue-200"
             >

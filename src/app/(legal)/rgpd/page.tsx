@@ -83,7 +83,7 @@ export default function RgpdPage() {
 
         <LegalSubsection title="Procédure simplifiée">
           <p>
-            Vous pouvez également supprimer vous-même votre compte depuis l&apos;interface du Service&nbsp;: page <em>Paramètres → Compte → Supprimer mon compte</em>. La suppression effective intervient sous <strong>30 jours maximum</strong>.
+            Vous pouvez également supprimer vous-même votre compte depuis l&apos;interface du Service&nbsp;: <em>Paramètres → Supprimer mon compte</em>. La suppression authentifiée est exécutée immédiatement côté serveur. La politique de confidentialité prévoit ensuite un délai maximal de <strong>30 jours</strong> pour l&apos;effacement définitif (sauvegardes incluses), sauf obligation légale contraire. Sans accès à l&apos;application, utilisez la page publique <a href="/suppression-compte" className="text-blue-700 dark:text-blue-300 hover:underline">Supprimer mon compte</a>.
           </p>
           <p className="text-sm text-slate-600 dark:text-slate-300">
             Certaines données peuvent être conservées au-delà de ce délai si la loi nous y oblige (obligations comptables, lutte contre la fraude). Dans ce cas, elles sont strictement isolées et inaccessibles en dehors de ces finalités légales.
@@ -217,6 +217,8 @@ export default function RgpdPage() {
           </p>
           <p className="mt-2 text-sm text-blue-800 dark:text-blue-300">
             Précisez <strong>« Demande RGPD »</strong> en objet de votre message.
+            Pour une demande de suppression de compte, vous pouvez aussi utiliser
+            la page <a href="/suppression-compte" className="font-medium underline">Supprimer mon compte</a>.
           </p>
         </div>
 

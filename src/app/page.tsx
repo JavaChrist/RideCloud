@@ -896,6 +896,7 @@ function Footer() {
               { label: "CGU", href: "/cgu" },
               { label: "Confidentialité", href: "/confidentialite" },
               { label: "RGPD", href: "/rgpd" },
+              { label: "Supprimer mon compte", href: "/suppression-compte" },
             ]}
           />
         </div>

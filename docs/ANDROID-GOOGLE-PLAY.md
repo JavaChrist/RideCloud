@@ -103,6 +103,34 @@ Référence technique push : [`ANDROID-NATIVE-PUSH.md`](ANDROID-NATIVE-PUSH.md).
 
 ---
 
+## Suppression de compte — URL officielle Google Play
+
+URL publique permanente (sans connexion) :
+
+**https://ridecloud.app/suppression-compte**
+
+À renseigner dans Play Console → **Sécurité des données** (et toute question
+demandant une URL web de suppression de compte).
+
+| Élément | Réponse réelle |
+| --- | --- |
+| Suppression depuis l’app | **Paramètres → Supprimer mon compte** (confirmation par e-mail du compte, pas le mot de passe) |
+| Suppression sans l’app | E-mail prérempli vers `support@javachrist.fr` depuis la page publique |
+| Endpoint applicatif | `POST /api/account/delete` (session authentifiée uniquement — ne pas exposer comme API publique) |
+| Mot de passe demandé | **Non** |
+| « Les utilisateurs peuvent-ils demander la suppression de certaines ou de toutes leurs données sans devoir supprimer leur compte ? » | **Oui** |
+
+Justification Play Console (question facultative) : **Oui** — l’utilisateur peut
+déjà supprimer un véhicule, un entretien, une échéance, un document, une
+modification, une notification, ou désactiver les notifications push, **sans**
+supprimer le compte. Ce n’est pas une demande globale d’effacement : chaque
+action retire uniquement l’élément choisi. La suppression de **toutes** les
+données du compte passe par la suppression de compte.
+
+Pages liées : `/confidentialite`, `/rgpd`.
+
+---
+
 ## Dette à traiter avant Closed Testing / Production Play
 
 Ne pas modifier le code applicatif dans ce chantier. À planifier :
@@ -111,9 +139,10 @@ Ne pas modifier le code applicatif dans ce chantier. À planifier :
 | --- | --- | --- |
 | Landing / Kit-Contenu « PWA sans store » | Copy marketing encore vraie pour le web ; le shell Play existe | Avant Production store (ou Closed si la fiche promet le store) |
 | Page `/confidentialite` | Mise à jour 25/08/2026 (FCM, jeton, désactivation, suppression) | Relire avant Data safety |
-| Page `/rgpd` | Mise à jour 25/08/2026 (section notifications natives) | Relire avant Data safety |
+| Page `/rgpd` | Mise à jour 25/08/2026 (section notifications natives + lien suppression) | Relire avant Data safety |
+| Page `/suppression-compte` | Page publique 25/08/2026 | **URL Data safety Play** |
 | Suppression de compte | UI + API existantes ; tokens en `ON DELETE CASCADE` | Vérifier le libellé Data safety |
-| Data safety Play | Formulaire Console à remplir (notifications, identifiants d’appareil) | **Avant Closed Testing** |
+| Data safety Play | Formulaire Console à remplir (notifications, identifiants d’appareil, URL suppression) | **Avant Closed Testing** |
 
 ---
 

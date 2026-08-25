@@ -167,6 +167,9 @@ export default async function TarifsPage() {
             <Link href="/rgpd" className="transition hover:text-slate-900 dark:hover:text-slate-50">
               RGPD
             </Link>
+            <Link href="/suppression-compte" className="transition hover:text-slate-900 dark:hover:text-slate-50">
+              Supprimer mon compte
+            </Link>
           </nav>
         </div>
       </footer>

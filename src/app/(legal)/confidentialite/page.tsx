@@ -32,7 +32,7 @@ export default function ConfidentialitePage() {
       toc={toc}
     >
       <LegalCallout variant="info">
-        Cette politique précise les modalités de traitement des données personnelles dans RideCloud. Pour exercer vos droits RGPD (accès, rectification, suppression…), consultez la page <a href="/rgpd" className="font-medium underline">RGPD</a>.
+        Cette politique précise les modalités de traitement des données personnelles dans RideCloud. Pour exercer vos droits RGPD (accès, rectification, suppression…), consultez la page <a href="/rgpd" className="font-medium underline">RGPD</a>. Pour demander la suppression de votre compte, voir <a href="/suppression-compte" className="font-medium underline">Supprimer mon compte</a>.
       </LegalCallout>
 
       <LegalSection id="responsable" title="1. Responsable du traitement">
@@ -199,7 +199,7 @@ export default function ConfidentialitePage() {
         <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li><strong>Données de compte actif</strong>&nbsp;: pendant toute la durée d&apos;utilisation du Service&nbsp;;</li>
           <li><strong>Compte inactif</strong>&nbsp;: après 24 mois consécutifs d&apos;inactivité, l&apos;Utilisateur reçoit une notification. À défaut de réactivation dans les 30 jours, le compte est supprimé automatiquement&nbsp;;</li>
-          <li><strong>Compte supprimé</strong>&nbsp;: suppression définitive des données dans un délai maximal de <strong>30 jours</strong>, sauf obligations légales contraires&nbsp;;</li>
+          <li><strong>Compte supprimé</strong>&nbsp;: suppression définitive des données dans un délai maximal de <strong>30 jours</strong>, sauf obligations légales contraires. La procédure publique est décrite sur <a href="/suppression-compte" className="text-blue-700 dark:text-blue-300 hover:underline">Supprimer mon compte</a>&nbsp;;</li>
           <li>
             <strong>Jetons Android (FCM) et souscriptions Web Push</strong>&nbsp;: conservés tant que les notifications restent activées pour cette installation.
             Ils sont supprimés lorsque vous désactivez les notifications dans les Paramètres, lorsque le compte est supprimé, ou lorsqu&apos;un jeton/souscription est devenu invalide lors d&apos;un envoi.

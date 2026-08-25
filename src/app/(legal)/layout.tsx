@@ -27,6 +27,7 @@ export default function LegalLayout({ children }: { children: ReactNode }) {
             <Link href="/cgu" className="hover:text-slate-900 dark:hover:text-slate-50">CGU</Link>
             <Link href="/confidentialite" className="hover:text-slate-900 dark:hover:text-slate-50">Confidentialité</Link>
             <Link href="/rgpd" className="hover:text-slate-900 dark:hover:text-slate-50">RGPD</Link>
+            <Link href="/suppression-compte" className="hover:text-slate-900 dark:hover:text-slate-50">Supprimer mon compte</Link>
           </nav>
         </div>
       </footer>
