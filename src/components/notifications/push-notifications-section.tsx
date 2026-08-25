@@ -13,6 +13,11 @@ import {
   getNativePushStatus,
   type NativePushStatus
 } from "@/lib/push/native-client";
+import {
+  NATIVE_PUSH_DETECTION_TIMEOUT_MS,
+  resolveNotificationsDetectionView,
+  withTimeout
+} from "@/lib/push/native-status";
 
 interface PushNotificationsSectionProps {
   vapidPublicKey: string | null;
@@ -38,19 +43,27 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
   const [isAndroidNative, setIsAndroidNative] = useState(false);
   const [status, setStatus] = useState<PushStatus | null>(null);
   const [nativeStatus, setNativeStatus] = useState<NativePushStatus | null>(null);
+  const [detectionPhase, setDetectionPhase] = useState<"loading" | "ready" | "error">("loading");
+  const [detectionError, setDetectionError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    setIsAndroidNative(isCapacitorAndroid());
-  }, []);
-
   const refresh = useCallback(async () => {
-    if (isCapacitorAndroid()) {
-      setNativeStatus(await getNativePushStatus());
-      return;
+    setDetectionPhase("loading");
+    setDetectionError(null);
+    try {
+      const android = isCapacitorAndroid();
+      setIsAndroidNative(android);
+      if (android) {
+        setNativeStatus(await getNativePushStatus());
+      } else {
+        setStatus(await withTimeout(getPushStatus(), NATIVE_PUSH_DETECTION_TIMEOUT_MS, "web_status_timeout"));
+      }
+      setDetectionPhase("ready");
+    } catch (error) {
+      console.error("[push-ui] detection failed", error);
+      setDetectionError("Impossible de vérifier les notifications");
+      setDetectionPhase("error");
     }
-    const next = await getPushStatus();
-    setStatus(next);
   }, []);
 
   useEffect(() => {
@@ -101,21 +114,44 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
     }
   };
 
-  const waitingStatus = isAndroidNative ? !nativeStatus : !status;
-  if (waitingStatus) {
+  const detectionView = resolveNotificationsDetectionView({
+    phase: detectionPhase,
+    isAndroidNative,
+    nativeStatus,
+    webStatus: status,
+    error: detectionError
+  });
+
+  if (detectionView.kind === "loading") {
     return (
       <article className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-6 shadow-ride-sm md:p-8">
         <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-          Détection des notifications…
+          Détection en cours…
         </div>
       </article>
     );
   }
 
-  const isNativeLinked = Boolean(nativeStatus?.linked && nativeStatus.permission === "granted");
+  if (detectionView.kind === "error") {
+    return (
+      <article className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-6 shadow-ride-sm md:p-8">
+        <div className="flex items-start gap-2 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50/60 dark:bg-amber-950/40 p-3 text-sm text-amber-800 dark:text-amber-300">
+          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          <div className="flex-1">
+            <p>{detectionView.message}</p>
+            <Button type="button" variant="outline" onClick={() => void refresh()} className="mt-3 gap-2">
+              Réessayer
+            </Button>
+          </div>
+        </div>
+      </article>
+    );
+  }
+
+  const isNativeLinked = detectionView.kind === "native" && detectionView.label === "activated";
   const isWebSubscribed = Boolean(status?.subscribed && status.permission === "granted");
-  const isSubscribed = isAndroidNative ? isNativeLinked : isWebSubscribed;
+  const isSubscribed = detectionView.kind === "native" ? isNativeLinked : isWebSubscribed;
 
   return (
     <article className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-6 shadow-ride-sm md:p-8">
@@ -143,20 +179,32 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
 
       <Separator className="my-5 bg-slate-200/70 dark:bg-slate-800/70" />
 
-      {isAndroidNative && nativeStatus?.permission === "denied" && (
+      {detectionView.kind === "native" && detectionView.label === "denied" && (
         <div className="flex items-start gap-2 rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/60 dark:bg-rose-950/40 p-3 text-sm text-rose-800 dark:text-rose-300">
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <span>
-            Les notifications sont bloquées pour RideCloud. Ouvre <strong>Paramètres Android → Applications → RideCloud → Notifications</strong> pour les autoriser, puis reviens ici.
+            Notifications non autorisées. Ouvre <strong>Paramètres Android → Applications → RideCloud → Notifications</strong> pour les autoriser, puis reviens ici.
           </span>
         </div>
       )}
 
-      {isAndroidNative && nativeStatus?.permission !== "denied" && (
+      {detectionView.kind === "native" && detectionView.label === "check_failed" && (
+        <div className="flex items-start gap-2 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50/60 dark:bg-amber-950/40 p-3 text-sm text-amber-800 dark:text-amber-300">
+          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          <div className="flex-1">
+            <p>Impossible de vérifier les notifications. Tes alertes ne sont pas désactivées.</p>
+            <Button type="button" variant="outline" onClick={() => void refresh()} className="mt-3 gap-2">
+              Réessayer
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {detectionView.kind === "native" && detectionView.label !== "denied" && detectionView.label !== "check_failed" && (
         <div className="flex flex-col-reverse items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-600 dark:text-slate-300">
             {isNativeLinked
-              ? "Ce téléphone Android est inscrit : les rappels arriveront ici."
+              ? "Notifications Android détectées. Ce téléphone recevra les rappels d'entretien."
               : "Active les notifications pour recevoir les rappels d'entretien hors de l'app."}
           </p>
           {isNativeLinked ? (
@@ -178,14 +226,14 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
         </div>
       )}
 
-      {!isAndroidNative && status?.support === "unsupported" && (
+      {detectionView.kind === "web" && status?.support === "unsupported" && (
         <div className="flex items-start gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-3 text-sm text-slate-600 dark:text-slate-300">
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <span>Ce navigateur ne supporte pas les notifications push. Ouvre l&apos;app depuis Chrome, Edge, Firefox ou Safari 16.4+ pour activer cette fonctionnalité.</span>
         </div>
       )}
 
-      {!isAndroidNative && status?.support === "needs-install" && (
+      {detectionView.kind === "web" && status?.support === "needs-install" && (
         <div className="flex items-start gap-2 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50/60 dark:bg-amber-950/40 p-3 text-sm text-amber-800 dark:text-amber-300">
           <Smartphone className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <span>
@@ -194,7 +242,7 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
         </div>
       )}
 
-      {!isAndroidNative && status?.support === "supported" && status.permission === "denied" && (
+      {detectionView.kind === "web" && status?.support === "supported" && status.permission === "denied" && (
         <div className="flex items-start gap-2 rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/60 dark:bg-rose-950/40 p-3 text-sm text-rose-800 dark:text-rose-300">
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <span>
@@ -203,7 +251,7 @@ export function PushNotificationsSection({ vapidPublicKey }: PushNotificationsSe
         </div>
       )}
 
-      {!isAndroidNative && status?.support === "supported" && status.permission !== "denied" && (
+      {detectionView.kind === "web" && status?.support === "supported" && status.permission !== "denied" && (
         <div className="flex flex-col-reverse items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-600 dark:text-slate-300">
             {isWebSubscribed

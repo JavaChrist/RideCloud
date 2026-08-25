@@ -1,22 +1,23 @@
 import { isCapacitorAndroid } from "@/lib/pwa/environment";
+import {
+  NATIVE_PUSH_DETECTION_TIMEOUT_MS,
+  withTimeout,
+  type NativePushPermission,
+  type NativePushStatus
+} from "@/lib/push/native-status";
 import { extractPushNotificationHref } from "@/lib/push/native-url";
 
 export const RIDE_CLOUD_ANDROID_CHANNEL_ID = "ridecloud-default";
 export const NATIVE_PUSH_INSTALLATION_KEY = "ridecloud.nativePushInstallationId";
 export const NATIVE_PUSH_LINKED_KEY = "ridecloud.nativePushLinked";
 
-export type NativePushPermission = "prompt" | "granted" | "denied" | "unsupported";
-
-export interface NativePushStatus {
-  available: boolean;
-  permission: NativePushPermission;
-  linked: boolean;
-}
+export type { NativePushPermission, NativePushStatus };
 
 let listenersReady = false;
 let onForegroundReceivedHandler: (() => void) | undefined;
 let onActionUrlHandler: ((href: string) => void) | undefined;
 let pendingTokenResolve: ((token: string) => void) | undefined;
+let pendingTokenReject: ((error: Error) => void) | undefined;
 
 function readLinkedFlag(): boolean {
   if (typeof window === "undefined") return false;
@@ -82,13 +83,24 @@ async function persistRegistrationToken(token: string): Promise<void> {
   writeLinkedFlag(true);
 }
 
-function waitForRegistrationToken(timeoutMs = 15000): Promise<string> {
+function waitForRegistrationToken(timeoutMs = NATIVE_PUSH_DETECTION_TIMEOUT_MS): Promise<string> {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error("token_timeout")), timeoutMs);
+    const timer = setTimeout(() => {
+      pendingTokenResolve = undefined;
+      pendingTokenReject = undefined;
+      reject(new Error("token_timeout"));
+    }, timeoutMs);
     pendingTokenResolve = (token) => {
       clearTimeout(timer);
       pendingTokenResolve = undefined;
+      pendingTokenReject = undefined;
       resolve(token);
+    };
+    pendingTokenReject = (error) => {
+      clearTimeout(timer);
+      pendingTokenResolve = undefined;
+      pendingTokenReject = undefined;
+      reject(error);
     };
   });
 }
@@ -112,6 +124,7 @@ export async function ensureNativePushListeners(handlers?: {
 
   await PushNotifications.addListener("registrationError", (error) => {
     console.error("[native-push] registrationError", error);
+    pendingTokenReject?.(new Error("registration_error"));
   });
 
   await PushNotifications.addListener("pushNotificationReceived", () => {
@@ -132,19 +145,31 @@ export async function ensureNativePushListeners(handlers?: {
 }
 
 export async function getNativePushStatus(): Promise<NativePushStatus> {
+  const linked = readLinkedFlag();
   if (!isCapacitorAndroid()) {
-    return { available: false, permission: "unsupported", linked: false };
+    return { available: false, permission: "unsupported", linked };
   }
   try {
-    const PushNotifications = await getPushPlugin();
-    const current = await PushNotifications.checkPermissions();
+    const PushNotifications = await withTimeout(getPushPlugin(), NATIVE_PUSH_DETECTION_TIMEOUT_MS, "plugin_timeout");
+    const current = await withTimeout(
+      PushNotifications.checkPermissions(),
+      NATIVE_PUSH_DETECTION_TIMEOUT_MS,
+      "permission_timeout"
+    );
     return {
       available: true,
       permission: mapReceivePermission(current.receive),
-      linked: readLinkedFlag()
+      linked,
+      checkFailed: false
     };
-  } catch {
-    return { available: false, permission: "unsupported", linked: false };
+  } catch (error) {
+    console.error("[native-push] getNativePushStatus failed", error);
+    return {
+      available: true,
+      permission: linked ? "granted" : "prompt",
+      linked,
+      checkFailed: true
+    };
   }
 }
 
