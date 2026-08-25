@@ -1,4 +1,5 @@
 import { isCapacitorAndroid } from "@/lib/pwa/environment";
+import { loadNativePushBridge } from "@/lib/push/native-push-bridge";
 import {
   runNativePushRegistration,
   type NativeRegisterResult
@@ -53,14 +54,9 @@ function mapReceivePermission(receive: string | undefined): NativePushPermission
   return "prompt";
 }
 
-async function getPushPlugin() {
-  const { PushNotifications } = await import("@capacitor/push-notifications");
-  return PushNotifications;
-}
-
 async function ensureAndroidChannel(): Promise<void> {
-  const PushNotifications = await getPushPlugin();
-  await PushNotifications.createChannel({
+  const push = await loadNativePushBridge();
+  await push.createChannel({
     id: RIDE_CLOUD_ANDROID_CHANNEL_ID,
     name: "RideCloud",
     description: "Rappels et alertes RideCloud",
@@ -92,8 +88,8 @@ async function resetNativePushListeners(): Promise<void> {
   pendingTokenResolve = undefined;
   pendingTokenReject = undefined;
   try {
-    const PushNotifications = await getPushPlugin();
-    await PushNotifications.removeAllListeners();
+    const push = await loadNativePushBridge();
+    await push.removeAllListeners();
   } catch (error) {
     console.error("[native-push] reset listeners failed", error);
   }
@@ -121,10 +117,10 @@ export async function ensureNativePushListeners(handlers?: {
   if (handlers?.onForegroundReceived) onForegroundReceivedHandler = handlers.onForegroundReceived;
   if (handlers?.onActionUrl) onActionUrlHandler = handlers.onActionUrl;
   if (!isCapacitorAndroid() || listenersReady) return;
-  const PushNotifications = await getPushPlugin();
-  await PushNotifications.removeAllListeners();
+  const push = await loadNativePushBridge();
+  await push.removeAllListeners();
 
-  await PushNotifications.addListener("registration", (token) => {
+  await push.addListener("registration", (token) => {
     logNativePush("registration:event", { tokenReceived: true, tokenLength: token.value.length });
     pendingTokenResolve?.(token.value);
     void persistRegistrationToken(token.value).catch((error) => {
@@ -132,13 +128,13 @@ export async function ensureNativePushListeners(handlers?: {
     });
   });
 
-  await PushNotifications.addListener("registrationError", (error) => {
+  await push.addListener("registrationError", (error) => {
     const code = typeof error === "object" && error && "error" in error ? String(error.error) : "registration_error";
     logNativePush("registration:error", { code });
     pendingTokenReject?.(new Error(code));
   });
 
-  await PushNotifications.addListener("pushNotificationReceived", () => {
+  await push.addListener("pushNotificationReceived", () => {
     /**
      * Foreground : FCM + payload `notification` n'affiche pas de notif système
      * tant que l'app est ouverte. On rafraîchit l'inbox, sans doublon local.
@@ -147,7 +143,7 @@ export async function ensureNativePushListeners(handlers?: {
     window.dispatchEvent(new Event("ridecloud:inbox-refresh"));
   });
 
-  await PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+  await push.addListener("pushNotificationActionPerformed", (action) => {
     const href = extractPushNotificationHref(action.notification);
     onActionUrlHandler?.(href);
   });
@@ -161,12 +157,8 @@ export async function getNativePushStatus(): Promise<NativePushStatus> {
     return { available: false, permission: "unsupported", linked };
   }
   try {
-    const PushNotifications = await withTimeout(getPushPlugin(), NATIVE_PUSH_DETECTION_TIMEOUT_MS, "plugin_timeout");
-    const current = await withTimeout(
-      PushNotifications.checkPermissions(),
-      NATIVE_PUSH_DETECTION_TIMEOUT_MS,
-      "permission_timeout"
-    );
+    const push = await loadNativePushBridge();
+    const current = await withTimeout(push.checkPermissions(), NATIVE_PUSH_DETECTION_TIMEOUT_MS, "permission_timeout");
     return {
       available: true,
       permission: mapReceivePermission(current.receive),
@@ -189,13 +181,9 @@ export async function enableNativePush(): Promise<{ ok: true } | { ok: false; re
     return { ok: false, reason: "Notifications natives disponibles uniquement dans l'app Android.", permission: "unsupported" };
   }
 
-  const PushNotifications = await getPushPlugin();
+  const push = await loadNativePushBridge();
   try {
-    let current = await withTimeout(
-      PushNotifications.checkPermissions(),
-      NATIVE_PUSH_DETECTION_TIMEOUT_MS,
-      "permission_timeout"
-    );
+    let current = await withTimeout(push.checkPermissions(), NATIVE_PUSH_DETECTION_TIMEOUT_MS, "permission_timeout");
     if (current.receive === "denied") {
       return {
         ok: false,
@@ -205,11 +193,7 @@ export async function enableNativePush(): Promise<{ ok: true } | { ok: false; re
       };
     }
     if (current.receive !== "granted") {
-      current = await withTimeout(
-        PushNotifications.requestPermissions(),
-        NATIVE_PUSH_DETECTION_TIMEOUT_MS,
-        "permission_timeout"
-      );
+      current = await withTimeout(push.requestPermissions(), NATIVE_PUSH_DETECTION_TIMEOUT_MS, "permission_timeout");
     }
     if (current.receive !== "granted") {
       return {
@@ -242,7 +226,7 @@ export async function retryNativePushRegistration(): Promise<NativeRegisterResul
 }
 
 async function registerNativePushTokenWithPlugin(): Promise<NativeRegisterResult> {
-  const PushNotifications = await getPushPlugin();
+  const push = await loadNativePushBridge();
   try {
     await withTimeout(ensureAndroidChannel(), NATIVE_PUSH_DETECTION_TIMEOUT_MS, "channel_timeout");
   } catch (error) {
@@ -254,25 +238,25 @@ async function registerNativePushTokenWithPlugin(): Promise<NativeRegisterResult
     log: logNativePush,
     resetListeners: resetNativePushListeners,
     installListeners: async (handlers) => {
-      await PushNotifications.addListener("registration", (token) => {
+      await push.addListener("registration", (token) => {
         logNativePush("registration:event", { tokenReceived: true, tokenLength: token.value.length });
         handlers.onRegistration(token.value);
       });
-      await PushNotifications.addListener("registrationError", (error) => {
+      await push.addListener("registrationError", (error) => {
         const code = typeof error === "object" && error && "error" in error ? String(error.error) : "registration_error";
         logNativePush("registration:error", { code });
         handlers.onRegistrationError(code);
       });
-      await PushNotifications.addListener("pushNotificationReceived", () => {
+      await push.addListener("pushNotificationReceived", () => {
         onForegroundReceivedHandler?.();
         window.dispatchEvent(new Event("ridecloud:inbox-refresh"));
       });
-      await PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+      await push.addListener("pushNotificationActionPerformed", (action) => {
         onActionUrlHandler?.(extractPushNotificationHref(action.notification));
       });
       listenersReady = true;
     },
-    register: () => PushNotifications.register(),
+    register: () => push.register(),
     persistToken: persistRegistrationToken
   });
 }
@@ -283,13 +267,9 @@ export async function syncNativePushIfGranted(handlers?: {
   onActionUrl?: (href: string) => void;
 }): Promise<void> {
   if (!isCapacitorAndroid()) return;
-  const PushNotifications = await getPushPlugin();
+  const push = await loadNativePushBridge();
   try {
-    const current = await withTimeout(
-      PushNotifications.checkPermissions(),
-      NATIVE_PUSH_DETECTION_TIMEOUT_MS,
-      "permission_timeout"
-    );
+    const current = await withTimeout(push.checkPermissions(), NATIVE_PUSH_DETECTION_TIMEOUT_MS, "permission_timeout");
     if (current.receive !== "granted") return;
   } catch (error) {
     console.error("[native-push] silent sync permission check failed", error);
@@ -302,7 +282,7 @@ export async function syncNativePushIfGranted(handlers?: {
     console.error("[native-push] silent sync channel timeout", error);
   }
   logNativePush("register:start");
-  await PushNotifications.register();
+  await push.register();
 }
 
 export async function disableNativePush(): Promise<{ ok: true } | { ok: false; reason: string }> {
