@@ -23,6 +23,8 @@ page « Vos droits RGPD » (`/rgpd`).
 | Métier | Documents PDF / images (factures, cartes grises) | Téléversement | Service principal | Contrat |
 | Technique | Cookies de session Supabase | Connexion | Authentification | Cookies strictement nécessaires (CNIL) |
 | Technique | IP + user-agent (logs Vercel / Supabase) | Requêtes HTTP | Sécurité, prévention de la fraude | Intérêt légitime |
+| Technique | Endpoint Web Push (VAPID) | Opt-in `/parametres` | Notifications hors app (`push_subscriptions`) | Consentement |
+| Technique | Token FCM Android (jamais loggé en clair) | App Capacitor opt-in | Notifications natives (`native_push_tokens`) | Consentement |
 
 > **Aucune donnée sensible** au sens de l'art. 9 RGPD (santé, opinions politiques,
 > religieuses, biométrie, etc.) n'est traitée.
@@ -143,6 +145,7 @@ intervention manuelle (export, suppression) sont **immédiats**.
 | **Mistral AI SAS** | Génération des plans d'entretien IA — seules métadonnées techniques (marque, modèle, année, carburant) transmises, aucune donnée personnelle | France (UE) | DPA Mistral |
 | **Resend, Inc.** | Envoi des e-mails transactionnels | Irlande (eu-west-1, UE) | DPA Resend |
 | **IONOS SE** | Nom de domaine et zone DNS | Allemagne (UE) | Contrat IONOS |
+| **Google LLC (Firebase Cloud Messaging)** | Envoi des notifications push à l’app Android Capacitor | Siège USA — CCT + DPF | DPA Google Cloud / Firebase |
 
 > Tous les sous-traitants sont **conformes RGPD** et fournissent un DPA standard (art. 28).  
 > Les sous-traitants ayant leur siège hors UE (Vercel, Supabase, Resend) sont couverts par des CCT (Clauses Contractuelles Types) et/ou le Data Privacy Framework.

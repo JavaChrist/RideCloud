@@ -13,7 +13,7 @@
 | Catégorie | Productivité / Automobile / Lifestyle |
 | Langue | Français (FR) — internationalisation prévue |
 | Statut du projet | **En production** — bêta publique ouverte |
-| Plateformes | Web (desktop), Mobile (PWA iOS/Android), Tablette |
+| Plateformes | Web (desktop), Mobile (PWA iOS/Android), **Android natif Capacitor** (`fr.javachrist.ridecloud`), Tablette |
 | Domaine | `ridecloud.app` (DNS IONOS, TLS automatique Vercel) |
 | Modèle économique | Freemium SaaS — paiements Mollie (SEPA + carte) |
 | Hébergement | Vercel (frontend, EU) + Supabase (DB, EU) |
@@ -44,9 +44,10 @@ L'objectif : que vendre, acheter, entretenir ou transmettre un véhicule devienn
 ### Statut du projet
 
 - **Phase actuelle** : **production ouverte**, bêta publique.
-- **Couverture fonctionnelle** : authentification PKCE, CRUD complet multi-catégories, plan d'entretien intelligent + IA, exports/imports, paiements récurrents Mollie, conformité RGPD complète, emails transactionnels personnalisés.
+- **Couverture fonctionnelle** : authentification PKCE, CRUD complet multi-catégories, plan d'entretien intelligent + IA, exports/imports, paiements récurrents Mollie, conformité RGPD complète, emails transactionnels personnalisés, **Web Push + Push Android FCM**.
+- **Push Android natif** : **VALIDÉ EN PRODUCTION le 25/08/2026** (SHARK 9 — foreground / background / app fermée = PASS). Voir `docs/ANDROID-NATIVE-PUSH.md`.
 - **Disponibilité** : `https://ridecloud.app` — accessible à tout utilisateur disposant d'un email.
-- **Prochaine étape** : campagne d'acquisition + onboarding optimisé + premières intégrations partenaires.
+- **Prochaine étape technique** : Google Play Closed Testing (publication AAB). Pas de changement Firebase / Capacitor sans besoin identifié.
 
 ---
 
@@ -494,7 +495,9 @@ Aucune infra serveur custom : tout passe par **Supabase + Routes API Next.js**.
 - `POST /api/account/delete` — suppression compte RGPD (cascade complète + résiliation Mollie)
 - `GET /api/vehicule/[id]/export` — export JSON
 - `GET /api/vehicule/[id]/export-zip` — export ZIP complet
-- `GET /api/cron/notifications` — cron push quotidien (08h00 UTC)
+- `GET /api/cron/notifications` — cron push quotidien (08h00 UTC) — Web Push + FCM
+- `POST /api/push/native/register` — enregistrement token FCM Android
+- `POST /api/push/native/unregister` — révocation token FCM
 - `GET /api/cron/downgrade-expired` — cron rétrogradation abos expirés (02h00 UTC)
 - `GET /auth/callback` — callback PKCE Supabase + `ensureProfile()`
 
@@ -715,7 +718,7 @@ Aucune infra serveur custom : tout passe par **Supabase + Routes API Next.js**.
 - Marketplace de dossiers / revente facilitée.
 - Assistant IA contextuel par véhicule (questions/réponses).
 - Expansion EU multi-langue (DE, ES, IT, EN).
-- Apps natives iOS / Android (si pertinent vs PWA).
+- Publication store : Google Play Closed Testing (shell Android Capacitor déjà en place) ; iOS natif si pertinent vs PWA.
 - "Passeport numérique du véhicule" — standard partagé entre acheteurs / vendeurs.
 - Partenariats constructeurs (intégration officielle des plans d'entretien).
 - Partenariats assurances (réductions sur dossier propre).

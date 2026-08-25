@@ -34,9 +34,21 @@ Dans la page d'import, section **Environment Variables**, ajoutez :
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://zjwwakyhvszojtakvfpb.supabase.co` | Production, Preview, Development |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `sb_publishable_…` (votre anon key) | Production, Preview, Development |
 | `SUPABASE_SERVICE_ROLE_KEY` | `eyJ…` (clé service_role — **secret**) | Production uniquement |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | clé publique Web Push | Production, Preview, Development |
+| `VAPID_PRIVATE_KEY` | clé privée Web Push — **secret** | Production uniquement |
+| `VAPID_CONTACT_EMAIL` | `mailto:support@ridecloud.app` | Production uniquement |
+| `CRON_SECRET` | token aléatoire 32+ caractères — **secret** | Production uniquement |
+| `FIREBASE_PROJECT_ID` | projet Firebase FCM — **secret serveur** | Production uniquement |
+| `FIREBASE_CLIENT_EMAIL` | compte de service Firebase — **secret** | Production uniquement |
+| `FIREBASE_PRIVATE_KEY` | clé privée Firebase (`\n` échappés, une ligne) — **secret** | Production uniquement |
 
-> ⚠️ La clé `SUPABASE_SERVICE_ROLE_KEY` ne doit JAMAIS être exposée côté client.
-> Vercel la garde côté serveur tant que son nom ne commence pas par `NEXT_PUBLIC_`.
+> ⚠️ La clé `SUPABASE_SERVICE_ROLE_KEY` et les secrets Firebase ne doivent JAMAIS
+> être exposés côté client. Jamais de `NEXT_PUBLIC_*` Firebase.
+> Vercel les garde côté serveur tant que le nom ne commence pas par `NEXT_PUBLIC_`.
+>
+> `google-services.json` (package `fr.javachrist.ridecloud`) reste **local** et
+> **exclu de Git**. Push Android natif validé en Production le 25/08/2026 :
+> voir `docs/ANDROID-NATIVE-PUSH.md`.
 
 Cliquez **Deploy**. Le premier build prend 2-3 minutes.
 

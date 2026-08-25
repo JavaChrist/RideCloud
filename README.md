@@ -78,6 +78,8 @@ RideCloud est une **PWA SaaS française** pour suivre l'entretien et la vie comp
 - **Emails** : Resend (SMTP custom Supabase Auth)
 - **Hosting** : Vercel (CDN + Edge)
 - **PWA** : manifest + service worker custom (Web Push)
+- **Android natif** : Capacitor 8, package `fr.javachrist.ridecloud`, URL distante `https://ridecloud.app`
+- **Push** : Web Push VAPID + FCM Android (`@capacitor/push-notifications@8.1.2`)
 - **Forms** : React Hook Form + Zod
 
 ---
@@ -123,6 +125,12 @@ VAPID_CONTACT_EMAIL=mailto:support@votre-domaine.fr
 # Secret du cron Vercel (généré avec : node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
 CRON_SECRET=...
 
+# Firebase Cloud Messaging (serveur uniquement, JAMAIS NEXT_PUBLIC_*)
+# Compte de service Firebase → Vercel Production
+FIREBASE_PROJECT_ID=...
+FIREBASE_CLIENT_EMAIL=...
+FIREBASE_PRIVATE_KEY=...
+
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
@@ -145,9 +153,18 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 2. Webhook → pointer sur `https://votre-domaine/api/billing/webhook`.
 3. Créer 2 abonnements (mensuel + annuel) avec les références utilisées dans `src/lib/billing/plans.ts`.
 
-## Notifications push (Web Push API)
+## Notifications push
 
-RideCloud envoie les rappels d'entretien et de mise à jour du compteur directement sur le téléphone, hors de l'app, via le standard Web Push.
+RideCloud envoie les rappels d'entretien et de mise à jour du compteur hors de l'app via **deux canaux** :
+
+| Canal | Cible | Table |
+| --- | --- | --- |
+| Web Push VAPID | Navigateur / PWA | `push_subscriptions` |
+| FCM Android | App Capacitor (`fr.javachrist.ridecloud`) | `native_push_tokens` |
+
+**Push Android natif = VALIDÉ EN PRODUCTION le 25/08/2026** (appareil réel SHARK 9 : app fermée, arrière-plan et premier plan = PASS). Token FCM enregistré dans `native_push_tokens`. Détail opérationnel : [`docs/ANDROID-NATIVE-PUSH.md`](docs/ANDROID-NATIVE-PUSH.md).
+
+Ne pas modifier le setup Firebase / Capacitor sans besoin identifié. `google-services.json` reste local et exclu de Git.
 
 ### Configuration une seule fois
 
@@ -168,7 +185,8 @@ RideCloud envoie les rappels d'entretien et de mise à jour du compteur directem
 
 - L'utilisateur ouvre `/parametres` → section « Notifications sur le téléphone » → bouton **Activer**.
 - Sur iPhone : Safari → **Partager → Ajouter à l'écran d'accueil** d'abord, puis ouvrir l'app installée et activer.
-- Sur Android : Chrome / Edge / Firefox supportent les notifications même sans installer la PWA (mais l'installation reste recommandée).
+- Sur Android **web / PWA** : Chrome / Edge / Firefox supportent Web Push (l'installation PWA reste recommandée).
+- Sur l'**app Android Capacitor** : Paramètres → Notifications → **Activer** / **Réessayer**. Le plugin natif enregistre un token FCM (pas Web Push).
 
 ### Anti-spam intégré
 
@@ -202,6 +220,7 @@ src/
         notifications/       # rappels push quotidiens (08h00 UTC)
         downgrade-expired/   # rétrogradation Free des abos expirés (02h00 UTC)
       account/delete/        # suppression compte RGPD (cascade + résiliation Mollie)
+      push/                  # subscribe / unsubscribe Web Push + native register / unregister
     auth/callback/           # PKCE callback Supabase
   error.tsx                  # page d'erreur 500 brandée
   not-found.tsx              # page 404 brandée
@@ -224,6 +243,7 @@ src/
     billing/                 # limits, ensure-profile, plans, founder-program
     data/                    # accès données métier
     hooks/                   # use-founder-program, ...
+    push/                    # Web Push + bridge FCM Android (jamais retourner le proxy Capacitor)
     supabase/                # client, server, admin, middleware, env
     utils.ts
   types/
@@ -232,6 +252,7 @@ supabase/
   schema.sql                 # schéma de base (entités principales)
   migrations/                # migrations idempotentes datées
 docs/
+  ANDROID-NATIVE-PUSH.md     # état validé Push Android (25/08/2026)
   RideCloud-Product-Sheet.md
   RideCloud-Landing-Page.md
   AI-MAINTENANCE-PLAN.md
@@ -285,6 +306,7 @@ select public.claim_founder_slot();
 
 ### Livré en production ✅
 - Notifications push Web Push (rappels entretien, mise à jour compteur)
+- Push Android natif FCM (Capacitor) — validé le 25/08/2026 sur SHARK 9
 - Paiements Mollie récurrents + rétrogradation automatique + résiliation RGPD
 
 ### V1 (1-3 mois)
@@ -295,7 +317,7 @@ select public.claim_founder_slot();
 - Onboarding guidé premier véhicule
 
 ### V2+
-- Application mobile native (Capacitor / React Native)
+- Google Play Closed Testing (publication AAB — hors chantier push)
 - OCR factures
 - Intégration contrôle technique / assurance
 - API publique partenaires
