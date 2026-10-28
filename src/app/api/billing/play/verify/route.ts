@@ -6,6 +6,7 @@ import { CHECKOUT_CONSENT_VERSION } from "@/lib/billing/plans";
 import { ensureProfile } from "@/lib/billing/ensure-profile";
 import { applyVerifiedPlayPurchase } from "@/lib/billing/apply-play-purchase";
 import { hasPlayBillingEnv } from "@/lib/billing/play-publisher";
+import { reconcileStoredPlayRtdnEvents } from "@/lib/billing/play-rtdn-reconcile";
 import { rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -87,6 +88,21 @@ export async function POST(request: Request) {
       claimedOrderId: parsed.orderId,
       requireObfuscatedAccount: true
     });
+    if (result.boundUserId) {
+      try {
+        await reconcileStoredPlayRtdnEvents({
+          purchaseToken: parsed.purchaseToken,
+          applyPurchase: (purchaseToken) =>
+            applyVerifiedPlayPurchase({
+              userId: user.id,
+              purchaseToken,
+              requireObfuscatedAccount: true
+            })
+        });
+      } catch {
+        // L'achat est déjà lié ; le cron reprendra les RTDN encore ouverts.
+      }
+    }
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Vérification Google Play impossible.";

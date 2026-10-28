@@ -106,6 +106,28 @@ describe("resolvePlayEntitlement", () => {
     ).toBe("apply");
   });
 
+  it("applique l'état Google courant, y compris expiration ou révocation", () => {
+    expect(
+      shouldApplyPlayPlanToProfile({
+        access: "none",
+        existingHasPaidRights: true
+      })
+    ).toBe("apply");
+    expect(
+      shouldApplyPlayPlanToProfile({
+        access: "restricted",
+        existingHasPaidRights: true
+      })
+    ).toBe("apply");
+    expect(
+      resolvePlayEntitlement({
+        subscriptionState: "SUBSCRIPTION_STATE_EXPIRED",
+        expiryTime: "2026-09-01T12:00:00.000Z",
+        now
+      }).access
+    ).toBe("none");
+  });
+
   it("restreint hold et pause, puis retire les droits à l'expiration", () => {
     expect(
       resolvePlayEntitlement({
