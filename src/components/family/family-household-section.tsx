@@ -21,6 +21,7 @@ import {
 } from "@/lib/family/household";
 import { USAGE_PROFILE_LABELS } from "@/lib/usage-profile";
 import type { UserPlanState } from "@/lib/billing/limits";
+import { shouldShowFamilyHouseholdSection } from "@/lib/family/invite-flow";
 import Link from "next/link";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -44,7 +45,12 @@ export function FamilyHouseholdSection({
 
   const inviteToken = searchParams.get("invite");
   const canManage = planState.plan === "family" && planState.planStatus === "active";
-  const showSection = canManage || planState.hasHouseholdBenefits || Boolean(inviteToken);
+  const showSection = shouldShowFamilyHouseholdSection({
+    canManage,
+    hasHouseholdBenefits: planState.hasHouseholdBenefits,
+    pendingInvite: Boolean(household?.pendingInvite),
+    inviteQuery: Boolean(inviteToken)
+  });
 
   const supportMailto = useMemo(() => {
     const ownerEmail = household?.ownerEmail ?? "";
@@ -62,10 +68,6 @@ export function FamilyHouseholdSection({
   }
 
   useEffect(() => {
-    if (!showSection) {
-      setLoading(false);
-      return;
-    }
     let cancelled = false;
     void refresh()
       .catch((error: unknown) => {
@@ -79,7 +81,7 @@ export function FamilyHouseholdSection({
     return () => {
       cancelled = true;
     };
-  }, [showSection]);
+  }, []);
 
   useEffect(() => {
     if (!inviteToken || loading) return;
@@ -111,7 +113,7 @@ export function FamilyHouseholdSection({
     };
   }, [inviteToken, loading, router]);
 
-  if (!showSection) return null;
+  if (!loading && !showSection) return null;
 
   async function handleInvite(event: React.FormEvent) {
     event.preventDefault();
@@ -122,13 +124,36 @@ export function FamilyHouseholdSection({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email })
       });
-      const data = (await response.json()) as { error?: string; token?: string };
+      const data = (await response.json()) as { error?: string; emailed?: boolean };
       if (!response.ok) throw new Error(data.error ?? "Invitation impossible.");
-      toast.success("Invitation enregistrée. La personne la verra dans ses Paramètres.");
+      toast.success(
+        data.emailed ? "Invitation envoyée par e-mail." : "Invitation enregistrée, e-mail non envoyé"
+      );
       setEmail("");
       await refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Invitation impossible.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleResend(targetEmail: string) {
+    setBusy(true);
+    try {
+      const response = await fetch("/api/family/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: targetEmail })
+      });
+      const data = (await response.json()) as { error?: string; emailed?: boolean };
+      if (!response.ok) throw new Error(data.error ?? "Renvoi impossible.");
+      toast.success(
+        data.emailed ? "Invitation envoyée par e-mail." : "Invitation enregistrée, e-mail non envoyé"
+      );
+      await refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Renvoi impossible.");
     } finally {
       setBusy(false);
     }
@@ -277,20 +302,32 @@ export function FamilyHouseholdSection({
                   <div>
                     <p className="font-medium text-slate-900 dark:text-slate-50">{invite.email}</p>
                     <p className="text-xs text-slate-500">
-                      {invite.status === "expired" ? "Expirée" : "En attente"} · lien{" "}
-                      <span className="font-mono">/parametres?invite={invite.token}</span>
+                      {invite.status === "expired" ? "Expirée" : "En attente d'acceptation"}
                     </p>
                   </div>
                   {canManage ? (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      disabled={busy}
-                      onClick={() => void handleAction({ action: "revoke", inviteId: invite.id })}
-                    >
-                      Annuler
-                    </Button>
+                    <div className="flex shrink-0 gap-2">
+                      {invite.status === "pending" ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={busy}
+                          onClick={() => void handleResend(invite.email)}
+                        >
+                          Renvoyer
+                        </Button>
+                      ) : null}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => void handleAction({ action: "revoke", inviteId: invite.id })}
+                      >
+                        Annuler
+                      </Button>
+                    </div>
                   ) : null}
                 </li>
               ))}

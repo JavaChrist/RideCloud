@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import type { z } from "zod";
+import { familyInviteAuthPath, familyInvitePostAuthPath, safeFamilyInviteToken } from "@/lib/family/invite-flow";
 
 type RegisterValues = z.infer<typeof registerSchema>;
 
@@ -37,8 +38,10 @@ export function RegisterForm() {
       const supabase = createClient();
       // Si l'utilisateur vient de la page tarifs avec un plan sélectionné,
       // on l'y redirige après confirmation email pour qu'il puisse payer.
-      const postConfirmNext =
-        next && plan && interval
+      const inviteToken = safeFamilyInviteToken(searchParams.get("invite"));
+      const postConfirmNext = inviteToken
+        ? familyInvitePostAuthPath(inviteToken)
+        : next && plan && interval
           ? `${next}?plan=${plan}&interval=${interval}`
           : next ?? "/categories";
 
@@ -188,7 +191,7 @@ export function RegisterForm() {
         <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? "Création..." : "Créer un compte"}
         </Button>
-        <p className="text-center text-sm text-muted-foreground">Déjà inscrit ? <Link href="/login" className="text-primary hover:underline">Se connecter</Link></p>
+        <p className="text-center text-sm text-muted-foreground">Déjà inscrit ? <Link href={familyInviteAuthPath("/login", searchParams.get("invite"))} className="text-primary hover:underline">Se connecter</Link></p>
       </form>
     </Form>
   );

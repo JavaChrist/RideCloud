@@ -409,6 +409,7 @@ export interface Database {
           expires_at: string;
           accepted_at: string | null;
           revoked_at: string | null;
+          last_email_sent_at: string | null;
         };
         Insert: {
           id?: UUID;
@@ -420,8 +421,13 @@ export interface Database {
           expires_at: string;
           accepted_at?: string | null;
           revoked_at?: string | null;
+          last_email_sent_at?: string | null;
         };
-        Update: Partial<{ accepted_at: string | null; revoked_at: string | null }>;
+        Update: Partial<{
+          accepted_at: string | null;
+          revoked_at: string | null;
+          last_email_sent_at: string | null;
+        }>;
         Relationships: [];
       };
       notifications: {

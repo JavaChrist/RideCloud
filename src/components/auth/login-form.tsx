@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import type { z } from "zod";
+import { familyInviteAuthPath, familyInvitePostAuthPath, safeFamilyInviteToken } from "@/lib/family/invite-flow";
 
 type LoginValues = z.infer<typeof loginSchema>;
 
@@ -49,7 +50,7 @@ export function LoginForm() {
         return;
       }
       toast.success("Connexion réussie");
-      router.push("/categories");
+      router.push(familyInvitePostAuthPath(safeFamilyInviteToken(searchParams.get("invite"))));
       router.refresh();
     } catch {
       toast.error("Impossible de se connecter. Vérifiez Supabase.");
@@ -66,10 +67,15 @@ export function LoginForm() {
     setIsResending(true);
     try {
       const supabase = createClient();
+      const inviteToken = safeFamilyInviteToken(searchParams.get("invite"));
       const { error } = await supabase.auth.resend({
         type: "signup",
         email,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/categories` }
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+            familyInvitePostAuthPath(inviteToken)
+          )}`
+        }
       });
       if (error) {
         toast.error(error.message);
@@ -116,7 +122,7 @@ export function LoginForm() {
         )} />
         <div className="flex items-center justify-between text-sm">
           <Link href="/forgot-password" className="text-primary hover:underline">Mot de passe oublié</Link>
-          <Link href="/register" className="text-primary hover:underline">Créer un compte</Link>
+          <Link href={familyInviteAuthPath("/register", searchParams.get("invite"))} className="text-primary hover:underline">Créer un compte</Link>
         </div>
         <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>{form.formState.isSubmitting ? "Connexion..." : "Se connecter"}</Button>
 

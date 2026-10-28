@@ -13,7 +13,8 @@ import { PLANS } from "@/lib/billing/plans";
 import { ensureProfile } from "@/lib/billing/ensure-profile";
 import { applyVerifiedPlayPurchase } from "@/lib/billing/apply-play-purchase";
 import { hasPlayBillingEnv } from "@/lib/billing/play-publisher";
-import { ensureHouseholdForOwner } from "@/lib/family/household";
+import { ensureHouseholdForOwner, getHouseholdMembership } from "@/lib/family/household";
+import { describeHouseholdSync } from "@/lib/family/invite-flow";
 import type { Plan, PlanInterval } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -93,6 +94,7 @@ export async function POST(request: Request) {
     plan_interval: string | null;
   } | null;
 
+  const membership = await getHouseholdMembership(user.id);
   const playTokens = [
     ...playPurchases,
     ...(profile?.play_purchase_token
@@ -127,6 +129,22 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: message }, { status: 502 });
       }
     }
+  }
+
+  const householdSync = describeHouseholdSync({
+    acceptedMember: membership?.role === "member",
+    householdActive: Boolean(membership?.isActive),
+    hasPersonalPlay: playTokens.length > 0,
+    hasPersonalMollie: Boolean(profile?.mollie_subscription_id)
+  });
+  if (householdSync.skipMollie) {
+    return NextResponse.json({
+      ok: true,
+      synced: householdSync.synced,
+      plan: "family",
+      planStatus: "active",
+      household: true
+    });
   }
 
   if (!hasMollieEnv()) {

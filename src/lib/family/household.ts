@@ -24,7 +24,6 @@ export interface HouseholdMemberView {
 export interface HouseholdInviteView {
   id: string;
   email: string;
-  token: string;
   createdAt: string;
   expiresAt: string;
   status: "pending" | "expired";
@@ -382,7 +381,6 @@ export async function getHouseholdState(input: {
     invites = (inviteRows ?? []).map((row) => ({
       id: row.id as string,
       email: row.email as string,
-      token: row.token as string,
       createdAt: row.created_at as string,
       expiresAt: row.expires_at as string,
       status: new Date(row.expires_at as string).getTime() < now ? "expired" : "pending"
@@ -410,7 +408,7 @@ export async function inviteHouseholdMember(input: {
   ownerId: string;
   ownerEmail: string;
   email: string;
-}): Promise<{ token: string }> {
+}): Promise<{ token: string; reused: boolean; lastEmailSentAt: string | null }> {
   const target = normalizeEmail(input.email);
   if (!isValidInviteEmail(target)) {
     throw new Error("Adresse e-mail invalide.");
@@ -439,6 +437,23 @@ export async function inviteHouseholdMember(input: {
 
   const householdId = await ensureHouseholdForOwner(input.ownerId);
   const admin = adminClient();
+  const { data: existingInvite } = await admin
+    .from("household_invites")
+    .select("token, last_email_sent_at")
+    .eq("household_id", householdId)
+    .eq("email", target)
+    .is("accepted_at", null)
+    .is("revoked_at", null)
+    .gt("expires_at", new Date().toISOString())
+    .maybeSingle();
+  if (existingInvite?.token) {
+    return {
+      token: existingInvite.token as string,
+      reused: true,
+      lastEmailSentAt: (existingInvite.last_email_sent_at as string | null) ?? null
+    };
+  }
+
   const state = await getHouseholdState({ userId: input.ownerId, email: input.ownerEmail });
   if (remainingHouseholdSeats(state.members.length, state.invites.filter((i) => i.status === "pending").length) <= 0) {
     throw new Error(`Le foyer est limité à ${FAMILY_HOUSEHOLD_LIMIT} comptes.`);
@@ -470,11 +485,50 @@ export async function inviteHouseholdMember(input: {
 
   if (error || !data) {
     if (error?.code === "23505") {
-      throw new Error("Une invitation est déjà en cours pour cette adresse.");
+      const { data: raced } = await admin
+        .from("household_invites")
+        .select("token, last_email_sent_at")
+        .eq("household_id", householdId)
+        .eq("email", target)
+        .is("accepted_at", null)
+        .is("revoked_at", null)
+        .gt("expires_at", new Date().toISOString())
+        .maybeSingle();
+      if (raced?.token) {
+        return {
+          token: raced.token as string,
+          reused: true,
+          lastEmailSentAt: (raced.last_email_sent_at as string | null) ?? null
+        };
+      }
     }
     throw new Error(error?.message ?? "Impossible d'envoyer l'invitation.");
   }
-  return { token: data.token as string };
+  return { token: data.token as string, reused: false, lastEmailSentAt: null };
+}
+
+export async function markHouseholdInviteEmailed(token: string): Promise<void> {
+  const admin = adminClient();
+  await admin
+    .from("household_invites")
+    .update({ last_email_sent_at: new Date().toISOString() } as never)
+    .eq("token", token)
+    .is("accepted_at", null)
+    .is("revoked_at", null);
+}
+
+export async function hasOpenHouseholdInviteForEmail(email: string): Promise<boolean> {
+  const admin = adminClient();
+  const { data } = await admin
+    .from("household_invites")
+    .select("id")
+    .eq("email", normalizeEmail(email))
+    .is("accepted_at", null)
+    .is("revoked_at", null)
+    .gt("expires_at", new Date().toISOString())
+    .limit(1)
+    .maybeSingle();
+  return Boolean(data);
 }
 
 export async function acceptHouseholdInvite(input: {

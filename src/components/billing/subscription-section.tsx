@@ -23,7 +23,9 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
   //   - mollie_customer_id absent en DB : on cherchera côté Mollie via l'email
   // Cette UX permet à un utilisateur qui a payé mais dont le profil n'a pas été
   // mis à jour de débloquer la situation lui-même.
-  const showSyncFallback = state.plan === "free" || state.planStatus === "pending";
+  const householdAccess = state.hasHouseholdBenefits;
+  const showSyncFallback =
+    !householdAccess && (state.plan === "free" || state.planStatus === "pending");
   const isPlay = state.billingProvider === "play" || Boolean(state.playPurchaseToken);
   const hasMollieCustomer = Boolean(state.mollieCustomerId);
 
@@ -63,7 +65,7 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
                 id="subscription-heading"
                 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50"
               >
-                Abonnement {planDef.name}
+                Abonnement {householdAccess && state.plan === "free" ? "Family (foyer)" : planDef.name}
               </h2>
               {isPastDue ? (
                 <Badge className="rounded-full border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-300">
@@ -73,7 +75,7 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
                 <Badge className="rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-200">
                   Annulé
                 </Badge>
-              ) : isPaid ? (
+              ) : isPaid || householdAccess ? (
                 <Badge className="rounded-full border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
                   Actif
                 </Badge>
@@ -82,7 +84,7 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{planDef.description}</p>
           </div>
         </div>
-        {!isPaid ? (
+        {!isPaid && !householdAccess ? (
           <Link
             href="/tarifs"
             className="inline-flex h-10 w-full shrink-0 items-center justify-center gap-1.5 rounded-md bg-blue-700 px-4 text-sm font-medium text-white shadow-[0_4px_14px_-4px_rgba(29,78,216,0.6)] transition hover:bg-blue-800 md:w-auto"
