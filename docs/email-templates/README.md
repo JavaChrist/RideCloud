@@ -68,7 +68,7 @@ Les templates utilisent les placeholders Supabase suivants :
 
 Tous les templates partagent la même base visuelle :
 
-- **Header** : gradient bleu RideCloud (`#1e40af → #2563eb`) + logo "R" + nom du produit
+- **Header** : gradient bleu RideCloud (`#1e40af → #2563eb`) + logo (`https://ridecloud.app/icons/logo192.png`) + nom du produit
 - **Badge** : couleur contextuelle (bleu, ambre, vert, indigo selon le cas)
 - **Bouton CTA** : gradient bleu + ombre douce + rounded 14px
 - **Lien fallback** : URL complète en monospace pour copier-coller
@@ -98,18 +98,20 @@ Recherche/remplace dans les 4 fichiers :
 - `#f8fafc` → background footer (slate-50)
 - `#f1f5f9` → background page (slate-100)
 
-### Remplacer le logo "R" par une vraie image
+### Logo
 
-Une fois l'app déployée publiquement sur `https://ridecloud.app`, tu peux remplacer le bloc avec la lettre "R" par une `<img>` :
+Les 4 templates utilisent le logo public :
 
 ```html
-<img src="https://ridecloud.app/icons/RideCloud.png"
+<img src="https://ridecloud.app/icons/logo192.png"
      alt="RideCloud"
      width="48" height="48"
      style="display:block;border-radius:14px;border:0;outline:none;text-decoration:none;" />
 ```
 
-> ⚠️ L'image doit être hébergée sur une URL publique HTTPS pour que tous les clients mail l'affichent (certains, dont Outlook, bloquent les images embarquées sans URL absolue).
+`logo192.png` (~41 Ko) est préféré à `RideCloud.png` (~1,5 Mo), trop lourd pour un e-mail.
+
+> ⚠️ L'image doit rester une URL publique HTTPS. Après modification ici, recoller le HTML dans Supabase → Authentication → Emails (les templates Dashboard ne sont pas versionnés).
 
 ## Maintenance
 

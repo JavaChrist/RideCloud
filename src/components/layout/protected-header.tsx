@@ -11,7 +11,7 @@ import { MobileHeaderMenu, MobileMenuLink, menuItemClassName } from "@/component
 interface ProtectedHeaderProps {
   /** Numéro de slot fondateur si l'utilisateur a débloqué son badge. `null` sinon. */
   founderBadge?: number | null;
-  /** Affiche le CTA "Devenir Fondateur" pour les non-membres. */
+  /** Affiche le CTA Beta Club pour les utilisateurs sans place fondateur. */
   showFounderCta?: boolean;
 }
 
@@ -37,12 +37,12 @@ export function ProtectedHeader({ founderBadge, showFounderCta }: ProtectedHeade
           {showFounderCta && (
             <Link
               href="/fondateur"
-              aria-label="Devenir Membre Fondateur RideCloud"
+              aria-label="Découvrir le Beta Club JavaChrist"
               className="inline-flex items-center gap-1.5 rounded-full border border-indigo-300/60 bg-gradient-to-r from-blue-500/10 via-indigo-500/15 to-violet-500/10 px-2.5 py-1 text-xs font-semibold text-indigo-700 transition hover:shadow-sm dark:border-indigo-700/60 dark:text-indigo-300 sm:px-3 sm:py-1.5"
             >
               <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
-              <span className="hidden sm:inline">Devenir Fondateur</span>
-              <span className="sm:hidden">Fondateur</span>
+              <span className="hidden sm:inline">Beta Club</span>
+              <span className="sm:hidden">Beta</span>
             </Link>
           )}
           <Link
@@ -58,6 +58,9 @@ export function ProtectedHeader({ founderBadge, showFounderCta }: ProtectedHeade
           </div>
           <MobileHeaderMenu>
             <ThemeMenuRow />
+            {showFounderCta ? (
+              <MobileMenuLink href="/fondateur">Beta Club</MobileMenuLink>
+            ) : null}
             <MobileMenuLink href="/parametres">
               <Settings className="h-4 w-4" strokeWidth={2} aria-hidden />
               Paramètres

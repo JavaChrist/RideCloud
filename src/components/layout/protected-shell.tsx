@@ -22,8 +22,8 @@ export function ProtectedShell({ children, planState, founderRecord }: Protected
 
   const remaining = founderRecord ? daysLeft(founderRecord.joinedAt) : 0;
 
-  // Lien "Devenir Fondateur" visible pour les utilisateurs qui n'ont pas encore
-  // de slot (ni badge), pour leur permettre de découvrir le programme.
+  // CTA Beta Club pour les utilisateurs sans place fondateur (le recrutement
+  // public ne propose plus de réserver une place Fondateur).
   const showFounderCta = !founderRecord && !planState?.founderBadge;
 
   return (

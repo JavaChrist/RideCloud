@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { FounderWelcome } from "@/components/founder/founder-welcome";
 
 export const metadata: Metadata = {
-  title: "Programme Membres Fondateurs · RideCloud",
+  title: "Beta Club JavaChrist · RideCloud",
   description:
-    "Rejoignez les 100 premiers Membres Fondateurs RideCloud. Premium à vie en échange d'un retour d'expérience de 5 minutes."
+    "Découvrez les campagnes de test RideCloud via le Beta Club JavaChrist. Les accès dépendent des missions, des prérequis et des validations de l'équipe."
 };
 
 export default function FounderPage() {

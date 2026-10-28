@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { LandingHeader } from "@/components/layout/landing-header";
+import { BetaClubInvite } from "@/components/beta-club/beta-club-invite";
 
 export const metadata = {
   title: "RideCloud — Le carnet d'entretien intelligent de tous vos véhicules",
@@ -41,6 +42,7 @@ export default function LandingPage() {
         <Features />
         <Benefits />
         <FreemiumCTA />
+        <BetaClubSection />
         <FAQ />
       </main>
       <Footer />
@@ -708,6 +710,16 @@ function FreemiumCTA() {
   );
 }
 
+function BetaClubSection() {
+  return (
+    <section className="relative border-t border-slate-200/70 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <div className="mx-auto max-w-6xl px-6 py-20 md:py-24">
+        <BetaClubInvite />
+      </div>
+    </section>
+  );
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
  * FAQ
  * ──────────────────────────────────────────────────────────────────────────── */
@@ -878,6 +890,7 @@ function Footer() {
               { label: "Fonctionnalités", href: "#features" },
               { label: "Bénéfices", href: "#benefits" },
               { label: "FAQ", href: "#faq" },
+              { label: "Beta Club", href: "#beta-club" },
               { label: "Tarifs", href: "/tarifs" },
             ]}
           />

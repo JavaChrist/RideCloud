@@ -29,6 +29,7 @@ export function LandingHeader() {
             Tarifs
           </HeaderLink>
           <HeaderLink href="#faq">FAQ</HeaderLink>
+          <HeaderLink href="#beta-club">Beta Club</HeaderLink>
           <HeaderLink href="/login" asLink>
             Connexion
           </HeaderLink>
@@ -51,6 +52,7 @@ export function LandingHeader() {
             <MobileMenuAnchor href="#benefits">Bénéfices</MobileMenuAnchor>
             <MobileMenuLink href="/tarifs">Tarifs</MobileMenuLink>
             <MobileMenuAnchor href="#faq">FAQ</MobileMenuAnchor>
+            <MobileMenuAnchor href="#beta-club">Beta Club</MobileMenuAnchor>
             <MobileMenuLink href="/login">Connexion</MobileMenuLink>
             <ThemeMenuRow />
           </MobileHeaderMenu>
