@@ -1,4 +1,4 @@
-import type { Plan, PlanInterval, PlanStatus, Profile } from "@/types/database";
+import type { BillingProvider, Plan, PlanInterval, PlanStatus, Profile } from "@/types/database";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PLANS } from "@/lib/billing/plans";
@@ -32,9 +32,12 @@ export interface UserPlanState {
   vehicleCount: number;
   hasReachedVehicleLimit: boolean;
   remainingVehicles: number;
+  billingProvider: BillingProvider | null;
   mollieCustomerId: string | null;
   mollieSubscriptionId: string | null;
   mollieMandateId: string | null;
+  playProductId: string | null;
+  playPurchaseToken: string | null;
   isFounder: boolean;
   founderBadge: boolean;
   /** Accès payants via un foyer Family actif (titulaire ou membre). */
@@ -50,9 +53,12 @@ const DEFAULT_PROFILE: Pick<
   | "plan_interval"
   | "plan_renews_at"
   | "plan_canceled_at"
+  | "billing_provider"
   | "mollie_customer_id"
   | "mollie_subscription_id"
   | "mollie_mandate_id"
+  | "play_product_id"
+  | "play_purchase_token"
   | "founder_premium_lifetime"
   | "founder_badge"
 > = {
@@ -61,9 +67,12 @@ const DEFAULT_PROFILE: Pick<
   plan_interval: null,
   plan_renews_at: null,
   plan_canceled_at: null,
+  billing_provider: null,
   mollie_customer_id: null,
   mollie_subscription_id: null,
   mollie_mandate_id: null,
+  play_product_id: null,
+  play_purchase_token: null,
   founder_premium_lifetime: false,
   founder_badge: false
 };
@@ -84,7 +93,7 @@ export async function getUserPlanState(userId: string): Promise<UserPlanState> {
     supabase
       .from("profiles")
       .select(
-        "plan, plan_status, plan_interval, plan_renews_at, plan_canceled_at, mollie_customer_id, mollie_subscription_id, mollie_mandate_id, founder_premium_lifetime, founder_badge"
+        "plan, plan_status, plan_interval, plan_renews_at, plan_canceled_at, billing_provider, mollie_customer_id, mollie_subscription_id, mollie_mandate_id, play_product_id, play_purchase_token, founder_premium_lifetime, founder_badge"
       )
       .eq("id", userId)
       .maybeSingle(),
@@ -117,7 +126,6 @@ export async function getUserPlanState(userId: string): Promise<UserPlanState> {
         plan_interval: null,
         plan_renews_at: null,
         plan_canceled_at: null,
-        mollie_subscription_id: null,
         updated_at: new Date().toISOString()
       } as never)
       .eq("id", userId);
@@ -150,9 +158,12 @@ export async function getUserPlanState(userId: string): Promise<UserPlanState> {
     vehicleCount,
     hasReachedVehicleLimit: vehicleCount >= vehicleLimit,
     remainingVehicles: Math.max(0, vehicleLimit - vehicleCount),
+    billingProvider: profile.billing_provider ?? null,
     mollieCustomerId: profile.mollie_customer_id,
     mollieSubscriptionId: expired ? null : profile.mollie_subscription_id,
     mollieMandateId: profile.mollie_mandate_id,
+    playProductId: profile.play_product_id ?? null,
+    playPurchaseToken: expired ? null : profile.play_purchase_token ?? null,
     isFounder,
     founderBadge,
     hasHouseholdBenefits,
@@ -189,9 +200,13 @@ export async function updateUserPlanFromAdmin(
     plan_interval: PlanInterval | null;
     plan_renews_at: string | null;
     plan_canceled_at: string | null;
+    billing_provider: BillingProvider | null;
     mollie_customer_id: string | null;
     mollie_subscription_id: string | null;
     mollie_mandate_id: string | null;
+    play_product_id: string | null;
+    play_purchase_token: string | null;
+    play_order_id: string | null;
   }>
 ): Promise<void> {
   const admin = createAdminClient();

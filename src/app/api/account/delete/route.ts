@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { getMollieClient, hasMollieEnv } from "@/lib/billing/mollie";
+import { cancelPlaySubscription, hasPlayBillingEnv } from "@/lib/billing/play-publisher";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +82,9 @@ export async function POST(request: Request) {
     try {
       const { data: profileData } = await admin
         .from("profiles")
-        .select("mollie_customer_id, mollie_subscription_id, plan")
+        .select(
+          "mollie_customer_id, mollie_subscription_id, plan, play_product_id, play_purchase_token"
+        )
         .eq("id", userId)
         .maybeSingle();
 
@@ -89,6 +92,8 @@ export async function POST(request: Request) {
         mollie_customer_id: string | null;
         mollie_subscription_id: string | null;
         plan: string | null;
+        play_product_id: string | null;
+        play_purchase_token: string | null;
       } | null;
 
       if (
@@ -106,6 +111,30 @@ export async function POST(request: Request) {
       const msg = mollieError instanceof Error ? mollieError.message : "Erreur Mollie";
       console.warn(`[account/delete] Résiliation Mollie échouée (non bloquante) : ${msg}`);
       errors.push(`Mollie (non bloquant) : ${msg}`);
+    }
+  }
+
+  if (hasPlayBillingEnv()) {
+    try {
+      const { data: playProfileData } = await admin
+        .from("profiles")
+        .select("play_product_id, play_purchase_token")
+        .eq("id", userId)
+        .maybeSingle();
+      const playProfile = playProfileData as {
+        play_product_id: string | null;
+        play_purchase_token: string | null;
+      } | null;
+      if (playProfile?.play_product_id && playProfile.play_purchase_token) {
+        await cancelPlaySubscription({
+          productId: playProfile.play_product_id,
+          purchaseToken: playProfile.play_purchase_token
+        });
+      }
+    } catch (playError) {
+      const msg = playError instanceof Error ? playError.message : "Erreur Google Play";
+      console.warn(`[account/delete] Résiliation Google Play échouée (non bloquante) : ${msg}`);
+      errors.push(`Google Play (non bloquant) : ${msg}`);
     }
   }
 

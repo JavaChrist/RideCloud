@@ -56,7 +56,12 @@ export default async function TarifsPage() {
             isLoggedIn={Boolean(user)}
             currentPlan={planState?.plan ?? null}
             currentInterval={planState?.planInterval ?? null}
-            hasActiveSubscription={Boolean(planState?.mollieSubscriptionId)}
+            hasActiveSubscription={Boolean(
+              planState &&
+                planState.plan !== "free" &&
+                planState.planStatus === "active" &&
+                !planState.canceledAt
+            )}
           />
         </section>
 
@@ -73,7 +78,7 @@ export default async function TarifsPage() {
                 icon: Lock,
                 title: "Paiements sécurisés",
                 description:
-                  "Mollie (Pays-Bas, agréé PSP européen) gère les paiements. Aucune donnée carte ne transite par nos serveurs."
+                  "Sur le web, Mollie (Pays-Bas, agréé PSP européen) encaisse le paiement. Dans l'application Android, Google Play facture le même tarif. Aucune donnée carte ne transite par nos serveurs."
               },
               {
                 icon: Shield,
@@ -104,7 +109,7 @@ export default async function TarifsPage() {
             {[
               {
                 q: "Quels modes de paiement sont acceptés ?",
-                a: "Carte bancaire (Visa, Mastercard) et prélèvement SEPA via Mollie. D'autres méthodes (Bancontact, iDEAL) sont disponibles selon votre pays."
+                a: "Sur le web : carte bancaire (Visa, Mastercard) et prélèvement SEPA via Mollie, plus Bancontact ou iDEAL selon le pays. Dans l'application Android : paiement via Google Play, aux mêmes prix (Premium 3,99 €/mois ou 39 €/an, Family 7,99 €/mois ou 79 €/an). Aucun essai gratuit."
               },
               {
                 q: "Puis-je changer de plan à tout moment ?",

@@ -72,7 +72,7 @@ export default function CguPage() {
           <li>la cession du dossier complet d&apos;un véhicule à un acheteur tiers.</li>
         </ul>
         <p>
-          Le Service est proposé sous forme freemium : un plan <strong>Free</strong> (1 véhicule) gratuit à vie, et des plans payants <strong>Premium</strong> (3,99 €/mois, 5 véhicules) et <strong>Family</strong> (7,99 €/mois, 10 véhicules), avec option annuelle remisée. Les prix incluent les taxes (l&apos;Éditeur bénéficiant de la franchise de TVA, art. 293 B du CGI, aucune TVA n&apos;est facturée). Toute évolution tarifaire fera l&apos;objet d&apos;une notification préalable à l&apos;Utilisateur, dans un délai raisonnable. Les paiements sont traités par <strong>Mollie B.V.</strong> (Pays-Bas), prestataire de services de paiement agréé.
+          Le Service est proposé sous forme freemium : un plan <strong>Free</strong> (1 véhicule) gratuit à vie, et des plans payants <strong>Premium</strong> (3,99 €/mois ou 39 €/an, 5 véhicules) et <strong>Family</strong> (7,99 €/mois ou 79 €/an, 10 véhicules). Les prix sont identiques sur le web et dans l&apos;application Android. Aucun essai gratuit n&apos;est proposé. Les prix incluent les taxes (l&apos;Éditeur bénéficiant de la franchise de TVA, art. 293 B du CGI, aucune TVA n&apos;est facturée). Toute évolution tarifaire fera l&apos;objet d&apos;une notification préalable à l&apos;Utilisateur, dans un délai raisonnable. Sur le web, les paiements sont traités par <strong>Mollie B.V.</strong> (Pays-Bas). Dans l&apos;application Android, les abonnements sont facturés par <strong>Google Play</strong>.
         </p>
       </LegalSection>
 
@@ -171,13 +171,13 @@ export default function CguPage() {
           Les prix affichés sont les prix finaux. L&apos;Éditeur bénéficie de la franchise de TVA prévue à l&apos;<strong>article 293 B du Code général des impôts</strong> : aucune TVA n&apos;est facturée, conformément à la mention « TVA non applicable, art. 293 B du CGI ».
         </p>
         <p>
-          Les paiements sont traités exclusivement par <strong>Mollie B.V.</strong> (société de droit néerlandais, agréée en tant qu&apos;établissement de monnaie électronique par la Banque centrale des Pays-Bas — DNB). Aucune donnée carte ne transite ni n&apos;est stockée par l&apos;Éditeur.
+          Sur le web, les paiements sont traités par <strong>Mollie B.V.</strong> (société de droit néerlandais, agréée en tant qu&apos;établissement de monnaie électronique par la Banque centrale des Pays-Bas — DNB). Dans l&apos;application Android, les abonnements sont facturés par <strong>Google Play</strong> aux mêmes tarifs. Aucune donnée carte ne transite ni n&apos;est stockée par l&apos;Éditeur.
         </p>
         <p>
           Les abonnements <strong>mensuels</strong> sont prélevés tous les mois à la date anniversaire de la souscription. Les abonnements <strong>annuels</strong> sont prélevés en une seule fois au moment de la souscription, puis tous les douze (12) mois à la date anniversaire.
         </p>
         <p>
-          L&apos;Utilisateur reçoit une <strong>confirmation de paiement par e-mail</strong> à chaque prélèvement, émise par Mollie. Les justificatifs de paiement sont également consultables depuis l&apos;espace personnel.
+          L&apos;Utilisateur reçoit une <strong>confirmation de paiement</strong> à chaque prélèvement, émise par Mollie sur le web ou par Google Play sur Android. Les justificatifs restent consultables chez le prestataire et depuis l&apos;espace personnel RideCloud.
         </p>
         <p>
           En cas de modification tarifaire, l&apos;Utilisateur est informé par e-mail au moins <strong>30 jours</strong> avant l&apos;entrée en vigueur du nouveau tarif. Il dispose, jusqu&apos;à cette date, du droit de résilier son abonnement sans frais s&apos;il n&apos;accepte pas le nouveau tarif.

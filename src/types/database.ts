@@ -5,6 +5,7 @@ export type VehicleCategory = "voitures" | "motos" | "scooters" | "utilitaires";
 export type Plan = "free" | "premium" | "family";
 export type PlanStatus = "active" | "past_due" | "canceled" | "pending";
 export type PlanInterval = "monthly" | "yearly";
+export type BillingProvider = "mollie" | "play";
 
 export interface Profile {
   id: UUID;
@@ -15,9 +16,13 @@ export interface Profile {
   plan_interval: PlanInterval | null;
   plan_renews_at: string | null;
   plan_canceled_at: string | null;
+  billing_provider: BillingProvider | null;
   mollie_customer_id: string | null;
   mollie_subscription_id: string | null;
   mollie_mandate_id: string | null;
+  play_product_id: string | null;
+  play_purchase_token: string | null;
+  play_order_id: string | null;
   founder_premium_lifetime: boolean;
   founder_badge: boolean;
   created_at: string;

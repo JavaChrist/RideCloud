@@ -10,6 +10,7 @@ import {
 } from "@/lib/billing/mollie";
 import { PLANS } from "@/lib/billing/plans";
 import { ensureProfile } from "@/lib/billing/ensure-profile";
+import { applyPlanUpdate } from "@/lib/billing/activate-plan";
 import type { Plan, PlanInterval } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -145,19 +146,19 @@ export async function POST(request: Request) {
           ? new Date(subscription.nextPaymentDate).toISOString()
           : null;
 
-        await admin
-          .from("profiles")
-          .update({
-            plan,
-            plan_status: "active",
-            plan_interval: interval,
-            plan_renews_at: renewsAt,
-            plan_canceled_at: null,
-            mollie_subscription_id: subscription.id,
-            mollie_mandate_id: payment.mandateId ?? null,
-            updated_at: now
-          } as never)
-          .eq("id", userId);
+        await applyPlanUpdate({
+          userId,
+          plan,
+          status: "active",
+          interval,
+          renewsAt,
+          canceledAt: null,
+          provider: "mollie",
+          mollie: {
+            subscriptionId: subscription.id,
+            mandateId: payment.mandateId ?? null
+          }
+        });
       } catch (error) {
         console.error("[billing/webhook] subscription create failed:", error);
         await admin

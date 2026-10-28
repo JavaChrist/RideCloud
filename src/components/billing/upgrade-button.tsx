@@ -10,6 +10,8 @@ import {
   CheckoutConsentDialog,
   type CheckoutConsentPayload
 } from "@/components/billing/checkout-consent-dialog";
+import { isCapacitorAndroid } from "@/lib/pwa/environment";
+import { loadPlayBillingBridge } from "@/lib/billing/play-billing-bridge";
 
 interface UpgradeButtonProps {
   plan: "premium" | "family";
@@ -53,6 +55,57 @@ export function UpgradeButton({
   const handleConfirm = async (consent: CheckoutConsentPayload) => {
     setIsLoading(true);
     try {
+      if (isCapacitorAndroid()) {
+        const prepared = await fetch("/api/billing/play/prepare", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan, interval, consent })
+        });
+        const preparedData = (await prepared.json().catch(() => ({}))) as {
+          productId?: string;
+          obfuscatedAccountId?: string;
+          error?: string;
+        };
+        if (!prepared.ok || !preparedData.productId || !preparedData.obfuscatedAccountId) {
+          toast.error(preparedData.error ?? "Impossible de préparer l'achat Google Play.");
+          setIsLoading(false);
+          return;
+        }
+
+        const billing = await loadPlayBillingBridge();
+        const purchase = await billing.purchase({
+          productId: preparedData.productId,
+          obfuscatedAccountId: preparedData.obfuscatedAccountId
+        });
+
+        const verified = await fetch("/api/billing/play/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            purchaseToken: purchase.purchaseToken,
+            productId: purchase.productId,
+            orderId: purchase.orderId,
+            consent
+          })
+        });
+        const verifiedData = (await verified.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+        };
+        if (!verified.ok || !verifiedData.ok) {
+          toast.error(verifiedData.error ?? "Achat Google Play non confirmé.");
+          setIsLoading(false);
+          return;
+        }
+
+        toast.success("Abonnement activé.");
+        setConsentOpen(false);
+        setIsLoading(false);
+        router.push("/parametres?billing=success");
+        router.refresh();
+        return;
+      }
+
       const response = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -68,8 +121,13 @@ export function UpgradeButton({
         return;
       }
       window.location.href = data.checkoutUrl;
-    } catch {
-      toast.error("Erreur réseau. Réessayez dans un instant.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (message.includes("USER_CANCELED") || message.includes("Achat annulé")) {
+        toast.message("Achat annulé.");
+      } else {
+        toast.error(message || "Erreur réseau. Réessayez dans un instant.");
+      }
       setIsLoading(false);
     }
   };
@@ -110,6 +168,7 @@ export function UpgradeButton({
           plan={plan}
           interval={interval}
           isSubmitting={isLoading}
+          provider={isCapacitorAndroid() ? "play" : "mollie"}
           onConfirm={handleConfirm}
         />
       ) : null}

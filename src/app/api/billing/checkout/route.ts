@@ -11,6 +11,7 @@ import {
   toMollieAmount
 } from "@/lib/billing/mollie";
 import { ensureProfile } from "@/lib/billing/ensure-profile";
+import { hasOpenPaidSubscription } from "@/lib/billing/play-state";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -136,7 +137,9 @@ export async function POST(request: Request) {
 
   const { data: profileData } = await admin
     .from("profiles")
-    .select("mollie_customer_id, plan, plan_status, mollie_subscription_id")
+    .select(
+      "mollie_customer_id, plan, plan_status, plan_canceled_at, plan_renews_at, mollie_subscription_id, play_purchase_token"
+    )
     .eq("id", user.id)
     .maybeSingle();
 
@@ -144,7 +147,10 @@ export async function POST(request: Request) {
     mollie_customer_id: string | null;
     plan: string | null;
     plan_status: string | null;
+    plan_canceled_at: string | null;
+    plan_renews_at: string | null;
     mollie_subscription_id: string | null;
+    play_purchase_token: string | null;
   } | null;
 
   let customerId = profile?.mollie_customer_id ?? null;
@@ -170,7 +176,16 @@ export async function POST(request: Request) {
     }
   }
 
-  if (profile?.mollie_subscription_id && profile.plan_status === "active") {
+  if (
+    hasOpenPaidSubscription({
+      plan: profile?.plan,
+      planStatus: profile?.plan_status,
+      canceledAt: profile?.plan_canceled_at,
+      renewsAt: profile?.plan_renews_at,
+      mollieSubscriptionId: profile?.mollie_subscription_id,
+      playPurchaseToken: profile?.play_purchase_token
+    })
+  ) {
     return NextResponse.json(
       {
         error:

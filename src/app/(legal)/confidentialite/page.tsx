@@ -183,7 +183,7 @@ export default function ConfidentialitePage() {
                 <td className="px-4 py-3 align-top">Consentement explicite (art. 6.1.a)</td>
               </tr>
               <tr>
-                <td className="px-4 py-3 align-top">Traitement des paiements et gestion des abonnements (via Mollie B.V.)</td>
+                <td className="px-4 py-3 align-top">Traitement des paiements et gestion des abonnements (Mollie B.V. sur le web, Google Play sur Android)</td>
                 <td className="px-4 py-3 align-top">Exécution du contrat (art. 6.1.b)</td>
               </tr>
               <tr>
@@ -248,8 +248,13 @@ export default function ConfidentialitePage() {
               </tr>
               <tr>
                 <td className="px-4 py-3 align-top font-medium">Mollie B.V.</td>
-                <td className="px-4 py-3 align-top">Traitement des paiements par carte et prélèvement (abonnements Premium et Family) — aucune donnée carte ne transite par RideCloud</td>
+                <td className="px-4 py-3 align-top">Traitement des paiements web par carte et prélèvement (abonnements Premium et Family) — aucune donnée carte ne transite par RideCloud</td>
                 <td className="px-4 py-3 align-top">Pays-Bas (UE)</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 align-top font-medium">Google LLC (Google Play Billing)</td>
+                <td className="px-4 py-3 align-top">Facturation des abonnements Premium et Family dans l&apos;application Android — RideCloud ne reçoit aucune donnée carte</td>
+                <td className="px-4 py-3 align-top">États-Unis / clauses contractuelles types</td>
               </tr>
               <tr>
                 <td className="px-4 py-3 align-top font-medium">Mistral AI SAS</td>

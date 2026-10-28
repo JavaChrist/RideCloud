@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { isCapacitorAndroid } from "@/lib/pwa/environment";
+import { loadPlayBillingBridge } from "@/lib/billing/play-billing-bridge";
 
 interface SyncSubscriptionButtonProps {
   variant?: "default" | "subtle";
@@ -17,9 +19,22 @@ export function SyncSubscriptionButton({ variant = "default" }: SyncSubscription
   const handleSync = async () => {
     setLoading(true);
     try {
+      let purchases: Array<{ purchaseToken: string; productId: string; orderId: string | null }> =
+        [];
+      if (isCapacitorAndroid()) {
+        try {
+          const billing = await loadPlayBillingBridge();
+          const restored = await billing.restorePurchases();
+          purchases = restored.purchases ?? [];
+        } catch (error) {
+          console.warn("[sync] restore Play failed", error);
+        }
+      }
+
       const response = await fetch("/api/billing/sync", {
         method: "POST",
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ purchases })
       });
       const result = (await response.json()) as {
         ok?: boolean;
@@ -43,7 +58,7 @@ export function SyncSubscriptionButton({ variant = "default" }: SyncSubscription
           `Abonnement ${result.plan} retrouvé et lié à votre compte.`
         );
       } else {
-        toast.success("Abonnement resynchronisé avec Mollie.");
+        toast.success("Abonnement resynchronisé.");
       }
 
       router.refresh();
@@ -73,7 +88,7 @@ export function SyncSubscriptionButton({ variant = "default" }: SyncSubscription
         ) : (
           <RefreshCw className="h-3 w-3" aria-hidden strokeWidth={2.25} />
         )}
-        {loading ? "Synchronisation…" : "Resynchroniser depuis Mollie"}
+        {loading ? "Synchronisation…" : "Resynchroniser mon abonnement"}
       </button>
     );
   }

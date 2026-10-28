@@ -216,8 +216,8 @@ export function PricingCards({
       </div>
 
       <p className="text-center text-xs text-slate-500 dark:text-slate-400">
-        Paiement sécurisé par Mollie · Sans engagement · Annulation en 1 clic ·
-        Données hébergées en Europe
+        Web : Mollie · Android : Google Play · Mêmes prix · Sans essai gratuit ·
+        Annulation en 1 clic
       </p>
     </div>
   );

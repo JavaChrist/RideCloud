@@ -24,6 +24,7 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
   // Cette UX permet à un utilisateur qui a payé mais dont le profil n'a pas été
   // mis à jour de débloquer la situation lui-même.
   const showSyncFallback = state.plan === "free" || state.planStatus === "pending";
+  const isPlay = state.billingProvider === "play" || Boolean(state.playPurchaseToken);
   const hasMollieCustomer = Boolean(state.mollieCustomerId);
 
   const renewsFormatted = state.renewsAt
@@ -152,8 +153,9 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
           <div>
             <p className="font-medium">Paiement en échec</p>
             <p className="mt-0.5 text-amber-800 dark:text-amber-300">
-              Mollie va retenter automatiquement. Si le problème persiste, vérifiez
-              votre moyen de paiement ou réessayez depuis la page Tarifs.
+              {isPlay
+                ? "Google Play va retenter automatiquement. Si le problème persiste, vérifiez votre moyen de paiement Play ou resynchronisez l'abonnement."
+                : "Mollie va retenter automatiquement. Si le problème persiste, vérifiez votre moyen de paiement ou réessayez depuis la page Tarifs."}
             </p>
           </div>
         </div>
@@ -168,9 +170,11 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
                 Vous avez réglé un paiement, mais votre plan est toujours Free ?
               </p>
               <p className="mt-0.5 text-blue-800 dark:text-blue-200">
-                {hasMollieCustomer
-                  ? "Cela peut arriver si la notification Mollie n'a pas été reçue. Utilisez le bouton pour resynchroniser votre abonnement."
-                  : "Utilisez le bouton pour rechercher votre paiement chez Mollie via votre e-mail et activer votre plan."}
+                {isPlay
+                  ? "Si Google Play a encaissé le paiement, resynchronisez pour activer Premium ou Family, y compris le foyer partagé."
+                  : hasMollieCustomer
+                    ? "Cela peut arriver si la notification Mollie n'a pas été reçue. Utilisez le bouton pour resynchroniser votre abonnement."
+                    : "Utilisez le bouton pour rechercher votre paiement chez Mollie via votre e-mail et activer votre plan."}
               </p>
             </div>
           </div>
@@ -184,7 +188,10 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
             Vous pouvez annuler à tout moment. Votre plan reste actif jusqu&apos;à la
             fin de la période payée.
           </p>
-          <CancelSubscriptionButton renewsAt={state.renewsAt} />
+          <CancelSubscriptionButton
+            renewsAt={state.renewsAt}
+            provider={isPlay ? "play" : "mollie"}
+          />
         </div>
       ) : null}
 

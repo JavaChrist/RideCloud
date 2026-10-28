@@ -33,6 +33,7 @@ interface CheckoutConsentDialogProps {
   plan: "premium" | "family";
   interval: PlanInterval;
   isSubmitting: boolean;
+  provider?: "mollie" | "play";
   onConfirm: (payload: CheckoutConsentPayload) => void;
 }
 
@@ -46,6 +47,7 @@ export function CheckoutConsentDialog({
   plan,
   interval,
   isSubmitting,
+  provider = "mollie",
   onConfirm
 }: CheckoutConsentDialogProps) {
   const [accepted, setAccepted] = useState(false);
@@ -167,8 +169,9 @@ export function CheckoutConsentDialog({
 
           <p className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
             <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
-            Paiement sécurisé par Mollie · Données hébergées en Europe · Annulation
-            en 1 clic
+            {provider === "play"
+              ? "Paiement sécurisé par Google Play · Mêmes prix que le web · Annulation depuis Play ou Paramètres"
+              : "Paiement sécurisé par Mollie · Données hébergées en Europe · Annulation en 1 clic"}
           </p>
         </div>
 
@@ -191,7 +194,7 @@ export function CheckoutConsentDialog({
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" aria-hidden />
-                Redirection vers Mollie…
+                {provider === "play" ? "Ouverture de Google Play…" : "Redirection vers Mollie…"}
               </>
             ) : (
               <>Confirmer et payer · {formatEuro(price)}&nbsp;€</>

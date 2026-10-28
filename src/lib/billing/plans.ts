@@ -24,6 +24,7 @@ export interface PlanDefinition {
  *   - la section abonnement de `/parametres`
  *   - la modal d'upgrade au quota atteint
  *   - les descriptions envoyées à Mollie au moment du checkout
+ *   - les identifiants produits Google Play (mêmes prix, sans essai)
  *
  * Les prix sont en EUROS, taxes incluses (l'éditeur étant en franchise de TVA,
  * art. 293 B du CGI, aucune TVA n'est facturée pour l'instant).

@@ -111,9 +111,9 @@ export default function SuppressionComptePage() {
           <li>les autres données métier directement rattachées au compte (suppression en cascade avec le compte d&apos;authentification).</li>
         </ul>
         <p>
-          Si un abonnement Mollie est encore actif, RideCloud tente de le
-          résilier avant la suppression. Cette étape n&apos;est pas bloquante si
-          Mollie est indisponible.
+          Si un abonnement Mollie ou Google Play est encore actif, RideCloud
+          tente de le résilier avant la suppression. Cette étape n&apos;est pas
+          bloquante si le prestataire est indisponible.
         </p>
       </LegalSection>
 
@@ -128,11 +128,11 @@ export default function SuppressionComptePage() {
         </p>
         <ul className="ml-4 list-disc space-y-1 text-slate-700 dark:text-slate-200">
           <li>
-            <strong>Traces de paiement / facturation Mollie</strong> — RideCloud
-            n&apos;enregistre pas les données de carte. Mollie peut conserver les
-            justificatifs de paiement. Les données comptables sont mentionnées
-            dans la politique avec une conservation de <strong>10 ans</strong>{" "}
-            (article L.123-22 du Code de commerce).
+            <strong>Traces de paiement / facturation</strong> — RideCloud
+            n&apos;enregistre pas les données de carte. Mollie (web) ou Google Play
+            (Android) peuvent conserver les justificatifs. Les données comptables
+            sont mentionnées dans la politique avec une conservation de{" "}
+            <strong>10 ans</strong> (article L.123-22 du Code de commerce).
           </li>
           <li>
             <strong>E-mails transactionnels Resend</strong> — les messages déjà

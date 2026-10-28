@@ -8,9 +8,13 @@ import { Button } from "@/components/ui/button";
 
 interface CancelSubscriptionButtonProps {
   renewsAt: string | null;
+  provider?: "mollie" | "play";
 }
 
-export function CancelSubscriptionButton({ renewsAt }: CancelSubscriptionButtonProps) {
+export function CancelSubscriptionButton({
+  renewsAt,
+  provider = "mollie"
+}: CancelSubscriptionButtonProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -23,7 +27,10 @@ export function CancelSubscriptionButton({ renewsAt }: CancelSubscriptionButtonP
     setIsLoading(true);
     try {
       const response = await fetch("/api/billing/cancel", { method: "POST" });
-      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      const data = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        manageUrl?: string;
+      };
       if (!response.ok) {
         toast.error(data.error ?? "Annulation impossible pour le moment.");
         setIsLoading(false);
@@ -62,7 +69,8 @@ export function CancelSubscriptionButton({ renewsAt }: CancelSubscriptionButtonP
         Confirmer ?{" "}
         {renewsFormatted ? (
           <span className="text-slate-500 dark:text-slate-400">
-            (plan actif jusqu&apos;au {renewsFormatted})
+            (plan actif jusqu&apos;au {renewsFormatted}
+            {provider === "play" ? " · Google Play" : ""})
           </span>
         ) : null}
       </span>

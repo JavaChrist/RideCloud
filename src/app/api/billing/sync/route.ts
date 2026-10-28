@@ -11,6 +11,9 @@ import {
 } from "@/lib/billing/mollie";
 import { PLANS } from "@/lib/billing/plans";
 import { ensureProfile } from "@/lib/billing/ensure-profile";
+import { applyVerifiedPlayPurchase } from "@/lib/billing/apply-play-purchase";
+import { hasPlayBillingEnv } from "@/lib/billing/play-publisher";
+import { ensureHouseholdForOwner } from "@/lib/family/household";
 import type { Plan, PlanInterval } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -32,13 +35,6 @@ export const maxDuration = 30;
  *   5. Retourne l'état finalement appliqué
  */
 export async function POST(request: Request) {
-  if (!hasMollieEnv()) {
-    return NextResponse.json(
-      { error: "Paiements indisponibles : MOLLIE_API_KEY non configurée." },
-      { status: 503 }
-    );
-  }
-
   const supabase = await createClient();
   const {
     data: { user }
@@ -46,6 +42,19 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  }
+
+  let playPurchases: Array<{ purchaseToken: string; productId?: string; orderId?: string }> = [];
+  try {
+    const body = (await request.json()) as {
+      purchases?: Array<{ purchaseToken?: string; productId?: string; orderId?: string }>;
+    };
+    playPurchases = (body.purchases ?? []).filter(
+      (row): row is { purchaseToken: string; productId?: string; orderId?: string } =>
+        typeof row.purchaseToken === "string" && row.purchaseToken.length > 8
+    );
+  } catch {
+    playPurchases = [];
   }
 
   const admin = createAdminClient();
@@ -66,20 +75,66 @@ export async function POST(request: Request) {
   const { data: profileData } = await admin
     .from("profiles")
     .select(
-      "id, mollie_customer_id, mollie_subscription_id, mollie_mandate_id, plan, plan_status, plan_interval"
+      "id, billing_provider, mollie_customer_id, mollie_subscription_id, mollie_mandate_id, play_purchase_token, play_product_id, plan, plan_status, plan_interval"
     )
     .eq("id", user.id)
     .maybeSingle();
 
   const profile = profileData as {
     id: string;
+    billing_provider: string | null;
     mollie_customer_id: string | null;
     mollie_subscription_id: string | null;
     mollie_mandate_id: string | null;
+    play_purchase_token: string | null;
+    play_product_id: string | null;
     plan: string | null;
     plan_status: string | null;
     plan_interval: string | null;
   } | null;
+
+  const playTokens = [
+    ...playPurchases,
+    ...(profile?.play_purchase_token
+      ? [
+          {
+            purchaseToken: profile.play_purchase_token,
+            productId: profile.play_product_id ?? undefined
+          }
+        ]
+      : [])
+  ];
+
+  if (playTokens.length > 0 && hasPlayBillingEnv()) {
+    try {
+      const result = await applyVerifiedPlayPurchase({
+        userId: user.id,
+        purchaseToken: playTokens[0].purchaseToken,
+        claimedProductId: playTokens[0].productId,
+        claimedOrderId: playTokens[0].orderId
+      });
+      return NextResponse.json({
+        ok: true,
+        synced: result.expired ? "subscription_refreshed" : "subscription_relinked",
+        plan: result.plan,
+        planStatus: result.planStatus,
+        renewsAt: result.renewsAt
+      });
+    } catch (error) {
+      console.error("[billing/sync] play apply failed", error);
+      if (!hasMollieEnv()) {
+        const message = error instanceof Error ? error.message : "Erreur Google Play";
+        return NextResponse.json({ error: message }, { status: 502 });
+      }
+    }
+  }
+
+  if (!hasMollieEnv()) {
+    return NextResponse.json(
+      { error: "Aucun abonnement à resynchroniser pour le moment." },
+      { status: 404 }
+    );
+  }
 
   const mollie = getMollieClient();
   const now = nowTs;
@@ -263,6 +318,7 @@ export async function POST(request: Request) {
           plan_interval: interval,
           plan_renews_at: renewsAt,
           plan_canceled_at: null,
+          billing_provider: "mollie",
           mollie_subscription_id: existing.id,
           mollie_mandate_id: firstPaid.mandateId ?? null,
           updated_at: now
@@ -290,6 +346,10 @@ export async function POST(request: Request) {
           },
           { status: 500 }
         );
+      }
+
+      if (plan === "family") {
+        await ensureHouseholdForOwner(user.id);
       }
 
       return NextResponse.json({
@@ -329,6 +389,7 @@ export async function POST(request: Request) {
         plan_interval: interval,
         plan_renews_at: renewsAt,
         plan_canceled_at: null,
+        billing_provider: "mollie",
         mollie_subscription_id: subscription.id,
         mollie_mandate_id: firstPaid.mandateId ?? null,
         updated_at: now
@@ -341,6 +402,10 @@ export async function POST(request: Request) {
         { error: `Activation du profil échouée : ${createError.message}` },
         { status: 500 }
       );
+    }
+
+    if (plan === "family") {
+      await ensureHouseholdForOwner(user.id);
     }
 
     return NextResponse.json({
