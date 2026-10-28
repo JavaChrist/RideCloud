@@ -4,21 +4,33 @@ export interface PlayPurchaseResult {
   orderId: string | null;
 }
 
+export interface PlayOffer {
+  productId: string;
+  basePlanId: string;
+  formattedPrice: string;
+  priceAmountMicros: number;
+  billingPeriod: string;
+}
+
+export interface PlayPurchaseOptions {
+  productId: string;
+  basePlanId: string;
+  obfuscatedAccountId: string;
+  oldProductId?: string;
+  oldPurchaseToken?: string;
+}
+
 export interface PlayBillingBridge {
   isAvailable: () => Promise<{ available: boolean }>;
-  purchase: (options: {
-    productId: string;
-    obfuscatedAccountId: string;
-  }) => Promise<PlayPurchaseResult>;
+  getOffers: () => Promise<{ offers: PlayOffer[] }>;
+  purchase: (options: PlayPurchaseOptions) => Promise<PlayPurchaseResult>;
   restorePurchases: () => Promise<{ purchases: PlayPurchaseResult[] }>;
 }
 
 export interface PlayBillingPluginLike {
   isAvailable: () => Promise<{ available: boolean }>;
-  purchase: (options: {
-    productId: string;
-    obfuscatedAccountId: string;
-  }) => Promise<PlayPurchaseResult>;
+  getOffers: () => Promise<{ offers: PlayOffer[] }>;
+  purchase: (options: PlayPurchaseOptions) => Promise<PlayPurchaseResult>;
   restorePurchases: () => Promise<{ purchases: PlayPurchaseResult[] }>;
 }
 
@@ -31,9 +43,15 @@ export function isUnsafeCapacitorThenable(value: unknown): boolean {
   }
 }
 
+export function isPlayPluginMissing(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /not implemented|UNIMPLEMENTED|plugin is not implemented|PlayBilling\./i.test(message);
+}
+
 export function wrapPlayBillingPlugin(plugin: PlayBillingPluginLike): PlayBillingBridge {
   return {
     isAvailable: () => plugin.isAvailable(),
+    getOffers: () => plugin.getOffers(),
     purchase: (options) => plugin.purchase(options),
     restorePurchases: () => plugin.restorePurchases()
   };

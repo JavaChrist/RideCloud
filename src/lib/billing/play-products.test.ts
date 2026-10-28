@@ -1,36 +1,43 @@
 import { describe, expect, it } from "vitest";
 import { PLANS } from "@/lib/billing/plans";
 import {
-  getPlayProduct,
-  getPlayProductId,
-  listPlayProductIds
+  getPlayCatalogEntry,
+  listPlayProductIds,
+  resolvePlayCatalog
 } from "@/lib/billing/play-products";
 
 describe("catalogue Google Play", () => {
-  it("aligne chaque produit Play sur le même plan, intervalle et prix que le web", () => {
+  it("sélectionne explicitement productId + basePlanId pour chaque formule", () => {
     const cases = [
-      ["premium", "monthly"] as const,
-      ["premium", "yearly"] as const,
-      ["family", "monthly"] as const,
-      ["family", "yearly"] as const
+      ["premium", "monthly", "ridecloud_premium", "premium-monthly"] as const,
+      ["premium", "yearly", "ridecloud_premium", "premium-yearly"] as const,
+      ["family", "monthly", "ridecloud_family", "family-monthly"] as const,
+      ["family", "yearly", "ridecloud_family", "family-yearly"] as const
     ];
 
-    for (const [plan, interval] of cases) {
-      const product = getPlayProduct(getPlayProductId(plan, interval));
-      expect(product).toMatchObject({
+    for (const [plan, interval, productId, basePlanId] of cases) {
+      const entry = getPlayCatalogEntry(plan, interval);
+      expect(entry).toMatchObject({
+        productId,
+        basePlanId,
         plan,
         interval,
         priceEuros: interval === "monthly" ? PLANS[plan].price.monthly : PLANS[plan].price.yearly
       });
-      expect(product?.priceEuros).toBeGreaterThan(0);
+      expect(resolvePlayCatalog(productId, basePlanId)).toEqual(entry);
     }
   });
 
-  it("n'expose aucun produit d'essai gratuit", () => {
-    for (const productId of listPlayProductIds()) {
-      const product = getPlayProduct(productId);
-      expect(product?.priceEuros).not.toBe(0);
-      expect(productId).not.toMatch(/trial|essai/i);
-    }
+  it("n'expose que deux abonnements, sans essai", () => {
+    expect(listPlayProductIds()).toEqual(["ridecloud_premium", "ridecloud_family"]);
+    expect(resolvePlayCatalog("ridecloud_premium")).toBeNull();
+  });
+
+  it("lit les anciens identifiants à 4 produits uniquement en secours", () => {
+    expect(resolvePlayCatalog("ridecloud_premium_monthly")).toMatchObject({
+      productId: "ridecloud_premium",
+      basePlanId: "premium-monthly"
+    });
+    expect(resolvePlayCatalog("unknown", "premium-monthly")).toBeNull();
   });
 });

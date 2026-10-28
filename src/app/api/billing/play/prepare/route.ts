@@ -4,8 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CHECKOUT_CONSENT_VERSION } from "@/lib/billing/plans";
 import { ensureProfile } from "@/lib/billing/ensure-profile";
-import { getPlayProductId } from "@/lib/billing/play-products";
-import { hasOpenPaidSubscription } from "@/lib/billing/play-state";
+import { getPlayCatalogEntry } from "@/lib/billing/play-products";
+import { hasPaidPeriodRemaining, playReplacementParams } from "@/lib/billing/play-state";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -20,12 +20,6 @@ const BodySchema = z.object({
   })
 });
 
-/**
- * POST /api/billing/play/prepare
- *
- * Prépare un achat Google Play : consentement, profil, produit.
- * L'activation réelle n'a lieu qu'après /api/billing/play/verify.
- */
 export async function POST(request: Request) {
   const supabase = await createClient();
   const {
@@ -81,7 +75,7 @@ export async function POST(request: Request) {
   const { data: profileData } = await admin
     .from("profiles")
     .select(
-      "plan, plan_status, plan_canceled_at, plan_renews_at, mollie_subscription_id, play_purchase_token"
+      "plan, plan_status, plan_canceled_at, plan_renews_at, billing_provider, mollie_subscription_id, play_purchase_token, play_product_id"
     )
     .eq("id", user.id)
     .maybeSingle();
@@ -91,51 +85,46 @@ export async function POST(request: Request) {
     plan_status: string | null;
     plan_canceled_at: string | null;
     plan_renews_at: string | null;
+    billing_provider: string | null;
     mollie_subscription_id: string | null;
     play_purchase_token: string | null;
+    play_product_id: string | null;
   } | null;
 
-  if (
-    hasOpenPaidSubscription({
-      plan: profile?.plan,
-      planStatus: profile?.plan_status,
-      canceledAt: profile?.plan_canceled_at,
-      renewsAt: profile?.plan_renews_at,
-      mollieSubscriptionId: profile?.mollie_subscription_id,
-      playPurchaseToken: profile?.play_purchase_token
-    })
-  ) {
+  const paidRemaining = hasPaidPeriodRemaining({
+    plan: profile?.plan,
+    planStatus: profile?.plan_status,
+    canceledAt: profile?.plan_canceled_at,
+    renewsAt: profile?.plan_renews_at,
+    mollieSubscriptionId: profile?.mollie_subscription_id,
+    playPurchaseToken: profile?.play_purchase_token
+  });
+
+  const catalog = getPlayCatalogEntry(parsed.plan, parsed.interval);
+  const isPlayOwner = Boolean(profile?.play_purchase_token) && profile?.billing_provider !== "mollie";
+
+  if (paidRemaining && !isPlayOwner) {
     return NextResponse.json(
       {
         error:
-          "Vous avez déjà un abonnement actif. Annulez-le d'abord depuis la page Paramètres."
+          "Un abonnement encore valable est déjà en cours. Attendez la fin de la période payée avant de changer de prestataire."
       },
       { status: 409 }
     );
   }
 
-  if (profile?.plan === "free" || profile?.plan_status === "pending") {
-    await admin
-      .from("profiles")
-      .update({
-        plan_status: "pending",
-        plan_interval: parsed.interval,
-        updated_at: new Date().toISOString()
-      } as never)
-      .eq("id", user.id);
-  }
-
-  console.info("[billing/play/prepare] consent recorded", {
-    userId: user.id,
-    plan: parsed.plan,
-    interval: parsed.interval,
-    consentVersion: parsed.consent.consentVersion,
-    consentAcceptedAt: parsed.consent.consentAcceptedAt,
-    consentIp: ip ?? "unknown"
-  });
+  const replacement = isPlayOwner
+    ? playReplacementParams({
+        paidRemaining,
+        playProductId: profile?.play_product_id,
+        playPurchaseToken: profile?.play_purchase_token
+      })
+    : null;
 
   return NextResponse.json({
-    productId: getPlayProductId(parsed.plan, parsed.interval),
-    obfuscatedAccountId: user.id
+    productId: catalog.productId,
+    basePlanId: catalog.basePlanId,
+    obfuscatedAccountId: user.id,
+    replacement
   });
 }

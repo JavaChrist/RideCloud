@@ -12,7 +12,6 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   PLANS,
   getPriceForInterval,
@@ -34,6 +33,7 @@ interface CheckoutConsentDialogProps {
   interval: PlanInterval;
   isSubmitting: boolean;
   provider?: "mollie" | "play";
+  displayPrice?: string | null;
   onConfirm: (payload: CheckoutConsentPayload) => void;
 }
 
@@ -48,6 +48,7 @@ export function CheckoutConsentDialog({
   interval,
   isSubmitting,
   provider = "mollie",
+  displayPrice = null,
   onConfirm
 }: CheckoutConsentDialogProps) {
   const [accepted, setAccepted] = useState(false);
@@ -57,7 +58,8 @@ export function CheckoutConsentDialog({
   }, [open]);
 
   const planDef = PLANS[plan];
-  const price = getPriceForInterval(planDef, interval);
+  const catalogPrice = getPriceForInterval(planDef, interval);
+  const priceLabel = displayPrice?.trim() || `${formatEuro(catalogPrice)}\u00a0€`;
   const monthlyEquivalent =
     interval === "yearly" ? (planDef.price.yearly / 12).toFixed(2).replace(".", ",") : null;
   const discount = interval === "yearly" ? getYearlyDiscount(planDef) : 0;
@@ -101,11 +103,16 @@ export function CheckoutConsentDialog({
               </div>
               <div className="text-right">
                 <p className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                  {formatEuro(price)}&nbsp;€
+                  {priceLabel}
                   <span className="ml-1 text-sm font-normal text-slate-500 dark:text-slate-400">
                     /{interval === "monthly" ? "mois" : "an"}
                   </span>
                 </p>
+                {displayPrice ? (
+                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                    Prix localisé Google Play
+                  </p>
+                ) : null}
                 {monthlyEquivalent ? (
                   <p className="mt-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
                     soit {monthlyEquivalent} €/mois
@@ -197,7 +204,7 @@ export function CheckoutConsentDialog({
                 {provider === "play" ? "Ouverture de Google Play…" : "Redirection vers Mollie…"}
               </>
             ) : (
-              <>Confirmer et payer · {formatEuro(price)}&nbsp;€</>
+              <>Confirmer et payer · {priceLabel}</>
             )}
           </Button>
         </DialogFooter>

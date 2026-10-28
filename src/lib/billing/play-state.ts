@@ -2,6 +2,8 @@ import type { PlanStatus } from "@/types/database";
 
 export type BillingProvider = "mollie" | "play";
 
+export type PlayAccess = "entitled" | "restricted" | "pending" | "none";
+
 export interface BillingEntitlementInput {
   plan?: string | null;
   planStatus?: string | null;
@@ -9,18 +11,30 @@ export interface BillingEntitlementInput {
   renewsAt?: string | null;
   mollieSubscriptionId?: string | null;
   playPurchaseToken?: string | null;
+  now?: Date;
 }
 
 /**
- * Un abonnement encore facturé (Mollie ou Play) bloque un nouveau checkout.
- * Après annulation, la période payée reste utilisable mais un nouveau plan
- * peut être souscrit.
+ * Droits encore payés (Mollie ou Play), y compris après résiliation
+ * tant que `renewsAt` n'est pas dépassé. Bloque un second prestataire.
  */
-export function hasOpenPaidSubscription(input: BillingEntitlementInput): boolean {
+export function hasPaidPeriodRemaining(input: BillingEntitlementInput): boolean {
   if (input.plan === "free" || !input.plan) return false;
-  if (input.planStatus !== "active") return false;
-  if (input.canceledAt) return false;
-  return Boolean(input.mollieSubscriptionId || input.playPurchaseToken);
+  if (input.planStatus === "pending" || input.planStatus === "past_due") return false;
+  if (input.planStatus !== "active" && input.planStatus !== "canceled") return false;
+  const now = input.now ?? new Date();
+  if (input.renewsAt) {
+    const renews = new Date(input.renewsAt);
+    if (!Number.isNaN(renews.getTime()) && renews.getTime() < now.getTime()) {
+      return false;
+    }
+  }
+  return Boolean(input.mollieSubscriptionId || input.playPurchaseToken || input.plan !== "free");
+}
+
+/** @deprecated utiliser hasPaidPeriodRemaining */
+export function hasOpenPaidSubscription(input: BillingEntitlementInput): boolean {
+  return hasPaidPeriodRemaining(input);
 }
 
 export function playPurchaseBelongsToUser(
@@ -42,6 +56,7 @@ export function isPlaySubscriptionExpired(
 }
 
 export interface PlayEntitlement {
+  access: PlayAccess;
   planStatus: PlanStatus;
   canceledAt: string | null;
   renewsAt: string | null;
@@ -49,9 +64,9 @@ export interface PlayEntitlement {
 }
 
 /**
- * Traduit l'état Google Play (SubscriptionPurchaseV2) vers le modèle RideCloud.
- * Family reste actif jusqu'à `expiryTime` : les membres gardent le garage
- * partagé jusqu'à cette date, puis RLS et `isFamilyPlanActive` retirent les droits.
+ * Cycle officiel Google Play (subscriptionsv2 + lifecycle/subscriptions).
+ * Grâce : droits conservés. Hold / pause : droits retirés.
+ * Résilié encore payé : droits jusqu'à expiryTime.
  */
 export function resolvePlayEntitlement(input: {
   subscriptionState: string;
@@ -60,54 +75,124 @@ export function resolvePlayEntitlement(input: {
 }): PlayEntitlement {
   const now = input.now ?? new Date();
   const expiry = input.expiryTime ?? null;
-  const expired = isPlaySubscriptionExpired(expiry, now);
+  const expiredByTime = isPlaySubscriptionExpired(expiry, now);
   const renewsAt = expiry;
 
   switch (input.subscriptionState) {
     case "SUBSCRIPTION_STATE_ACTIVE":
+    case "SUBSCRIPTION_STATE_IN_GRACE_PERIOD":
       return {
-        planStatus: expired ? "canceled" : "active",
+        access: expiredByTime ? "none" : "entitled",
+        planStatus: expiredByTime ? "canceled" : "active",
         canceledAt: null,
         renewsAt,
-        expired
+        expired: expiredByTime
       };
     case "SUBSCRIPTION_STATE_CANCELED":
       return {
-        planStatus: expired ? "canceled" : "active",
+        access: expiredByTime ? "none" : "entitled",
+        planStatus: expiredByTime ? "canceled" : "active",
         canceledAt: now.toISOString(),
         renewsAt,
-        expired
-      };
-    case "SUBSCRIPTION_STATE_EXPIRED":
-    case "SUBSCRIPTION_STATE_PENDING_PURCHASE_CANCELED":
-      return {
-        planStatus: "canceled",
-        canceledAt: now.toISOString(),
-        renewsAt,
-        expired: true
+        expired: expiredByTime
       };
     case "SUBSCRIPTION_STATE_ON_HOLD":
     case "SUBSCRIPTION_STATE_PAUSED":
-    case "SUBSCRIPTION_STATE_IN_GRACE_PERIOD":
       return {
+        access: "restricted",
         planStatus: "past_due",
         canceledAt: null,
         renewsAt,
-        expired
+        expired: false
       };
     case "SUBSCRIPTION_STATE_PENDING":
       return {
+        access: "pending",
         planStatus: "pending",
         canceledAt: null,
         renewsAt,
         expired: false
       };
+    case "SUBSCRIPTION_STATE_EXPIRED":
+    case "SUBSCRIPTION_STATE_PENDING_PURCHASE_CANCELED":
+      return {
+        access: "none",
+        planStatus: "canceled",
+        canceledAt: now.toISOString(),
+        renewsAt,
+        expired: true
+      };
     default:
       return {
-        planStatus: expired ? "canceled" : "pending",
-        canceledAt: expired ? now.toISOString() : null,
+        access: expiredByTime ? "none" : "pending",
+        planStatus: expiredByTime ? "canceled" : "pending",
+        canceledAt: expiredByTime ? now.toISOString() : null,
         renewsAt,
-        expired
+        expired: expiredByTime
       };
   }
+}
+
+export function shouldApplyPlayPlanToProfile(input: {
+  access: PlayAccess;
+  existingHasPaidRights: boolean;
+}): "apply" | "keep-existing" {
+  if (input.access === "pending" && input.existingHasPaidRights) {
+    return "keep-existing";
+  }
+  return "apply";
+}
+
+export function founderPlanAfterFamilyExpiry(isFounder: boolean): "premium" | "free" {
+  return isFounder ? "premium" : "free";
+}
+
+export type PlayOwnerResolution =
+  | { ok: true; userId: string | null }
+  | { ok: false; reason: "obfuscated_mismatch" | "already_bound" };
+
+/**
+ * Propriété d'un jeton : pas d'attribution automatique à un compte
+ * si l'identifiant Play attendu manque, diffère, ou si le jeton
+ * est déjà lié ailleurs. Un RTDN sans compte connu reste orphelin.
+ */
+export function resolvePlayPurchaseOwner(input: {
+  requestedUserId?: string | null;
+  existingUserId?: string | null;
+  linkedUserId?: string | null;
+  obfuscatedAccountId?: string | null;
+  requireObfuscated: boolean;
+}): PlayOwnerResolution {
+  const requested = input.requestedUserId ?? null;
+  if (input.requireObfuscated && requested) {
+    if (!playPurchaseBelongsToUser(input.obfuscatedAccountId, requested)) {
+      return { ok: false, reason: "obfuscated_mismatch" };
+    }
+  }
+  if (input.existingUserId && requested && input.existingUserId !== requested) {
+    return { ok: false, reason: "already_bound" };
+  }
+  if (input.existingUserId) {
+    return { ok: true, userId: input.existingUserId };
+  }
+  if (requested) {
+    return { ok: true, userId: requested };
+  }
+  if (input.linkedUserId) {
+    return { ok: true, userId: input.linkedUserId };
+  }
+  return { ok: true, userId: null };
+}
+
+export function playReplacementParams(input: {
+  paidRemaining: boolean;
+  playProductId?: string | null;
+  playPurchaseToken?: string | null;
+}): { oldProductId: string; oldPurchaseToken: string } | null {
+  if (!input.paidRemaining) return null;
+  if (!input.playProductId || !input.playPurchaseToken) return null;
+  return {
+    oldProductId: input.playProductId,
+    oldPurchaseToken: input.playPurchaseToken
+  };
 }

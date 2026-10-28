@@ -11,7 +11,7 @@ import {
   toMollieAmount
 } from "@/lib/billing/mollie";
 import { ensureProfile } from "@/lib/billing/ensure-profile";
-import { hasOpenPaidSubscription } from "@/lib/billing/play-state";
+import { hasPaidPeriodRemaining } from "@/lib/billing/play-state";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -177,7 +177,7 @@ export async function POST(request: Request) {
   }
 
   if (
-    hasOpenPaidSubscription({
+    hasPaidPeriodRemaining({
       plan: profile?.plan,
       planStatus: profile?.plan_status,
       canceledAt: profile?.plan_canceled_at,
@@ -189,7 +189,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Vous avez déjà un abonnement actif. Annulez-le d'abord depuis la page Paramètres."
+          "Un abonnement encore valable est déjà en cours. Attendez la fin de la période payée avant de changer de prestataire."
       },
       { status: 409 }
     );

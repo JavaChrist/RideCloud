@@ -144,6 +144,7 @@ export async function getUserPlanState(userId: string): Promise<UserPlanState> {
       ? await countHouseholdVehicles(membership.householdId)
       : ownVehicleCount;
   const canUsePaidFeatures =
+    isFounder ||
     hasHouseholdBenefits ||
     ((effectivePlan === "premium" || effectivePlan === "family") && planStatus === "active");
 

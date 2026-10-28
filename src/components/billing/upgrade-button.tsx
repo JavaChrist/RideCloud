@@ -10,8 +10,13 @@ import {
   CheckoutConsentDialog,
   type CheckoutConsentPayload
 } from "@/components/billing/checkout-consent-dialog";
+import { PlayUpdateRequiredDialog } from "@/components/billing/play-update-required-dialog";
 import { isCapacitorAndroid } from "@/lib/pwa/environment";
-import { loadPlayBillingBridge } from "@/lib/billing/play-billing-bridge";
+import {
+  isPlayPluginMissing,
+  loadPlayBillingBridge
+} from "@/lib/billing/play-billing-bridge";
+import { getPlayCatalogEntry } from "@/lib/billing/play-products";
 
 interface UpgradeButtonProps {
   plan: "premium" | "family";
@@ -39,16 +44,40 @@ export function UpgradeButton({
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [consentOpen, setConsentOpen] = useState(false);
+  const [updateOpen, setUpdateOpen] = useState(false);
+  const [playPrice, setPlayPrice] = useState<string | null>(null);
 
   const isCurrentPlan =
     isLoggedIn && currentPlan === plan && currentInterval === interval;
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (!isLoggedIn) {
       router.push(`/register?next=/tarifs&plan=${plan}&interval=${interval}`);
       return;
     }
     if (isCurrentPlan) return;
+
+    if (isCapacitorAndroid()) {
+      try {
+        const billing = await loadPlayBillingBridge();
+        const availability = await billing.isAvailable();
+        const offers = await billing.getOffers();
+        const catalog = getPlayCatalogEntry(plan, interval);
+        const match = (offers.offers ?? []).find(
+          (offer) =>
+            offer.productId === catalog.productId && offer.basePlanId === catalog.basePlanId
+        );
+        if (!availability.available || !match?.formattedPrice) {
+          setUpdateOpen(true);
+          return;
+        }
+        setPlayPrice(match.formattedPrice);
+      } catch {
+        setUpdateOpen(true);
+        return;
+      }
+    }
+
     setConsentOpen(true);
   };
 
@@ -63,19 +92,37 @@ export function UpgradeButton({
         });
         const preparedData = (await prepared.json().catch(() => ({}))) as {
           productId?: string;
+          basePlanId?: string;
           obfuscatedAccountId?: string;
+          replacement?: { oldProductId?: string; oldPurchaseToken?: string } | null;
           error?: string;
         };
-        if (!prepared.ok || !preparedData.productId || !preparedData.obfuscatedAccountId) {
+        if (
+          !prepared.ok ||
+          !preparedData.productId ||
+          !preparedData.basePlanId ||
+          !preparedData.obfuscatedAccountId
+        ) {
           toast.error(preparedData.error ?? "Impossible de préparer l'achat Google Play.");
           setIsLoading(false);
           return;
         }
 
-        const billing = await loadPlayBillingBridge();
+        let billing;
+        try {
+          billing = await loadPlayBillingBridge();
+        } catch {
+          setUpdateOpen(true);
+          setIsLoading(false);
+          return;
+        }
+
         const purchase = await billing.purchase({
           productId: preparedData.productId,
-          obfuscatedAccountId: preparedData.obfuscatedAccountId
+          basePlanId: preparedData.basePlanId,
+          obfuscatedAccountId: preparedData.obfuscatedAccountId,
+          oldProductId: preparedData.replacement?.oldProductId,
+          oldPurchaseToken: preparedData.replacement?.oldPurchaseToken
         });
 
         const verified = await fetch("/api/billing/play/verify", {
@@ -84,6 +131,7 @@ export function UpgradeButton({
           body: JSON.stringify({
             purchaseToken: purchase.purchaseToken,
             productId: purchase.productId,
+            basePlanId: preparedData.basePlanId,
             orderId: purchase.orderId,
             consent
           })
@@ -123,8 +171,12 @@ export function UpgradeButton({
       window.location.href = data.checkoutUrl;
     } catch (error) {
       const message = error instanceof Error ? error.message : "";
-      if (message.includes("USER_CANCELED") || message.includes("Achat annulé")) {
+      if (isPlayPluginMissing(error)) {
+        setUpdateOpen(true);
+      } else if (message.includes("USER_CANCELED") || message.includes("Achat annulé")) {
         toast.message("Achat annulé.");
+      } else if (message.includes("PURCHASE_PENDING")) {
+        toast.message("Paiement Google Play encore en cours. Les droits seront activés après confirmation.");
       } else {
         toast.error(message || "Erreur réseau. Réessayez dans un instant.");
       }
@@ -144,7 +196,7 @@ export function UpgradeButton({
     <>
       <Button
         type="button"
-        onClick={handleClick}
+        onClick={() => void handleClick()}
         disabled={isLoading}
         variant={variant}
         className={className}
@@ -169,9 +221,11 @@ export function UpgradeButton({
           interval={interval}
           isSubmitting={isLoading}
           provider={isCapacitorAndroid() ? "play" : "mollie"}
+          displayPrice={isCapacitorAndroid() ? playPrice : null}
           onConfirm={handleConfirm}
         />
       ) : null}
+      <PlayUpdateRequiredDialog open={updateOpen} onOpenChange={setUpdateOpen} />
     </>
   );
 }

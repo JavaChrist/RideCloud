@@ -66,6 +66,10 @@ export interface PlaySubscriptionLineItem {
   productId?: string;
   expiryTime?: string;
   autoRenewingPlan?: { autoRenewEnabled?: boolean };
+  offerDetails?: {
+    basePlanId?: string;
+    offerId?: string;
+  };
 }
 
 export interface PlaySubscriptionPurchase {
@@ -105,14 +109,11 @@ export async function acknowledgePlaySubscription(input: {
     `/applications/${packageName}/purchases/subscriptions/${subscriptionId}/tokens/${token}:acknowledge`,
     { method: "POST", body: JSON.stringify({}) }
   );
-  if (response.status === 400) {
-    // Déjà acquitté : Google renvoie souvent 400. Ce n'est pas bloquant.
+  if (response.status >= 200 && response.status < 300) {
     return;
   }
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`Google Play acknowledge: ${response.status} ${body.slice(0, 400)}`);
-  }
+  const body = await response.text();
+  throw new Error(`Google Play acknowledge: ${response.status} ${body.slice(0, 400)}`);
 }
 
 export async function cancelPlaySubscription(input: {

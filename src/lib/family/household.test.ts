@@ -34,6 +34,22 @@ describe("isFamilyPlanActive", () => {
         renewsAt: "2020-01-01T00:00:00.000Z"
       })
     ).toBe(false);
+    expect(
+      isFamilyPlanActive({
+        plan: "family",
+        planStatus: "active",
+        canceledAt: "2026-10-01T00:00:00.000Z",
+        renewsAt: "2099-01-01T00:00:00.000Z"
+      })
+    ).toBe(true);
+    expect(
+      isFamilyPlanActive({
+        plan: "family",
+        planStatus: "past_due",
+        canceledAt: null,
+        renewsAt: "2099-01-01T00:00:00.000Z"
+      })
+    ).toBe(false);
   });
 });
 

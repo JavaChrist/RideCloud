@@ -14,6 +14,7 @@ export const maxDuration = 30;
 const BodySchema = z.object({
   purchaseToken: z.string().min(8),
   productId: z.string().min(1).optional(),
+  basePlanId: z.string().min(1).optional(),
   orderId: z.string().min(1).optional(),
   consent: z
     .object({
@@ -82,7 +83,9 @@ export async function POST(request: Request) {
       userId: user.id,
       purchaseToken: parsed.purchaseToken,
       claimedProductId: parsed.productId,
-      claimedOrderId: parsed.orderId
+      claimedBasePlanId: parsed.basePlanId,
+      claimedOrderId: parsed.orderId,
+      requireObfuscatedAccount: true
     });
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {

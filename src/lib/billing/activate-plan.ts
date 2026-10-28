@@ -20,6 +20,7 @@ export interface ApplyPlanUpdateInput {
     productId?: string | null;
     purchaseToken?: string | null;
     orderId?: string | null;
+    basePlanId?: string | null;
   };
 }
 
@@ -59,6 +60,7 @@ export async function applyPlanUpdate(input: ApplyPlanUpdateInput): Promise<void
       patch.play_purchase_token = input.play.purchaseToken;
     }
     if (input.play.orderId !== undefined) patch.play_order_id = input.play.orderId;
+    if (input.play.basePlanId !== undefined) patch.play_base_plan_id = input.play.basePlanId;
   }
 
   const { error } = await admin.from("profiles").update(patch as never).eq("id", input.userId);

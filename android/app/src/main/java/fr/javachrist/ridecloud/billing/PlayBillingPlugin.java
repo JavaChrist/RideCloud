@@ -20,14 +20,21 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 @CapacitorPlugin(name = "PlayBilling")
 public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListener {
+    private static final String PRODUCT_PREMIUM = "ridecloud_premium";
+    private static final String PRODUCT_FAMILY = "ridecloud_family";
+
     private BillingClient billingClient;
     @Nullable
     private PluginCall pendingPurchase;
+    @Nullable
+    private PluginCall pendingReady;
 
     @Override
     public void load() {
@@ -49,20 +56,39 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
     }
 
     @PluginMethod
+    public void getOffers(PluginCall call) {
+        ensureReady(call, () -> queryOffers(call));
+    }
+
+    @PluginMethod
     public void purchase(PluginCall call) {
         String productId = call.getString("productId");
+        String basePlanId = call.getString("basePlanId");
         String obfuscatedAccountId = call.getString("obfuscatedAccountId");
+        String oldProductId = call.getString("oldProductId");
+        String oldPurchaseToken = call.getString("oldPurchaseToken");
         if (productId == null || productId.isEmpty()) {
             call.reject("PRODUCT_REQUIRED", "Identifiant produit manquant.");
             return;
         }
+        if (basePlanId == null || basePlanId.isEmpty()) {
+            call.reject("BASE_PLAN_REQUIRED", "Identifiant de plan de base manquant.");
+            return;
+        }
         pendingPurchase = call;
-        ensureReady(() -> queryAndLaunch(call, productId, obfuscatedAccountId));
+        ensureReady(call, () -> queryAndLaunch(
+            call,
+            productId,
+            basePlanId,
+            obfuscatedAccountId,
+            oldProductId,
+            oldPurchaseToken
+        ));
     }
 
     @PluginMethod
     public void restorePurchases(PluginCall call) {
-        ensureReady(() -> billingClient.queryPurchasesAsync(
+        ensureReady(call, () -> billingClient.queryPurchasesAsync(
             QueryPurchasesParams.newBuilder()
                 .setProductType(BillingClient.ProductType.SUBS)
                 .build(),
@@ -121,7 +147,74 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
         call.resolve(toJs(purchase));
     }
 
-    private void queryAndLaunch(PluginCall call, String productId, @Nullable String obfuscatedAccountId) {
+    private void queryOffers(PluginCall call) {
+        List<QueryProductDetailsParams.Product> products = new ArrayList<>();
+        for (String productId : Arrays.asList(PRODUCT_PREMIUM, PRODUCT_FAMILY)) {
+            products.add(
+                QueryProductDetailsParams.Product.newBuilder()
+                    .setProductId(productId)
+                    .setProductType(BillingClient.ProductType.SUBS)
+                    .build()
+            );
+        }
+        billingClient.queryProductDetailsAsync(
+            QueryProductDetailsParams.newBuilder().setProductList(products).build(),
+            (billingResult, queryResult) -> {
+                if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+                    call.reject(
+                        "PRODUCT_QUERY_FAILED",
+                        billingResult.getDebugMessage() == null
+                            ? "Impossible de lire les offres Google Play."
+                            : billingResult.getDebugMessage()
+                    );
+                    return;
+                }
+                JSObject result = new JSObject();
+                JSArray offers = new JSArray();
+                List<ProductDetails> details = queryResult.getProductDetailsList();
+                if (details != null) {
+                    for (ProductDetails productDetails : details) {
+                        appendBasePlanOffers(offers, productDetails);
+                    }
+                }
+                result.put("offers", offers);
+                call.resolve(result);
+            }
+        );
+    }
+
+    private void appendBasePlanOffers(JSArray offers, ProductDetails productDetails) {
+        List<ProductDetails.SubscriptionOfferDetails> details = productDetails.getSubscriptionOfferDetails();
+        if (details == null) {
+            return;
+        }
+        for (ProductDetails.SubscriptionOfferDetails offer : details) {
+            if (!isRegularBasePlan(offer)) {
+                continue;
+            }
+            List<ProductDetails.PricingPhase> phases = offer.getPricingPhases().getPricingPhaseList();
+            if (phases == null || phases.isEmpty()) {
+                continue;
+            }
+            ProductDetails.PricingPhase phase = phases.get(0);
+            JSObject row = new JSObject();
+            row.put("productId", productDetails.getProductId());
+            row.put("basePlanId", offer.getBasePlanId());
+            row.put("formattedPrice", phase.getFormattedPrice());
+            row.put("priceAmountMicros", phase.getPriceAmountMicros());
+            row.put("billingPeriod", phase.getBillingPeriod());
+            offers.put(row);
+        }
+    }
+
+    private void queryAndLaunch(
+        PluginCall call,
+        String productId,
+        String basePlanId,
+        @Nullable String obfuscatedAccountId,
+        @Nullable String oldProductId,
+        @Nullable String oldPurchaseToken
+    ) {
         QueryProductDetailsParams.Product product = QueryProductDetailsParams.Product.newBuilder()
             .setProductId(productId)
             .setProductType(BillingClient.ProductType.SUBS)
@@ -151,27 +244,51 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
                 return;
             }
             ProductDetails productDetails = details.get(0);
-            String offerToken = pickPaidOfferToken(productDetails);
-            if (offerToken == null) {
+            ProductDetails.SubscriptionOfferDetails offer = findBasePlanOffer(productDetails, basePlanId);
+            if (offer == null) {
                 pendingPurchase = null;
-                call.reject("OFFER_NOT_FOUND", "Aucune offre payante disponible pour ce produit.");
+                call.reject(
+                    "OFFER_NOT_FOUND",
+                    "Plan de base Google Play introuvable pour ce produit."
+                );
                 return;
             }
 
-            BillingFlowParams.ProductDetailsParams productParams =
+            BillingFlowParams.ProductDetailsParams.Builder productParams =
                 BillingFlowParams.ProductDetailsParams.newBuilder()
                     .setProductDetails(productDetails)
-                    .setOfferToken(offerToken)
-                    .build();
+                    .setOfferToken(offer.getOfferToken());
+            boolean replace =
+                oldProductId != null && !oldProductId.isEmpty()
+                    && oldPurchaseToken != null && !oldPurchaseToken.isEmpty();
+            if (replace) {
+                productParams.setSubscriptionProductReplacementParams(
+                    BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams
+                        .newBuilder()
+                        .setOldProductId(oldProductId)
+                        .setReplacementMode(
+                            BillingFlowParams.ProductDetailsParams
+                                .SubscriptionProductReplacementParams.ReplacementMode.CHARGE_FULL_PRICE
+                        )
+                        .build()
+                );
+            }
             if (getActivity() == null) {
                 pendingPurchase = null;
                 call.reject("NO_ACTIVITY", "Activité Android indisponible.");
                 return;
             }
             BillingFlowParams.Builder flowBuilder = BillingFlowParams.newBuilder()
-                .setProductDetailsParamsList(Collections.singletonList(productParams));
+                .setProductDetailsParamsList(Collections.singletonList(productParams.build()));
             if (obfuscatedAccountId != null && !obfuscatedAccountId.isEmpty()) {
                 flowBuilder.setObfuscatedAccountId(obfuscatedAccountId);
+            }
+            if (replace) {
+                flowBuilder.setSubscriptionUpdateParams(
+                    BillingFlowParams.SubscriptionUpdateParams.newBuilder()
+                        .setOldPurchaseToken(oldPurchaseToken)
+                        .build()
+                );
             }
             getActivity().runOnUiThread(() ->
                 billingClient.launchBillingFlow(getActivity(), flowBuilder.build())
@@ -180,24 +297,25 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
     }
 
     @Nullable
-    private String pickPaidOfferToken(ProductDetails productDetails) {
+    private ProductDetails.SubscriptionOfferDetails findBasePlanOffer(
+        ProductDetails productDetails,
+        String basePlanId
+    ) {
         List<ProductDetails.SubscriptionOfferDetails> offers = productDetails.getSubscriptionOfferDetails();
-        if (offers == null || offers.isEmpty()) {
+        if (offers == null) {
             return null;
         }
         for (ProductDetails.SubscriptionOfferDetails offer : offers) {
-            boolean hasFreePhase = false;
-            for (ProductDetails.PricingPhase phase : offer.getPricingPhases().getPricingPhaseList()) {
-                if (phase.getPriceAmountMicros() == 0) {
-                    hasFreePhase = true;
-                    break;
-                }
-            }
-            if (!hasFreePhase) {
-                return offer.getOfferToken();
+            if (basePlanId.equals(offer.getBasePlanId()) && isRegularBasePlan(offer)) {
+                return offer;
             }
         }
         return null;
+    }
+
+    private boolean isRegularBasePlan(ProductDetails.SubscriptionOfferDetails offer) {
+        String offerId = offer.getOfferId();
+        return offerId == null || offerId.isEmpty();
     }
 
     private void restoreOwnedPurchase(PluginCall call) {
@@ -226,20 +344,35 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
         return json;
     }
 
-    private void ensureReady(Runnable next) {
+    private void ensureReady(PluginCall call, Runnable next) {
+        pendingReady = call;
         if (billingClient != null && billingClient.isReady()) {
+            pendingReady = null;
             next.run();
             return;
         }
-        connect(next);
+        connect(() -> {
+            pendingReady = null;
+            next.run();
+        });
+    }
+
+    private void rejectPending(String code, String message) {
+        PluginCall purchaseCall = pendingPurchase;
+        PluginCall readyCall = pendingReady;
+        pendingPurchase = null;
+        pendingReady = null;
+        if (purchaseCall != null) {
+            purchaseCall.reject(code, message);
+        }
+        if (readyCall != null && readyCall != purchaseCall) {
+            readyCall.reject(code, message);
+        }
     }
 
     private void connect(@Nullable Runnable onReady) {
         if (billingClient == null) {
-            if (pendingPurchase != null) {
-                pendingPurchase.reject("BILLING_UNAVAILABLE", "Google Play Billing indisponible.");
-                pendingPurchase = null;
-            }
+            rejectPending("BILLING_UNAVAILABLE", "Google Play Billing indisponible.");
             return;
         }
         billingClient.startConnection(new BillingClientStateListener() {
@@ -251,15 +384,12 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
                     }
                     return;
                 }
-                if (pendingPurchase != null) {
-                    pendingPurchase.reject(
-                        "BILLING_UNAVAILABLE",
-                        billingResult.getDebugMessage() == null
-                            ? "Google Play Billing indisponible."
-                            : billingResult.getDebugMessage()
-                    );
-                    pendingPurchase = null;
-                }
+                rejectPending(
+                    "BILLING_UNAVAILABLE",
+                    billingResult.getDebugMessage() == null
+                        ? "Google Play Billing indisponible."
+                        : billingResult.getDebugMessage()
+                );
             }
 
             @Override

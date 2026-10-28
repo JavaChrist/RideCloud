@@ -21,6 +21,7 @@ export interface Profile {
   mollie_subscription_id: string | null;
   mollie_mandate_id: string | null;
   play_product_id: string | null;
+  play_base_plan_id: string | null;
   play_purchase_token: string | null;
   play_order_id: string | null;
   founder_premium_lifetime: boolean;
