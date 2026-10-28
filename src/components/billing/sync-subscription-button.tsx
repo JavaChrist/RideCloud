@@ -84,7 +84,7 @@ export function SyncSubscriptionButton({ variant = "default" }: SyncSubscription
       onClick={handleSync}
       disabled={loading}
       variant="outline"
-      className="gap-2 border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40"
+      className="h-auto w-full max-w-full whitespace-normal px-3 py-2 text-center border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 md:w-auto md:whitespace-nowrap"
     >
       {loading ? (
         <>

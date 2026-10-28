@@ -46,7 +46,6 @@ export async function POST(
     .from("vehicles")
     .select("*")
     .eq("id", vehicleId)
-    .eq("user_id", user.id)
     .maybeSingle();
 
   if (vehicleError || !vehicleData) {
@@ -60,7 +59,6 @@ export async function POST(
   const { data: entriesData, error: entriesError } = await supabase
     .from("maintenance_plan_entries")
     .select("*")
-    .eq("user_id", user.id)
     .eq("vehicle_id", vehicleId);
 
   if (entriesError) {

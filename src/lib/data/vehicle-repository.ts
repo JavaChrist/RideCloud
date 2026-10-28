@@ -140,7 +140,6 @@ async function ensureMaintenancePlanEntries(userId: string, vehicle: Vehicle) {
   const { data, error } = await supabase
     .from("maintenance_plan_entries")
     .select("*")
-    .eq("user_id", userId)
     .eq("vehicle_id", vehicle.id)
     .order("created_at", { ascending: true });
 
@@ -192,7 +191,7 @@ async function ensureMaintenancePlanEntries(userId: string, vehicle: Vehicle) {
     });
 
     return {
-      user_id: userId,
+      user_id: vehicle.user_id,
       vehicle_id: vehicle.id,
       titre: template.titre,
       categorie: template.categorie,
@@ -231,7 +230,7 @@ async function ensureMaintenancePlanEntries(userId: string, vehicle: Vehicle) {
 export async function getCategoryCounts(userId: string) {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.from("vehicles").select("category").eq("user_id", userId);
+    const { data, error } = await supabase.from("vehicles").select("category");
     if (error) return getDemoCategoryCounts();
 
     const rows = (data ?? []) as Array<{ category: VehicleCategory }>;
@@ -252,7 +251,6 @@ export async function getVehiclesByCategory(userId: string, category: VehicleCat
     const { data, error } = await supabase
       .from("vehicles")
       .select("*")
-      .eq("user_id", userId)
       .eq("category", category)
       .order("created_at", { ascending: false });
 
@@ -272,7 +270,6 @@ export async function getVehicleById(userId: string, id: string) {
     const { data, error } = await supabase
       .from("vehicles")
       .select("*")
-      .eq("user_id", userId)
       .eq("id", id)
       .maybeSingle();
 
@@ -293,7 +290,6 @@ export async function getVehicleHistory(userId: string, vehicleId: string) {
     const { data: vehicleData } = await supabase
       .from("vehicles")
       .select("*")
-      .eq("user_id", userId)
       .eq("id", vehicleId)
       .maybeSingle();
     const vehicle = (vehicleData ?? null) as Vehicle | null;
@@ -302,31 +298,26 @@ export async function getVehicleHistory(userId: string, vehicleId: string) {
       supabase
         .from("maintenance_entries")
         .select("*")
-        .eq("user_id", userId)
         .eq("vehicle_id", vehicleId)
         .order("date_entretien", { ascending: false }),
       supabase
         .from("upcoming_maintenance")
         .select("*")
-        .eq("user_id", userId)
         .eq("vehicle_id", vehicleId)
         .order("created_at", { ascending: false }),
       supabase
         .from("modifications")
         .select("*")
-        .eq("user_id", userId)
         .eq("vehicle_id", vehicleId)
         .order("created_at", { ascending: false }),
       supabase
         .from("documents")
         .select("*")
-        .eq("user_id", userId)
         .eq("vehicle_id", vehicleId)
         .order("created_at", { ascending: false }),
       supabase
         .from("maintenance_plan_entries")
         .select("*")
-        .eq("user_id", userId)
         .eq("vehicle_id", vehicleId)
         .order("created_at", { ascending: true })
     ]);

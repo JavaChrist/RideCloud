@@ -370,6 +370,54 @@ export interface Database {
         Update: Partial<NotificationDismissalRow>;
         Relationships: [];
       };
+      households: {
+        Row: { id: UUID; owner_id: UUID; created_at: string };
+        Insert: { id?: UUID; owner_id: UUID; created_at?: string };
+        Update: Partial<{ owner_id: UUID }>;
+        Relationships: [];
+      };
+      household_members: {
+        Row: {
+          household_id: UUID;
+          user_id: UUID;
+          role: "owner" | "member";
+          joined_at: string;
+        };
+        Insert: {
+          household_id: UUID;
+          user_id: UUID;
+          role: "owner" | "member";
+          joined_at?: string;
+        };
+        Update: Partial<{ role: "owner" | "member" }>;
+        Relationships: [];
+      };
+      household_invites: {
+        Row: {
+          id: UUID;
+          household_id: UUID;
+          email: string;
+          token: UUID;
+          invited_by: UUID;
+          created_at: string;
+          expires_at: string;
+          accepted_at: string | null;
+          revoked_at: string | null;
+        };
+        Insert: {
+          id?: UUID;
+          household_id: UUID;
+          email: string;
+          token?: UUID;
+          invited_by: UUID;
+          created_at?: string;
+          expires_at: string;
+          accepted_at?: string | null;
+          revoked_at?: string | null;
+        };
+        Update: Partial<{ accepted_at: string | null; revoked_at: string | null }>;
+        Relationships: [];
+      };
       notifications: {
         Row: NotificationRow;
         Insert: Omit<

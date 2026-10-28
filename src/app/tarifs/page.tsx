@@ -128,7 +128,7 @@ export default async function TarifsPage() {
               },
               {
                 q: "Comment fonctionne le partage Family ?",
-                a: "Le partage entre 4 comptes arrive dans la V1 (mi-2026). En attendant, le plan Family vous donne 10 véhicules à gérer depuis votre compte unique."
+                a: "Le titulaire Family invite jusqu'à 3 autres comptes depuis Paramètres. Ensemble, vous partagez le garage (jusqu'à 10 véhicules), les entretiens, les documents, les statistiques foyer et le support prioritaire. Si l'abonnement Family n'est plus actif, les membres perdent l'accès au garage partagé mais conservent leurs propres véhicules."
               }
             ].map(({ q, a }) => (
               <details

@@ -3,7 +3,6 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getUserPlanState } from "@/lib/billing/limits";
-import { isPaidPlan } from "@/lib/billing/plans";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { resolveMaintenanceTemplatesForVehicle } from "@/lib/data/maintenance-template-resolver";
 import {
@@ -82,7 +81,7 @@ export async function POST(request: Request) {
 
   // ----- Plan check : Premium ou Family uniquement -----
   const planState = await getUserPlanState(user.id);
-  if (!isPaidPlan(planState.plan) || planState.planStatus !== "active") {
+  if (!planState.canUsePaidFeatures) {
     return NextResponse.json(
       {
         error: "Fonctionnalité réservée aux abonnés Premium ou Family.",
@@ -92,12 +91,11 @@ export async function POST(request: Request) {
     );
   }
 
-  // ----- Vehicle check : ownership -----
+  // ----- Vehicle check : propriétaire ou membre du foyer -----
   const { data: vehicleData, error: vehicleError } = await supabase
     .from("vehicles")
     .select("*")
     .eq("id", body.vehicleId)
-    .eq("user_id", user.id)
     .maybeSingle();
 
   if (vehicleError || !vehicleData) {
@@ -185,7 +183,6 @@ export async function POST(request: Request) {
   const { data: existingEntries } = await admin
     .from("maintenance_plan_entries")
     .select("id, source, last_done_km, last_done_date, categorie, titre")
-    .eq("user_id", user.id)
     .eq("vehicle_id", vehicle.id);
 
   const existingMap = new Map<string, { id: string; hasHistory: boolean }>();

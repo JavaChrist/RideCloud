@@ -71,10 +71,10 @@ export function CheckoutConsentDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !isSubmitting && onOpenChange(next)}>
-      <DialogContent className="max-w-xl">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[calc(100svh-1rem)] max-w-xl flex-col overflow-hidden">
+        <DialogHeader className="shrink-0 pr-10">
           <DialogTitle className="flex items-center gap-2 text-lg">
-            <Sparkles className="h-5 w-5 text-blue-600" aria-hidden />
+            <Sparkles className="h-5 w-5 shrink-0 text-blue-600" aria-hidden />
             Confirmation de votre abonnement {planDef.name}
           </DialogTitle>
           <DialogDescription>
@@ -83,9 +83,9 @@ export function CheckoutConsentDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 px-6 pb-2">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 pb-2">
           <div className="rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/70 dark:bg-blue-950/40 p-4">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-start sm:gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-300">
                   Plan choisi
@@ -172,12 +172,13 @@ export function CheckoutConsentDialog({
           </p>
         </div>
 
-        <DialogFooter className="px-6 pb-6">
+        <DialogFooter className="shrink-0 flex-col gap-2 px-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:flex-row">
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
+            className="w-full sm:w-auto"
           >
             Annuler
           </Button>
@@ -185,7 +186,7 @@ export function CheckoutConsentDialog({
             type="button"
             onClick={handleConfirm}
             disabled={!accepted || isSubmitting}
-            className="bg-blue-700 text-white hover:bg-blue-800"
+            className="w-full bg-blue-700 text-white hover:bg-blue-800 sm:w-auto"
           >
             {isSubmitting ? (
               <>

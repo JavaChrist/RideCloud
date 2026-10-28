@@ -50,7 +50,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         .from("vehicles")
         .select("*")
         .eq("id", id)
-        .eq("user_id", userId)
         .maybeSingle();
       if (error || !data) return null;
       return data as Vehicle;
@@ -65,7 +64,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
           updated_at: input.updatedAt
         } as never)
         .eq("id", input.vehicleId)
-        .eq("user_id", input.userId)
         .select("*")
         .maybeSingle();
       if (error) {
@@ -77,8 +75,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       const { data, error } = await supabase
         .from("maintenance_plan_entries")
         .select("*")
-        .eq("vehicle_id", id)
-        .eq("user_id", userId);
+        .eq("vehicle_id", id);
       if (error) {
         throw new Error(error.message);
       }

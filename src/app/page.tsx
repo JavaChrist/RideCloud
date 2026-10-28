@@ -763,7 +763,7 @@ const FAQS: { question: string; answer: string }[] = [
   {
     question: "Puis-je partager un véhicule avec mon conjoint ou ma famille ?",
     answer:
-      "Le partage multi-utilisateurs par véhicule est prévu dans la V1 (3 à 6 mois). Le plan Family permettra un partage complet entre 4 comptes.",
+      "Oui, avec le plan Family : le titulaire invite jusqu'à 3 autres comptes. Le foyer partage alors le garage, les entretiens et les documents, dans la limite de 10 véhicules.",
   },
   {
     question: "RideCloud fonctionne-t-il hors connexion ?",

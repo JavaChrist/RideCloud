@@ -16,7 +16,6 @@ import { getVehicleMaintenanceSummary } from "@/lib/maintenance";
 import { getVehicleReminderSummary } from "@/lib/reminders";
 import { createClient } from "@/lib/supabase/server";
 import { getUserPlanState } from "@/lib/billing/limits";
-import { isPaidPlan } from "@/lib/billing/plans";
 
 const categoryLabels = {
   voitures: "Voiture",
@@ -57,7 +56,7 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
     getUserPlanState(user.id)
   ]);
   const { completed, upcoming, modifications, documents, planEntries, maintenanceProfileName } = history;
-  const canUseAi = isPaidPlan(planState.plan) && planState.planStatus === "active";
+  const canUseAi = planState.canUsePaidFeatures;
   const summary = getVehicleMaintenanceSummary({
     planEntries,
     currentKm: vehicle.kilometrage,

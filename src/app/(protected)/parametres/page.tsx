@@ -21,6 +21,11 @@ import { PushNotificationsSection } from "@/components/notifications/push-notifi
 import { getUserPlanState } from "@/lib/billing/limits";
 import { createClient } from "@/lib/supabase/server";
 import { isAdminEmail } from "@/lib/admin";
+import { Suspense } from "react";
+import {
+  FamilyHouseholdFallback,
+  FamilyHouseholdSection
+} from "@/components/family/family-household-section";
 
 export const metadata = {
   title: "Paramètres · RideCloud",
@@ -69,6 +74,10 @@ export default async function ParametresPage() {
       </header>
 
       <SubscriptionSection state={planState} />
+
+      <Suspense fallback={<FamilyHouseholdFallback />}>
+        <FamilyHouseholdSection planState={planState} />
+      </Suspense>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <article className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-6 shadow-ride-sm lg:col-span-2">

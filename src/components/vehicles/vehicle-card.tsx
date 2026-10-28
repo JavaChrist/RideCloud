@@ -11,7 +11,14 @@ function FallbackIcon({ category }: { category: Vehicle["category"] }) {
   return <Bike className="h-10 w-10 text-slate-400 dark:text-slate-500" />;
 }
 
-export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
+export function VehicleCard({
+  vehicle,
+  currentUserId
+}: {
+  vehicle: Vehicle;
+  currentUserId?: string;
+}) {
+  const isShared = Boolean(currentUserId && vehicle.user_id !== currentUserId);
   const isExternalImage = Boolean(vehicle.photo_url?.startsWith("http"));
 
   return (
@@ -47,11 +54,18 @@ export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
           <span className="truncate">
             {vehicle.marque} {vehicle.modele}
           </span>
-          <span
-            aria-hidden
-            className="text-[11px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500"
-          >
-            {vehicle.annee}
+          <span className="flex shrink-0 items-center gap-2">
+            {isShared ? (
+              <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">
+                Foyer
+              </span>
+            ) : null}
+            <span
+              aria-hidden
+              className="text-[11px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500"
+            >
+              {vehicle.annee}
+            </span>
           </span>
         </CardTitle>
       </CardHeader>

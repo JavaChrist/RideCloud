@@ -77,8 +77,8 @@ export const PLANS: Record<Plan, PlanDefinition> = {
     features: [
       "Jusqu'à 10 véhicules",
       "Tout Premium",
-      "Partage entre 4 comptes (V1, 2026)",
-      "Profil maintenance avancé",
+      "Partage entre 4 comptes",
+      "Profils maintenance du foyer",
       "Statistiques foyer",
       "Support prioritaire"
     ],

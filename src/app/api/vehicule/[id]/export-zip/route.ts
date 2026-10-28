@@ -31,17 +31,16 @@ export async function GET(_: Request, context: { params: Promise<{ id: string }>
     .from("vehicles")
     .select("*")
     .eq("id", id)
-    .eq("user_id", user.id)
     .maybeSingle();
   if (vehicleError || !vehicle) {
     return NextResponse.json({ error: "Véhicule introuvable" }, { status: 404 });
   }
 
   const [maintenanceRes, upcomingRes, modificationsRes, documentsRes] = await Promise.all([
-    supabase.from("maintenance_entries").select("*").eq("vehicle_id", id).eq("user_id", user.id).order("date_entretien", { ascending: false }),
-    supabase.from("upcoming_maintenance").select("*").eq("vehicle_id", id).eq("user_id", user.id).order("created_at", { ascending: false }),
-    supabase.from("modifications").select("*").eq("vehicle_id", id).eq("user_id", user.id).order("created_at", { ascending: false }),
-    supabase.from("documents").select("*").eq("vehicle_id", id).eq("user_id", user.id).order("created_at", { ascending: false })
+    supabase.from("maintenance_entries").select("*").eq("vehicle_id", id).order("date_entretien", { ascending: false }),
+    supabase.from("upcoming_maintenance").select("*").eq("vehicle_id", id).order("created_at", { ascending: false }),
+    supabase.from("modifications").select("*").eq("vehicle_id", id).order("created_at", { ascending: false }),
+    supabase.from("documents").select("*").eq("vehicle_id", id).order("created_at", { ascending: false })
   ]);
 
   const documentsRows = (documentsRes.data ?? []) as Array<{

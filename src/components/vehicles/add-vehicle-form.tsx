@@ -27,27 +27,25 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { VehiclePhotoField } from "@/components/vehicles/vehicle-photo-field";
 import { uploadVehiclePhoto, validateVehiclePhotoFile } from "@/lib/vehicles/vehicle-photo";
 
-async function ensureVehicleQuota(supabase: SupabaseClient, userId: string): Promise<boolean> {
-  const [profileRes, countRes] = await Promise.all([
-    supabase.from("profiles").select("plan").eq("id", userId).maybeSingle(),
-    supabase.from("vehicles").select("id", { count: "exact", head: true }).eq("user_id", userId)
-  ]);
-  const plan = (profileRes.data as { plan?: keyof typeof PLANS } | null)?.plan ?? "free";
-  const limit = PLANS[plan]?.vehicleLimit ?? PLANS.free.vehicleLimit;
-  const used = countRes.count ?? 0;
-  return used < limit;
+async function ensureVehicleQuota(_supabase: SupabaseClient, _userId: string): Promise<boolean> {
+  const response = await fetch("/api/family/state");
+  if (!response.ok) return false;
+  const data = (await response.json()) as {
+    plan?: { hasReachedVehicleLimit?: boolean };
+  };
+  return !data.plan?.hasReachedVehicleLimit;
 }
 
-async function getUserPlan(supabase: SupabaseClient, userId: string): Promise<keyof typeof PLANS> {
-  const { data } = await supabase
-    .from("profiles")
-    .select("plan, plan_status")
-    .eq("id", userId)
-    .maybeSingle();
-  const profile = data as { plan?: keyof typeof PLANS; plan_status?: string } | null;
-  if (!profile?.plan) return "free";
-  if (profile.plan_status && profile.plan_status !== "active") return "free";
-  return profile.plan;
+async function getUserPlan(_supabase: SupabaseClient, _userId: string): Promise<keyof typeof PLANS> {
+  const response = await fetch("/api/family/state");
+  if (!response.ok) return "free";
+  const data = (await response.json()) as {
+    plan?: { plan?: keyof typeof PLANS; canUsePaidFeatures?: boolean };
+  };
+  if (data.plan?.canUsePaidFeatures) {
+    return data.plan.plan === "family" ? "family" : "premium";
+  }
+  return data.plan?.plan ?? "free";
 }
 
 /**

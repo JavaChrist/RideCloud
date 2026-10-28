@@ -84,7 +84,7 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
         {!isPaid ? (
           <Link
             href="/tarifs"
-            className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-md bg-blue-700 px-4 text-sm font-medium text-white shadow-[0_4px_14px_-4px_rgba(29,78,216,0.6)] transition hover:bg-blue-800"
+            className="inline-flex h-10 w-full shrink-0 items-center justify-center gap-1.5 rounded-md bg-blue-700 px-4 text-sm font-medium text-white shadow-[0_4px_14px_-4px_rgba(29,78,216,0.6)] transition hover:bg-blue-800 md:w-auto"
           >
             Passer Premium
             <ArrowUpRight className="h-4 w-4" aria-hidden />
@@ -92,7 +92,7 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
         ) : (
           <Link
             href="/tarifs"
-            className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 text-sm font-medium text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-slate-950"
+            className="inline-flex h-10 w-full shrink-0 items-center justify-center gap-1.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 text-sm font-medium text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-slate-950 md:w-auto"
           >
             Voir les plans
             <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
@@ -160,17 +160,17 @@ export function SubscriptionSection({ state }: SubscriptionSectionProps) {
       ) : null}
 
       {showSyncFallback ? (
-        <div className="mt-5 flex flex-col items-start gap-3 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50/70 dark:bg-blue-950/40 p-4 text-sm text-blue-900 dark:text-blue-200 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
+        <div className="mt-5 flex min-w-0 flex-col items-stretch gap-3 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50/70 dark:bg-blue-950/40 p-4 text-sm text-blue-900 dark:text-blue-200 md:flex-row md:items-center md:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
             <RefreshCw className="mt-0.5 h-4 w-4 shrink-0 text-blue-700 dark:text-blue-300" aria-hidden />
-            <div>
+            <div className="min-w-0">
               <p className="font-medium">
                 Vous avez réglé un paiement, mais votre plan est toujours Free ?
               </p>
               <p className="mt-0.5 text-blue-800 dark:text-blue-200">
                 {hasMollieCustomer
-                  ? "Cela peut arriver si la notification Mollie n'a pas été reçue. Cliquez ci-contre pour resynchroniser votre abonnement."
-                  : "Cliquez ci-contre pour rechercher votre paiement chez Mollie via votre e-mail et activer votre plan."}
+                  ? "Cela peut arriver si la notification Mollie n'a pas été reçue. Utilisez le bouton pour resynchroniser votre abonnement."
+                  : "Utilisez le bouton pour rechercher votre paiement chez Mollie via votre e-mail et activer votre plan."}
               </p>
             </div>
           </div>

@@ -77,7 +77,7 @@ export default async function CategoryVehiclesPage({ params }: { params: Promise
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {vehicles.map((v) => (
-            <VehicleCard key={v.id} vehicle={v} />
+            <VehicleCard key={v.id} vehicle={v} currentUserId={user.id} />
           ))}
         </div>
       )}

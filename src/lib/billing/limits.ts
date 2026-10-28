@@ -2,6 +2,11 @@ import type { Plan, PlanInterval, PlanStatus, Profile } from "@/types/database";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PLANS } from "@/lib/billing/plans";
+import {
+  countHouseholdVehicles,
+  getHouseholdMembership,
+  householdVehicleLimit
+} from "@/lib/family/household";
 
 /**
  * Vérifie si un abonnement annulé a atteint sa date de fin.
@@ -32,6 +37,10 @@ export interface UserPlanState {
   mollieMandateId: string | null;
   isFounder: boolean;
   founderBadge: boolean;
+  /** Accès payants via un foyer Family actif (titulaire ou membre). */
+  hasHouseholdBenefits: boolean;
+  householdRole: "owner" | "member" | null;
+  canUsePaidFeatures: boolean;
 }
 
 const DEFAULT_PROFILE: Pick<
@@ -71,7 +80,7 @@ const DEFAULT_PROFILE: Pick<
 export async function getUserPlanState(userId: string): Promise<UserPlanState> {
   const supabase = await createClient();
 
-  const [profileRes, vehiclesRes] = await Promise.all([
+  const [profileRes, vehiclesRes, membership] = await Promise.all([
     supabase
       .from("profiles")
       .select(
@@ -79,11 +88,12 @@ export async function getUserPlanState(userId: string): Promise<UserPlanState> {
       )
       .eq("id", userId)
       .maybeSingle(),
-    supabase.from("vehicles").select("id", { count: "exact", head: true }).eq("user_id", userId)
+    supabase.from("vehicles").select("id", { count: "exact", head: true }).eq("user_id", userId),
+    getHouseholdMembership(userId)
   ]);
 
   const profile = (profileRes.data ?? DEFAULT_PROFILE) as unknown as typeof DEFAULT_PROFILE;
-  const vehicleCount = vehiclesRes.count ?? 0;
+  const ownVehicleCount = vehiclesRes.count ?? 0;
 
   const plan: Plan = profile.plan ?? "free";
   const isFounder = profile.founder_premium_lifetime ?? false;
@@ -114,16 +124,25 @@ export async function getUserPlanState(userId: string): Promise<UserPlanState> {
   }
 
   const resolvedPlan: Plan = expired ? "free" : plan;
+  const planStatus = expired ? "active" : (profile.plan_status ?? "active");
 
   // Override Fondateur : Premium à vie indépendant du plan Mollie.
   const effectivePlan: Plan = isFounder ? "premium" : resolvedPlan;
   const planDef = PLANS[effectivePlan] ?? PLANS.free;
-  const vehicleLimit = planDef.vehicleLimit;
+  const hasHouseholdBenefits = Boolean(membership?.isActive);
+  const vehicleLimit = householdVehicleLimit(hasHouseholdBenefits, planDef.vehicleLimit);
+  const vehicleCount =
+    hasHouseholdBenefits && membership
+      ? await countHouseholdVehicles(membership.householdId)
+      : ownVehicleCount;
+  const canUsePaidFeatures =
+    hasHouseholdBenefits ||
+    ((effectivePlan === "premium" || effectivePlan === "family") && planStatus === "active");
 
   return {
     userId,
     plan: resolvedPlan,
-    planStatus: expired ? "active" : (profile.plan_status ?? "active"),
+    planStatus,
     planInterval: expired ? null : profile.plan_interval,
     renewsAt: expired ? null : profile.plan_renews_at,
     canceledAt: expired ? null : profile.plan_canceled_at,
@@ -135,7 +154,10 @@ export async function getUserPlanState(userId: string): Promise<UserPlanState> {
     mollieSubscriptionId: expired ? null : profile.mollie_subscription_id,
     mollieMandateId: profile.mollie_mandate_id,
     isFounder,
-    founderBadge
+    founderBadge,
+    hasHouseholdBenefits,
+    householdRole: membership?.role ?? null,
+    canUsePaidFeatures
   };
 }
 
